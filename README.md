@@ -12,3 +12,6 @@
 
 
 Sugerencias ??? 
+
+-Reportar/Comentar cambios importantes
+-
