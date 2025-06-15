@@ -1,1 +1,0 @@
-Reglas a proponer ante los comits
