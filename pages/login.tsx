@@ -44,8 +44,8 @@ const { data: perfil, error: perfilError } = await supabase
     const rol = perfil.rol
 
     if (rol === 'programador') router.push('/panel/programador')
-    else if (rol === 'administrador') router.push('/panel/administrador/index')
-    else if (rol === 'empleado') router.push('/panel/empleado/index')
+    else if (rol === 'administrador') router.push('/panel/administrador')
+    else if (rol === 'empleado') router.push('/panel/empleado')
     else setError('Rol no válido')
   }
 
