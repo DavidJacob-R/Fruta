@@ -36,7 +36,7 @@ export default function PanelProgramador() {
     }
 
     verificarSesion()
-  }, [])
+  }, [router])
 
   if (!rol) return <p>Cargando...</p>
 
