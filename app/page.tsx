@@ -4,66 +4,60 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-// 👇 Crea el cliente de Supabase
 const supabase = createClient(
-  'https://zgzcxuwelzuluazleeua.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnemN4dXdlbHp1bHVhemxlZXVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MzU5MjEsImV4cCI6MjA2NTUxMTkyMX0.PcgbzmmbPn319t92DdWHjFLRJkFcR13uFoJ16rCrMGY'
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rol, setRol] = useState('empleado')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState('')
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
+    setError('')
     setLoading(true)
-    setErrorMsg('')
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Crear usuario en Supabase Auth
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
-      password
+      password,
     })
 
-    if (error) {
-      setErrorMsg('Credenciales incorrectas.')
+    if (signUpError || !data.user) {
+      setError('Error al crear el usuario.')
       setLoading(false)
       return
     }
 
-    // Consultar el rol en la tabla 'usuarios'
-    const { data: usuario, error: rolError } = await supabase
-      .from('usuarios')
-      .select('rol')
-      .eq('id', data.user.id)
-      .single()
+    // Guardar en tabla "usuarios"
+    const { error: insertError } = await supabase.from('usuarios').insert({
+      id: data.user.id,
+      email,
+      rol
+    })
 
-    if (rolError || !usuario) {
-      setErrorMsg('No se pudo obtener el rol del usuario.')
+    if (insertError) {
+      setError('Error al guardar el rol del usuario.')
       setLoading(false)
       return
     }
 
-    const rol = usuario.rol
-
-    if (rol === 'programador') router.push('/panel/programador')
-    else if (rol === 'administrador') router.push('/panel/administrador')
-    else if (rol === 'empleado') router.push('/panel/empleado')
-    else setErrorMsg('Rol no reconocido.')
-
-    setLoading(false)
+    alert('Usuario registrado correctamente')
+    router.push('/login')
   }
 
   return (
     <div className="max-w-sm mx-auto mt-20 p-4 border rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Iniciar sesión</h2>
+      <h2 className="text-xl font-bold mb-4">Registro de usuario</h2>
 
       <input
         type="email"
-        placeholder="Correo electrónico"
+        placeholder="Correo"
         className="w-full p-2 mb-4 border rounded"
-        value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
 
@@ -71,18 +65,27 @@ export default function LoginPage() {
         type="password"
         placeholder="Contraseña"
         className="w-full p-2 mb-4 border rounded"
-        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      {errorMsg && <p className="text-red-500 mb-2">{errorMsg}</p>}
+      <select
+        className="w-full p-2 mb-4 border rounded"
+        onChange={(e) => setRol(e.target.value)}
+        value={rol}
+      >
+        <option value="programador">Programador</option>
+        <option value="administrador">Administrador</option>
+        <option value="empleado">Empleado</option>
+      </select>
+
+      {error && <p className="text-red-500 mb-2">{error}</p>}
 
       <button
-        onClick={handleLogin}
-        className="w-full bg-blue-600 text-white p-2 rounded"
+        className="w-full bg-green-600 text-white p-2 rounded"
+        onClick={handleRegister}
         disabled={loading}
       >
-        {loading ? 'Ingresando...' : 'Iniciar sesión'}
+        {loading ? 'Registrando...' : 'Registrarse'}
       </button>
     </div>
   )
