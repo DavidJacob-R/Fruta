@@ -1,12 +1,19 @@
+import { useRouter } from 'next/router'
+
 export default function Home() {
+  const router = useRouter()
+
   return (
-    <div className="min-h-screen bg-white p-10">
-      <h1 className="text-3xl font-bold mb-8 text-center">Grid con Tailwind 📦</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-green-100 p-6 rounded-xl text-center">Bloque 1</div>
-        <div className="bg-blue-100 p-6 rounded-xl text-center">Bloque 2</div>
-        <div className="bg-pink-100 p-6 rounded-xl text-center">Bloque 3</div>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-orange-50 transition-all duration-500">
+      <h1 className="text-4xl font-bold text-orange-600 mb-8 animate-fade-in">
+        Bienvenido a El Molinito
+      </h1>
+      <button
+        onClick={() => router.push('/login')}
+        className="bg-orange-500 text-white px-6 py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all duration-300 transform hover:scale-105"
+      >
+        Iniciar sesión
+      </button>
     </div>
-  );
+  )
 }
