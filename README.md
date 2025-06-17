@@ -7,6 +7,7 @@ PENDIENTES 16/06/25
 
 
 Dia 17/06/25
+
 1- Se hicieron cambios visuales de todas las interfaces (Opiniones si les gusta ???)
 
 2- Se agrego una subcarpeta de "administradorRutas" donde estaran sus funcionalidades de el y no se mezcle con la
