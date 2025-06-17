@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Url } from 'next/dist/shared/lib/router/router'
 
-export default function AdminPanel() {
+export default function EmpleadoPanel() {
   const [email, setEmail] = useState('')
   const router = useRouter()
 
@@ -24,13 +24,10 @@ export default function AdminPanel() {
   const modulos = [
     { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
     { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
-    { nombre: 'Embalaje', ruta: '/panel/Rutas/embalaje' },
     { nombre: 'Preenfriado', ruta: '/panel/Rutas/preenfriado' },
     { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
     { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
     { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' },
-    { nombre: 'Pagos', ruta: '/panel/Rutas/pagos' },
-    { nombre: 'Reportes', ruta: '/panel/Rutas/reportes' },
   ]
 
   const handleModuloClick = (ruta: Url) => {
@@ -40,7 +37,7 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="bg-gray-900 rounded-2xl shadow-md p-6 mb-6 border border-orange-500">
-        <h1 className="text-3xl font-bold text-orange-500 mb-2">Panel del Administrador</h1>
+        <h1 className="text-3xl font-bold text-orange-500 mb-2">Panel del Empleado</h1>
         <p className="text-gray-300">Bienvenido, <span className="font-semibold">{email}</span></p>
       </div>
 

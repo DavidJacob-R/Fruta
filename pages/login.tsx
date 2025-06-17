@@ -14,9 +14,7 @@ export default function LoginPage() {
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
 
@@ -27,10 +25,8 @@ export default function LoginPage() {
         return
       }
 
-      // ✅ Guardar el usuario en localStorage
       localStorage.setItem('usuario', JSON.stringify(result.usuario))
 
-      // ✅ Redirigir según el rol
       const rol = result.usuario?.rol_id
       if (rol === 1) router.push('/panel/administrador')
       else if (rol === 2) router.push('/panel/programador')
@@ -43,21 +39,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen justify-center items-center bg-orange-50">
+    <div className="flex min-h-screen justify-center items-center bg-black">
       <form
         onSubmit={handleLogin}
-        className="bg-white p-8 rounded-2xl shadow-lg w-96 border border-orange-200 animate-fade-in-up"
+        className="bg-gray-900 text-white p-8 rounded-2xl shadow-lg w-96 border border-orange-500"
       >
-        <h2 className="text-3xl font-semibold text-orange-600 mb-6 text-center">Iniciar Sesión</h2>
-
-        {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-
+        <h2 className="text-3xl font-semibold text-orange-500 mb-6 text-center">Iniciar Sesión</h2>
+        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
         <input
           type="email"
           placeholder="Correo"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-orange-300 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full bg-black text-white border border-orange-300 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
           required
         />
         <input
@@ -65,7 +59,7 @@ export default function LoginPage() {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-orange-300 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full bg-black text-white border border-orange-300 p-3 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
           required
         />
         <button
