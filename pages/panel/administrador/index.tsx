@@ -22,15 +22,15 @@ export default function AdminPanel() {
   }
 
   const modulos = [
-    { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
-    { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
-    { nombre: 'Embalaje', ruta: '/panel/Rutas/embalaje' },
-    { nombre: 'Preenfriado', ruta: '/panel/Rutas/preenfriado' },
-    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
-    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
-    { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' },
-    { nombre: 'Pagos', ruta: '/panel/Rutas/pagos' },
-    { nombre: 'Reportes', ruta: '/panel/Rutas/reportes' },
+    { nombre: 'Recepción de fruta', ruta: '/panel/administradorRutas/recepcion' },
+    { nombre: 'Control de calidad', ruta: '/panel/administradorRutas/control-calidad' },
+    { nombre: 'Embalaje', ruta: '/panel/administradorRutas/embalaje' },
+    { nombre: 'Preenfriado', ruta: '/panel/administradorRutas/preenfriado' },
+    { nombre: 'Conservación', ruta: '/panel/administradorRutas/conservacion' },
+    { nombre: 'Carga y exportación', ruta: '/panel/administradorRutas/carga-exportacion' },
+    { nombre: 'Control de materiales', ruta: '/panel/administradorRutas/control-materiales' },
+    { nombre: 'Pagos', ruta: '/panel/administradorRutas/pagos' },
+    { nombre: 'Reportes', ruta: '/panel/administradorRutas/reportes' },
   ]
 
   const handleModuloClick = (ruta: Url) => {

@@ -15,4 +15,11 @@ de los empleados
 
 3- Se agrego la pantalla de inicio de los empleados
 
-4- 
+
+Dia 17/06/25 ( mas cambios que se hicieron )
+
+1-Se agrego la patalla de recepcion de pedidos 
+
+2- Se agrego un carpeta en /api llamada "recepcion" ,  con tres codigos que se enlazan a la base de datos 
+
+3- En la misma pantalla de agrego una opcion para que el empleado pueda ver los pedidos que ya fueron recibidos en el dia
