@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { supabase } from '../lib/supabase'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -12,41 +11,35 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
 
-    if (loginError) {
-      setError('Credenciales incorrectas')
-      return
+      const result = await res.json()
+
+      if (!result.success) {
+        setError(result.error || 'Credenciales incorrectas')
+        return
+      }
+
+      // ✅ Guardar el usuario en localStorage
+      localStorage.setItem('usuario', JSON.stringify(result.usuario))
+
+      // ✅ Redirigir según el rol
+      const rol = result.usuario?.rol_id
+      if (rol === 1) router.push('/panel/administrador')
+      else if (rol === 2) router.push('/panel/programador')
+      else if (rol === 3) router.push('/panel/empleado')
+      else setError('Rol no válido')
+    } catch (err) {
+      console.error('Error en login:', err)
+      setError('Error al conectar con el servidor')
     }
-
-const userEmail = data.user?.email
-
-if (!userEmail) {
-  setError('No se pudo identificar el correo del usuario')
-  return
-}
-
-const { data: perfil, error: perfilError } = await supabase
-  .from('usuarios')
-  .select('rol')
-  .eq('email', userEmail)
-  .single()
-
-
-    if (perfilError || !perfil) {
-      setError('No se pudo obtener el rol del usuario')
-      return
-    }
-
-    const rol = perfil.rol
-
-    if (rol === 'programador') router.push('/panel/programador')
-    else if (rol === 'administrador') router.push('/panel/administrador')
-    else if (rol === 'empleado') router.push('/panel/empleado')
-    else setError('Rol no válido')
   }
 
   return (
@@ -55,7 +48,7 @@ const { data: perfil, error: perfilError } = await supabase
         onSubmit={handleLogin}
         className="bg-white p-8 rounded-2xl shadow-lg w-96 border border-orange-200 animate-fade-in-up"
       >
-        <h2 className="text-3xl font-semibold text-orange-600 mb-6 text-center">Iniciar Sesion</h2>
+        <h2 className="text-3xl font-semibold text-orange-600 mb-6 text-center">Iniciar Sesión</h2>
 
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
