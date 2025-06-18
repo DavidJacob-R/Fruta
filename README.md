@@ -6,6 +6,12 @@ PENDIENTES 16/06/25
 4- q arias conmi berga? = Se la doy a la rata de oscar
 
 
+descarguen el : 
+
+nmp intall 
+
+npm install date-fns
+
 Dia 17/06/25
 
 1- Se hicieron cambios visuales de todas las interfaces (Opiniones si les gusta ???)
