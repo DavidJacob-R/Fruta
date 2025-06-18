@@ -69,9 +69,17 @@ export default function RecepcionFruta() {
       setMensaje('Error al registrar: ' + result.message)
     }
   }
-
+  
   return (
+    
     <div className="min-h-screen bg-black text-white p-6">
+      <button
+  onClick={() => router.push('/panel/empleado')}
+  className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
+>
+  Volver al panel principal
+</button>
+
       <h1 className="text-2xl font-bold text-orange-500 mb-6">Recepción de Fruta</h1>
 
       <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-xl border border-orange-500 max-w-xl">
