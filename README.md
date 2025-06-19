@@ -29,3 +29,8 @@ Dia 17/06/25 ( mas cambios que se hicieron )
 2- Se agrego un carpeta en /api llamada "recepcion" ,  con tres codigos que se enlazan a la base de datos 
 
 3- En la misma pantalla de agrego una opcion para que el empleado pueda ver los pedidos que ya fueron recibidos en el dia
+
+
+Dia 18/06/25
+
+1-Se habiro un nuevo branch , ante la optimización del la pantalla de "recepción.tsx"
