@@ -18,6 +18,15 @@ export default function RecepcionFruta() {
     notas: '',
   })
 
+  const [editando, setEditando] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<any>({
+    agricultor_id: '',
+    tipo_fruta_id: '',
+    cantidad_cajas: '',
+    peso_caja_oz: '',
+    notas: '',
+  })
+
   const cargarDatos = async () => {
     const res = await fetch('/api/recepcion/datos')
     const data = await res.json()
@@ -53,8 +62,8 @@ export default function RecepcionFruta() {
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
-    const now = new Date();
-    const localISOString = now.toLocaleString('sv-SE').replace(' ', 'T');
+    const now = new Date()
+    const localISOString = now.toLocaleString('sv-SE').replace(' ', 'T')
     const fecha_recepcion = localISOString.slice(0, 16)
     const datos = { ...form, fecha_recepcion, usuario_recepcion_id: usuario.id }
 
@@ -81,14 +90,135 @@ export default function RecepcionFruta() {
     }
   }
 
+  const eliminarRecepcion = async (codigo_caja: string) => {
+    if (confirm('¿Seguro que quieres eliminar esta recepción?')) {
+      const res = await fetch('/api/recepcion/eliminar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo_caja }),
+      })
+      const result = await res.json()
+      if (result.success) {
+        setMensaje('Recepción eliminada correctamente.')
+        cargarRecepciones()
+      } else {
+        setMensaje('Error al eliminar: ' + (result.message || ''))
+      }
+    }
+  }
+
+  const abrirEdicion = (r: any) => {
+    setEditando(r.codigo_caja)
+    setEditForm({
+      agricultor_id: r.agricultor_id,
+      tipo_fruta_id: r.tipo_fruta_id,
+      cantidad_cajas: r.cantidad_cajas,
+      peso_caja_oz: r.peso_caja_oz,
+      notas: r.notas || '',
+    })
+  }
+
+  const guardarEdicion = async (e: any) => {
+    e.preventDefault()
+    const datos = {
+      codigo_caja: editando,
+      ...editForm,
+    }
+    const res = await fetch('/api/recepcion/editar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos),
+    })
+    const result = await res.json()
+    if (result.success) {
+      setMensaje('Recepción editada correctamente.')
+      setEditando(null)
+      cargarRecepciones()
+    } else {
+      setMensaje('Error al editar: ' + (result.message || ''))
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black text-white p-6">
+      {/* Modal de edición */}
+      {editando && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <form onSubmit={guardarEdicion} className="bg-gray-900 border-orange-500 border p-6 rounded-xl min-w-[300px] relative">
+            <h3 className="text-lg text-orange-400 font-bold mb-4">Editar recepción</h3>
+            <button
+              type="button"
+              className="absolute top-2 right-2 text-white text-xl"
+              onClick={() => setEditando(null)}>
+              ×
+            </button>
+
+            <div className="mb-3">
+              <label>Agricultor:</label>
+              <select
+                value={editForm.agricultor_id}
+                onChange={e => setEditForm({ ...editForm, agricultor_id: e.target.value })}
+                className="w-full p-2 rounded bg-black border border-gray-700 text-white"
+                required>
+                <option value="">Selecciona un agricultor</option>
+                {agricultores.map((a) => (
+                  <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label>Tipo de fruta:</label>
+              <select
+                value={editForm.tipo_fruta_id}
+                onChange={e => setEditForm({ ...editForm, tipo_fruta_id: e.target.value })}
+                className="w-full p-2 rounded bg-black border border-gray-700 text-white"required>
+                <option value="">Selecciona una fruta</option>
+                {tiposFruta.map((f) => (
+                  <option key={f.id} value={f.id}>{f.nombre}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label>Cantidad de cajas:</label>
+              <input
+                type="number"
+                value={editForm.cantidad_cajas}
+                onChange={e => setEditForm({ ...editForm, cantidad_cajas: e.target.value })}
+                className="w-full p-2 rounded bg-black border border-gray-700 text-white"required/>
+            </div>
+
+            <div className="mb-3">
+              <label>Peso por caja (oz):</label>
+              <input
+                type="number"
+                step="0.01"
+                value={editForm.peso_caja_oz}
+                onChange={e => setEditForm({ ...editForm, peso_caja_oz: e.target.value })}
+                className="w-full p-2 rounded bg-black border border-gray-700 text-white"required/>
+            </div>
+
+            <div className="mb-3">
+              <label>Notas:</label>
+              <textarea
+                value={editForm.notas}
+                onChange={e => setEditForm({ ...editForm, notas: e.target.value })}
+                className="w-full p-2 rounded bg-black border border-gray-700 text-white" />
+            </div>
+
+            <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded w-full mt-2">
+              Guardar cambios
+            </button>
+          </form>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-orange-500">Recepción de Fruta</h1>
         <button
           onClick={() => router.push('/panel/empleado')}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded"
-        >
+          className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">
           Volver al panel principal
         </button>
       </div>
@@ -102,8 +232,7 @@ export default function RecepcionFruta() {
             value={form.codigo_caja}
             onChange={(e) => setForm({ ...form, codigo_caja: e.target.value })}
             className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-            required
-          />
+            required/>
         </div>
 
         <div className="mb-4">
@@ -112,8 +241,7 @@ export default function RecepcionFruta() {
             value={form.agricultor_id}
             onChange={(e) => setForm({ ...form, agricultor_id: e.target.value })}
             className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-            required
-          >
+            required>
             <option value="">Selecciona un agricultor</option>
             {agricultores.map((a) => (
               <option key={a.id} value={a.id}>{a.nombre} {a.apellido}</option>
@@ -126,9 +254,7 @@ export default function RecepcionFruta() {
           <select
             value={form.tipo_fruta_id}
             onChange={(e) => setForm({ ...form, tipo_fruta_id: e.target.value })}
-            className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-            required
-          >
+            className="w-full p-2 rounded bg-black border border-gray-700 text-white"required>
             <option value="">Selecciona una fruta</option>
             {tiposFruta.map((f) => (
               <option key={f.id} value={f.id}>{f.nombre}</option>
@@ -142,9 +268,7 @@ export default function RecepcionFruta() {
             type="number"
             value={form.cantidad_cajas}
             onChange={(e) => setForm({ ...form, cantidad_cajas: e.target.value })}
-            className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-            required
-          />
+            className="w-full p-2 rounded bg-black border border-gray-700 text-white" required/>
         </div>
 
         <div className="mb-4">
@@ -154,9 +278,7 @@ export default function RecepcionFruta() {
             step="0.01"
             value={form.peso_caja_oz}
             onChange={(e) => setForm({ ...form, peso_caja_oz: e.target.value })}
-            className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-            required
-          />
+            className="w-full p-2 rounded bg-black border border-gray-700 text-white"required/>
         </div>
 
         <div className="mb-4">
@@ -164,8 +286,7 @@ export default function RecepcionFruta() {
           <textarea
             value={form.notas}
             onChange={(e) => setForm({ ...form, notas: e.target.value })}
-            className="w-full p-2 rounded bg-black border border-gray-700 text-white"
-          />
+            className="w-full p-2 rounded bg-black border border-gray-700 text-white"/>
         </div>
 
         <button type="submit" className="w-full bg-orange-600 text-white p-2 rounded hover:bg-orange-700">
@@ -180,8 +301,7 @@ export default function RecepcionFruta() {
           <h2 className="text-xl text-orange-400 font-semibold">Recepciones registradas hoy</h2>
           <button
             onClick={() => setMostrarTabla(!mostrarTabla)}
-            className="text-sm bg-gray-800 px-3 py-1 rounded border border-gray-600 hover:border-orange-400"
-          >
+            className="text-sm bg-gray-800 px-3 py-1 rounded border border-gray-600 hover:border-orange-400">
             {mostrarTabla ? 'Ocultar tabla' : 'Mostrar tabla'}
           </button>
         </div>
@@ -198,6 +318,7 @@ export default function RecepcionFruta() {
                   <th className="p-2">Peso (oz)</th>
                   <th className="p-2">Fecha</th>
                   <th className="p-2">Notas</th>
+                  <th className="p-2">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,6 +331,18 @@ export default function RecepcionFruta() {
                     <td className="p-2">{r.peso_caja_oz}</td>
                     <td className="p-2">{format(new Date(r.fecha_recepcion), 'yyyy-MM-dd HH:mm')}</td>
                     <td className="p-2">{r.notas || '-'}</td>
+                    <td className="p-2">
+                      <button
+                        className="text-sm text-blue-400 hover:underline mr-2"
+                        onClick={() => abrirEdicion(r)} >
+                        Editar
+                      </button>
+                      <button
+                        className="text-sm text-red-400 hover:underline"
+                        onClick={() => eliminarRecepcion(r.codigo_caja)} >
+                        Eliminar
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
