@@ -35,6 +35,6 @@ Dia 18/06/25
 
 1-Se habiro un nuevo branch , ante la optimización del la pantalla de "recepción.tsx"
 
-Dia 19/06/25
+Dia 20/06/25
 
 1-Optimizacion del la "recepción.tsx"
