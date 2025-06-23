@@ -221,6 +221,12 @@ export default function RecepcionFruta() {
           className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">
           Volver al panel principal
         </button>
+         <button
+          className="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded"
+           // La funcionalidad se implementará después
+            onClick={() => alert('Funcionalidad de impresión próximamente')}>
+          Imprimir documento
+          </button>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-xl border border-orange-500 max-w-xl">
