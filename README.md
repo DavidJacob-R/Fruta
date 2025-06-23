@@ -20,6 +20,7 @@ ___Pendientes a implementar :___
 
 
 ___Descargas antes de corres el git___
+
 descarguen el : 
 
 nmp intall 
