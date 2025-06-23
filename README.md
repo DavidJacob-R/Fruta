@@ -4,11 +4,10 @@ que tipos de clamshell se usan
 
 Pendientes a implementar : 
 
-----Pantallas para registrar Agricultores para cada empresa 
+----Pantallas para registrar Agricultores para cada empresa *
+
       *Nombres
-      
       *Certificado
-      
       *Procedencia
 
 
