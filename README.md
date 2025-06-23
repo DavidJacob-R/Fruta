@@ -6,7 +6,9 @@ Pendientes a implementar :
 
 ----Pantallas para registrar Agricultores para cada empresa 
       *Nombres
+      
       *Certificado
+      
       *Procedencia
 
 
