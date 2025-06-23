@@ -13,14 +13,12 @@ export default function ControlCalidad() {
   })
   const [mensaje, setMensaje] = useState('')
 
-  // Cargar palets/cajas pendientes
   const cargarPendientes = async () => {
     const res = await fetch('/api/calidad/pendientes')
     const data = await res.json()
     setPendientes(data.pendientes)
   }
 
-  // Cargar controles del día
   const cargarControles = async () => {
     const res = await fetch('/api/calidad/listar')
     const data = await res.json()
@@ -44,7 +42,6 @@ export default function ControlCalidad() {
     }
   }, [mensaje])
 
-  // Registrar control de calidad
   const handleSubmit = async (e: any) => {
     e.preventDefault()
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
