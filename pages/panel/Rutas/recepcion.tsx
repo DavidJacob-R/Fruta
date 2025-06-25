@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { format } from 'date-fns'
+import { db } from '@/lib/db'
+import { recepcion_fruta } from '@/lib/schema'
 
 export default function RecepcionFruta() {
   const router = useRouter()
@@ -28,18 +30,27 @@ export default function RecepcionFruta() {
   })
 
   const cargarDatos = async () => {
-    const res = await fetch('/api/recepcion/datos')
-    const data = await res.json()
-    setAgricultores(data.agricultores)
-    setTiposFruta(data.frutas)
+    try {
+      const res = await fetch('/api/recepcion/datos')
+      const data = await res.json()
+      setAgricultores(Array.isArray(data.agricultores) ? data.agricultores : [])
+      setTiposFruta(Array.isArray(data.frutas) ? data.frutas : [])
+    } catch (e) {
+      setAgricultores([])
+      setTiposFruta([])
+    }
   }
 
   const cargarRecepciones = async () => {
-    const hoy = new Date()
-    const fechaInicio = new Date(hoy.setHours(0, 0, 0, 0)).toISOString()
-    const res = await fetch(`/api/recepcion/listar?desde=${fechaInicio}`)
-    const data = await res.json()
-    setRecepciones(data.recepciones)
+    try {
+      const hoy = new Date()
+      const fechaInicio = new Date(hoy.setHours(0, 0, 0, 0)).toISOString()
+      const res = await fetch(`/api/recepcion/listar?desde=${fechaInicio}`)
+      const data = await res.json()
+      setRecepciones(Array.isArray(data.recepciones) ? data.recepciones : [])
+    } catch (e) {
+      setRecepciones([])
+    }
   }
 
   useEffect(() => {
@@ -67,42 +78,50 @@ export default function RecepcionFruta() {
     const fecha_recepcion = localISOString.slice(0, 16)
     const datos = { ...form, fecha_recepcion, usuario_recepcion_id: usuario.id }
 
-    const res = await fetch('/api/recepcion/crear', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos),
-    })
-
-    const result = await res.json()
-    if (result.success) {
-      setMensaje('Recepción registrada correctamente.')
-      setForm({
-        codigo_caja: '',
-        agricultor_id: '',
-        tipo_fruta_id: '',
-        cantidad_cajas: '',
-        peso_caja_oz: '',
-        notas: '',
+    try {
+      const res = await fetch('/api/recepcion/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
       })
-      cargarRecepciones()
-    } else {
-      setMensaje('Error al registrar: ' + result.message)
+
+      const result = await res.json()
+      if (result.success) {
+        setMensaje('Recepción registrada correctamente.')
+        setForm({
+          codigo_caja: '',
+          agricultor_id: '',
+          tipo_fruta_id: '',
+          cantidad_cajas: '',
+          peso_caja_oz: '',
+          notas: '',
+        })
+        cargarRecepciones()
+      } else {
+        setMensaje('Error al registrar: ' + (result.message || 'Error desconocido'))
+      }
+    } catch (e) {
+      setMensaje('Error al registrar: Error de conexión')
     }
   }
 
   const eliminarRecepcion = async (codigo_caja: string) => {
     if (confirm('¿Seguro que quieres eliminar esta recepción?')) {
-      const res = await fetch('/api/recepcion/eliminar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codigo_caja }),
-      })
-      const result = await res.json()
-      if (result.success) {
-        setMensaje('Recepción eliminada correctamente.')
-        cargarRecepciones()
-      } else {
-        setMensaje('Error al eliminar: ' + (result.message || ''))
+      try {
+        const res = await fetch('/api/recepcion/eliminar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codigo_caja }),
+        })
+        const result = await res.json()
+        if (result.success) {
+          setMensaje('Recepción eliminada correctamente.')
+          cargarRecepciones()
+        } else {
+          setMensaje('Error al eliminar: ' + (result.message || 'Error desconocido'))
+        }
+      } catch (e) {
+        setMensaje('Error al eliminar: Error de conexión')
       }
     }
   }
@@ -124,18 +143,22 @@ export default function RecepcionFruta() {
       codigo_caja: editando,
       ...editForm,
     }
-    const res = await fetch('/api/recepcion/editar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos),
-    })
-    const result = await res.json()
-    if (result.success) {
-      setMensaje('Recepción editada correctamente.')
-      setEditando(null)
-      cargarRecepciones()
-    } else {
-      setMensaje('Error al editar: ' + (result.message || ''))
+    try {
+      const res = await fetch('/api/recepcion/editar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+      })
+      const result = await res.json()
+      if (result.success) {
+        setMensaje('Recepción editada correctamente.')
+        setEditando(null)
+        cargarRecepciones()
+      } else {
+        setMensaje('Error al editar: ' + (result.message || 'Error desconocido'))
+      }
+    } catch (e) {
+      setMensaje('Error al editar: Error de conexión')
     }
   }
 
@@ -328,29 +351,39 @@ export default function RecepcionFruta() {
                 </tr>
               </thead>
               <tbody>
-                {recepciones.map((r, i) => (
-                  <tr key={i} className="border-b border-gray-700 hover:bg-gray-800">
-                    <td className="p-2">{r.codigo_caja}</td>
-                    <td className="p-2">{r.agricultor}</td>
-                    <td className="p-2">{r.fruta}</td>
-                    <td className="p-2">{r.cantidad_cajas}</td>
-                    <td className="p-2">{r.peso_caja_oz}</td>
-                    <td className="p-2">{format(new Date(r.fecha_recepcion), 'yyyy-MM-dd HH:mm')}</td>
-                    <td className="p-2">{r.notas || '-'}</td>
-                    <td className="p-2">
-                      <button
-                        className="text-sm text-blue-400 hover:underline mr-2"
-                        onClick={() => abrirEdicion(r)} >
-                        Editar
-                      </button>
-                      <button
-                        className="text-sm text-red-400 hover:underline"
-                        onClick={() => eliminarRecepcion(r.codigo_caja)} >
-                        Eliminar
-                      </button>
-                    </td>
+                {Array.isArray(recepciones) && recepciones.length > 0 ? (
+                  recepciones.map((r, i) => (
+                    <tr key={i} className="border-b border-gray-700 hover:bg-gray-800">
+                      <td className="p-2">{r.codigo_caja}</td>
+                      <td className="p-2">{r.agricultor || r.agricultor_id}</td>
+                      <td className="p-2">{r.fruta || r.tipo_fruta_id}</td>
+                      <td className="p-2">{r.cantidad_cajas}</td>
+                      <td className="p-2">{r.peso_caja_oz}</td>
+                      <td className="p-2">
+                        {r.fecha_recepcion
+                          ? format(new Date(r.fecha_recepcion), 'yyyy-MM-dd HH:mm')
+                          : '-'}
+                      </td>
+                      <td className="p-2">{r.notas || '-'}</td>
+                      <td className="p-2">
+                        <button
+                          className="text-sm text-blue-400 hover:underline mr-2"
+                          onClick={() => abrirEdicion(r)} >
+                          Editar
+                        </button>
+                        <button
+                          className="text-sm text-red-400 hover:underline"
+                          onClick={() => eliminarRecepcion(r.codigo_caja)} >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-400">No hay recepciones registradas.</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import db from '@/lib/db'
+import { db } from '../../lib/db'
+import { usuarios, roles } from '../../lib/schema'
+import { eq, and } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Método no permitido' })
+    return res.status(405).json({ success: false, error: 'Metodo no permitido' })
   }
 
   const { email, password } = req.body
@@ -13,19 +15,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const [rows]: any = await db.query(
-      `SELECT u.id, u.email, u.nombre, u.rol_id, r.nombre AS rol_nombre
-       FROM usuarios u
-       JOIN roles r ON u.rol_id = r.id
-       WHERE u.email = ? AND u.pass = ?`,
-      [email, password]
-    )
+    const result = await db
+      .select({
+        id: usuarios.id,
+        email: usuarios.email,
+        nombre: usuarios.nombre,
+        rol_id: usuarios.rol_id,
+        rol_nombre: roles.nombre,
+      })
+      .from(usuarios)
+      .innerJoin(roles, eq(usuarios.rol_id, roles.id))
+      .where(
+        and(
+          eq(usuarios.email, email),
+          eq(usuarios.pass, password) // <--- campo correcto
+        )
+      );
 
-    if (rows.length === 0) {
+    if (!result || result.length === 0) {
       return res.status(401).json({ success: false, error: 'Credenciales incorrectas' })
     }
 
-    const user = rows[0]
+    const user = result[0]
 
     return res.status(200).json({
       success: true,

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import { usuarios, roles } from '../lib/schema' // Ajusta el path si está en otra carpeta
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
