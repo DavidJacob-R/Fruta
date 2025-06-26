@@ -62,7 +62,7 @@ export const recepcion_fruta = mysqlTable('recepcion_fruta', {
   agricultor_id: int('agricultor_id'),
   tipo_fruta_id: int('tipo_fruta_id'),
   cantidad_cajas: int('cantidad_cajas'),
-  peso_caja_oz: decimal('peso_caja_oz', { precision: 10, scale: 2 }), // <-- así va el decimal
+  peso_caja_oz: decimal('peso_caja_oz', { precision: 10, scale: 2 }), 
   fecha_recepcion: datetime('fecha_recepcion'),
   usuario_recepcion_id: int('usuario_recepcion_id'),
   notas: text('notas'),
