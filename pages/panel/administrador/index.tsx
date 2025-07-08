@@ -31,6 +31,8 @@ export default function AdminPanel() {
     { nombre: 'Control de materiales', ruta: '/panel/administradorRutas/control-materiales' },
     { nombre: 'Pagos', ruta: '/panel/administradorRutas/pagos' },
     { nombre: 'Reportes', ruta: '/panel/administradorRutas/reportes' },
+    { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres' },
+    { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas' },
   ]
 
   const handleModuloClick = (ruta: Url) => {

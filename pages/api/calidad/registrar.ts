@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import db from '@/lib/db'
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,11 +18,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const localISOString = now.toLocaleString('sv-SE').replace(' ', 'T')
     const fecha_control = localISOString.slice(0, 16)
 
-    await db.query(
-      `INSERT INTO control_calidad 
+    await db.execute(
+      sql`INSERT INTO control_calidad 
       (codigo_caja, cajas_rechazadas, motivo_rechazo_id, usuario_control_id, fecha_control)
-      VALUES (?, ?, ?, ?, ?)`,
-      [codigo_caja, cajas_rechazadas, motivo_rechazo_id, usuario_control_id, fecha_control]
+      VALUES (${codigo_caja}, ${cajas_rechazadas}, ${motivo_rechazo_id}, ${usuario_control_id}, ${fecha_control})`
     )
     res.status(200).json({ success: true })
   } catch (error) {

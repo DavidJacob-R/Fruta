@@ -1,5 +1,10 @@
-___Pendientes a preguntar:___  
+___Railway___
 
+Railway
+Si se dignan a leer o algo , este branch solamente sera la acturalizacion de lo que hagamos en el main
+pero de cierta forma lo estare actualizando para que funcione en el "hoster" , ya que como tenemos este 
+codigo ahora mismo , no funcionaria.
+=======
 1-que tipos de clamshell se usan
 
 ___Pendientes a implementar :___
@@ -27,6 +32,8 @@ nmp intall
 
 npm install date-fns
 
+npm install drizzle-orm postgres
+
 Crear un archivo raiz llamdo :    .env.local
 
      DB_HOST=localhost
@@ -39,7 +46,5 @@ Crear un archivo raiz llamdo :    .env.local
 ___Pendientes en el hoster___
 
 Hacer las automátizaciones para  los envíos de los recibos y crear los reciobos 
-
-Crear los recibos ( pendiente a checar con el "TIO" 
 
 Hacer la automatización de la auto descarga y eliminacion de los archivos ( PDF´S  y mas )  cada mes 
