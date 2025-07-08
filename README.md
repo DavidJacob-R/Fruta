@@ -30,6 +30,8 @@ descarguen el :
 
 nmp intall 
 
+npm install react-icons
+
 npm install date-fns
 
 npm install drizzle-orm postgres
