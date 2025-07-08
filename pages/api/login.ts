@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '../../lib/db'
 import { usuarios, roles } from '../../lib/schema'
 import { eq, and } from 'drizzle-orm'
+import { pgTable, serial } from 'drizzle-orm/pg-core';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

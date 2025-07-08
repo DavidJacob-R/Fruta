@@ -1,24 +1,72 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '../../../lib/db'
-import { recepcion_fruta } from '../../../lib/schema'
+import { recepcion_fruta, empresa, agricultores } from '../../../lib/schema'
+import { eq, desc } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ success: false, message: 'Método no permitido' })
+  if (req.method !== 'POST')
+    return res.status(405).json({ success: false, message: 'Método no permitido' })
 
-  const { codigo_caja, agricultor_id, tipo_fruta_id, cantidad_cajas, peso_caja_oz, fecha_recepcion, usuario_recepcion_id, notas } = req.body
+  const { 
+    agricultor_id, empresa_id, tipo_fruta_id, cantidad_cajas, peso_caja_oz, fecha_recepcion, usuario_recepcion_id, notas,
+    tipo_nota, empaque_id
+  } = req.body
+
   try {
-    await db.insert(recepcion_fruta).values({
-      codigo_caja: String(codigo_caja),
-      agricultor_id: Number(agricultor_id),
+    // Validación: solo debe existir el id correspondiente, y debe ser válido
+    if (tipo_nota === 'empresa') {
+      if (!empresa_id) return res.status(400).json({ success: false, message: 'Falta empresa_id.' })
+      const empresaExiste = await db.select().from(empresa).where(eq(empresa.id, Number(empresa_id)))
+      if (!empresaExiste.length) return res.status(400).json({ success: false, message: 'La empresa seleccionada no existe.' })
+    }
+    if (tipo_nota === 'maquila') {
+      if (!agricultor_id) return res.status(400).json({ success: false, message: 'Falta agricultor_id.' })
+      const agricultorExiste = await db.select().from(agricultores).where(eq(agricultores.id, Number(agricultor_id)))
+      if (!agricultorExiste.length) return res.status(400).json({ success: false, message: 'El agricultor seleccionado no existe.' })
+    }
+
+    // Calcular siguiente numero_nota
+    const ultimaNota = await db
+      .select({ numero_nota: recepcion_fruta.numero_nota })
+      .from(recepcion_fruta)
+      .orderBy(desc(recepcion_fruta.numero_nota))
+      .limit(1)
+
+    const siguienteNumero = ultimaNota.length && ultimaNota[0].numero_nota
+      ? ultimaNota[0].numero_nota + 1
+      : 1
+
+    // Preparar datos a insertar
+    const insertData: any = {
       tipo_fruta_id: Number(tipo_fruta_id),
       cantidad_cajas: Number(cantidad_cajas),
       peso_caja_oz: Number(peso_caja_oz),
       fecha_recepcion: new Date(fecha_recepcion),
       usuario_recepcion_id: Number(usuario_recepcion_id),
-      notas: notas ? String(notas) : null,
-    })
-    res.status(200).json({ success: true })
-  } catch (error) {
+      notas: typeof notas === 'string' ? notas.trim() : (notas ? JSON.stringify(notas) : ''),
+      tipo_nota: String(tipo_nota),
+      numero_nota: siguienteNumero,
+      empaque_id: empaque_id ? Number(empaque_id) : null,
+      agricultor_id: null,
+      empresa_id: null,
+    }
+
+    if (tipo_nota === 'empresa') {
+      insertData.empresa_id = Number(empresa_id)
+      insertData.agricultor_id = null
+    } else {
+      insertData.agricultor_id = Number(agricultor_id)
+      insertData.empresa_id = null
+    }
+
+    await db.insert(recepcion_fruta).values(insertData)
+
+    res.status(200).json({ success: true, numero_nota: siguienteNumero })
+  } catch (error: any) {
+    const errorCode = error.code || error.cause?.code
+    if (errorCode === '23505') {
+      return res.status(400).json({ success: false, message: 'Ya existe un registro con esos datos.' })
+    }
     res.status(500).json({ success: false, message: 'Error al registrar la recepción' })
   }
 }

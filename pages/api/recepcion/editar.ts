@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         peso_caja_oz: String(peso_caja_oz),
         notas: notas || null,
       })
-      .where(eq(recepcion_fruta.codigo_caja, codigo_caja))
     res.status(200).json({ success: true })
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error al editar la recepción' })
