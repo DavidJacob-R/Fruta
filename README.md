@@ -47,6 +47,4 @@ ___Pendientes en el hoster___
 
 Hacer las automátizaciones para  los envíos de los recibos y crear los reciobos 
 
-Crear los recibos ( pendiente a checar con el "TIO" )
-
 Hacer la automatización de la auto descarga y eliminacion de los archivos ( PDF´S  y mas )  cada mes 
