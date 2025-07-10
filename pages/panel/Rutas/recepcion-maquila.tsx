@@ -106,7 +106,7 @@ export default function RecepcionMaquila() {
             </div>
             <button
               className="mt-4 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-xl text-white font-bold shadow transition"
-              onClick={() => router.push('/panel/empleado')}>
+              onClick={() => router.push('/panel/Rutas/recepcion')}>
               Regresar al menú principal
             </button>
           </div>
