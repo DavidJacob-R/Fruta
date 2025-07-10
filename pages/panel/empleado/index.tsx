@@ -35,33 +35,40 @@ export default function EmpleadoPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="bg-gray-900 rounded-2xl shadow-md p-6 mb-6 border border-orange-500">
-        <h1 className="text-3xl font-bold text-orange-500 mb-2">Panel del Empleado</h1>
-        <p className="text-gray-300">Bienvenido, <span className="font-semibold">{email}</span></p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {modulos.map((modulo, idx) => (
-          <div
-            key={idx}
-            onClick={() => handleModuloClick(modulo.ruta)}
-            className="bg-gray-800 hover:bg-gray-700 transition border border-gray-700 hover:border-orange-400 cursor-pointer rounded-2xl p-5 shadow-md"
-          >
-            <h2 className="text-lg font-semibold text-orange-400 mb-1">{modulo.nombre}</h2>
-            <p className="text-sm text-gray-400">Accede al módulo de {modulo.nombre.toLowerCase()}.</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white p-6 flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl">
+        {/* Header con icono */}
+        <div className="flex flex-col items-center mb-7">
+          <div className="bg-orange-100 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
+            <span className="text-3xl">🍊</span>
           </div>
-        ))}
-      </div>
+          <h1 className="text-3xl font-bold text-orange-500 mb-2 drop-shadow">Panel del Empleado</h1>
+          <p className="text-gray-300 text-base">Bienvenido, <span className="font-semibold">{email}</span></p>
+        </div>
 
-      <div className="mt-10 text-center">
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full shadow"
-        >
-          Cerrar sesión
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-7 mb-12">
+          {modulos.map((modulo, idx) => (
+            <div
+              key={idx}
+              onClick={() => handleModuloClick(modulo.ruta)}
+              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-6 shadow-md hover:shadow-lg group"
+            >
+              <h2 className="text-lg font-semibold text-orange-400 mb-2 group-hover:text-orange-500 transition">{modulo.nombre}</h2>
+              <p className="text-sm text-gray-400 group-hover:text-gray-200 transition">Accede al módulo de <span className="lowercase">{modulo.nombre}</span>.</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <button
+            onClick={handleLogout}
+            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
+      <div className="mt-10 text-xs text-gray-400">© {new Date().getFullYear()} El Molinito</div>
     </div>
   )
 }

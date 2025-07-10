@@ -25,6 +25,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!agricultorExiste.length) return res.status(400).json({ success: false, message: 'El agricultor seleccionado no existe.' })
     }
 
+    // Validación de campos numéricos requeridos
+    const cajas = Number(cantidad_cajas) > 0 ? Number(cantidad_cajas) : 1
+    const peso = Number(peso_caja_oz) > 0 ? Number(peso_caja_oz) : null
+    if (!tipo_fruta_id || !peso || !fecha_recepcion || !usuario_recepcion_id || !tipo_nota) {
+      return res.status(400).json({ success: false, message: 'Faltan datos requeridos.' })
+    }
+
     // Calcular siguiente numero_nota
     const ultimaNota = await db
       .select({ numero_nota: recepcion_fruta.numero_nota })
@@ -39,8 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Preparar datos a insertar
     const insertData: any = {
       tipo_fruta_id: Number(tipo_fruta_id),
-      cantidad_cajas: Number(cantidad_cajas),
-      peso_caja_oz: Number(peso_caja_oz),
+      cantidad_cajas: cajas,
+      peso_caja_oz: peso,
       fecha_recepcion: new Date(fecha_recepcion),
       usuario_recepcion_id: Number(usuario_recepcion_id),
       notas: typeof notas === 'string' ? notas.trim() : (notas ? JSON.stringify(notas) : ''),
@@ -63,6 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json({ success: true, numero_nota: siguienteNumero })
   } catch (error: any) {
+    console.error(error)
     const errorCode = error.code || error.cause?.code
     if (errorCode === '23505') {
       return res.status(400).json({ success: false, message: 'Ya existe un registro con esos datos.' })

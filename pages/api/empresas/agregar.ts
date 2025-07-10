@@ -6,7 +6,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Método no permitido' })
   }
-  const { empresa: nombreEmpresa, tipo_venta } = req.body
+
+  const { empresa: nombreEmpresa, telefono, email, direccion, tipo_venta } = req.body
 
   if (!nombreEmpresa || !tipo_venta) {
     return res.status(400).json({ success: false, message: 'Falta nombre o tipo de venta' })
@@ -14,9 +15,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await db.insert(empresa).values({
-      nombre: nombreEmpresa,
-      tipo_venta: tipo_venta, // nacional o exportacion
-      activo: true
+      empresa: nombreEmpresa,
+      telefono: telefono || '',
+      email: email || '',
+      direccion: direccion || '',
+      tipo_venta: tipo_venta,
+      activo: true,
     })
     res.status(200).json({ success: true })
   } catch (error) {

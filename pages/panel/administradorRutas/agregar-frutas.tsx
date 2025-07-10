@@ -48,71 +48,112 @@ export default function FrutasAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
-      <div className="w-full max-w-2xl">
-        <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-green-400">Administrar Frutas</h1>
-          <button
-            className="mt-4 sm:mt-0 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-xl text-white font-bold shadow transition"
-            onClick={() => router.push('/panel/administrador')}>
-            Regresar al menú principal
-          </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8">
+      {/* Header */}
+      <div className="w-full max-w-3xl flex flex-col md:flex-row md:justify-between items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-1">
+            <span className="text-green-600">Administrar Frutas</span>
+          </h1>
+          <p className="text-gray-500 text-base">
+            Administra el catálogo de frutas registradas para recepción.
+          </p>
         </div>
+        <button
+          className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-xl shadow transition"
+          onClick={() => router.push('/panel/administrador')}>
+          Menú principal
+        </button>
+      </div>
 
-        <form
-          className="bg-gray-900 rounded-2xl p-6 border border-green-500 mb-8 shadow-xl flex flex-col gap-4"
-          onSubmit={e => { e.preventDefault(); handleAgregar() }}>
-
-          <div className="flex flex-col sm:flex-row gap-3">
+      {/* Formulario */}
+      <form
+        className="w-full max-w-3xl bg-white rounded-2xl p-6 border border-green-200 mb-8 shadow-xl flex flex-col gap-4"
+        onSubmit={e => { e.preventDefault(); handleAgregar() }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 mb-1 font-medium">
+              Nombre de fruta <span className="text-green-600">*</span>
+            </label>
             <input
               value={nombre}
               onChange={e => setNombre(e.target.value)}
-              placeholder="Nombre de fruta"
-              className="flex-1 p-3 rounded-xl bg-black border border-green-400 text-white text-lg"
+              placeholder="Ej: Uva, Manzana, Durazno"
+              className="w-full p-3 rounded-xl bg-gray-50 border border-green-300 focus:ring-2 focus:ring-green-400 text-gray-900"
               required
-              autoFocus/>
-
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-1 font-medium">
+              Descripción (opcional)
+            </label>
             <input
               value={descripcion}
               onChange={e => setDescripcion(e.target.value)}
-              placeholder="Descripción (opcional)"
-              className="flex-1 p-3 rounded-xl bg-black border border-green-400 text-white text-lg"/>
-
-            <button type="submit"
-              className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-2xl text-white font-bold"
-              disabled={loading}>
-              {loading ? 'Guardando...' : 'Agregar fruta'}
-            </button>
+              placeholder="Color, variedad, origen, etc."
+              className="w-full p-3 rounded-xl bg-gray-50 border border-green-300 focus:ring-2 focus:ring-green-400 text-gray-900"
+              maxLength={255}
+            />
           </div>
-          {mensaje && (
-            <div className="mt-2 text-green-300 font-semibold">{mensaje}</div>
-          )}
+        </div>
+        <div className="flex mt-4">
+          <button
+            type="submit"
+            className={`bg-green-600 hover:bg-green-800 text-white font-bold py-3 px-6 rounded-xl shadow transition ${
+              loading ? 'opacity-60 pointer-events-none' : ''
+            }`}
+            disabled={loading}
+          >
+            {loading ? 'Guardando...' : 'Agregar fruta'}
+          </button>
+        </div>
+        {mensaje && (
+          <div className="mt-2 text-green-700 font-semibold text-lg">
+            {mensaje}
+          </div>
+        )}
       </form>
 
-        <div>
-          <h2 className="text-xl font-bold text-green-300 mb-4">Frutas registradas</h2>
-          {loading ? (
-            <div className="text-gray-400 py-6 text-center">Cargando...</div>
-          ) : frutas.length === 0 ? (
-            <div className="text-gray-400 py-6 text-center">No hay frutas registradas.</div>
-          ) : (
-            <div className="grid gap-3">
-              {frutas.map(fruta => (
-                <div key={fruta.id} className="flex flex-col sm:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl border border-green-800 shadow">
-                  <div>
-                    <span className="font-bold text-lg">{fruta.nombre}</span>
-                    {fruta.descripcion && (
-                      <span className="ml-2 text-gray-400 text-sm">({fruta.descripcion})</span>
-                    )}
-                  </div>
-                  <button
-                    className="bg-red-700 hover:bg-red-800 px-4 py-2 rounded-xl text-white font-bold mt-3 sm:mt-0"
-                    onClick={() => handleEliminar(fruta.id)}>Eliminar</button>
+      {/* Lista de frutas */}
+      <div className="w-full max-w-3xl mt-10">
+        <h2 className="text-xl font-bold text-green-700 mb-4">
+          Frutas registradas
+        </h2>
+        {loading ? (
+          <div className="text-gray-400 py-6 text-center">Cargando...</div>
+        ) : frutas.length === 0 ? (
+          <div className="text-gray-400 py-6 text-center">
+            No hay frutas registradas.
+          </div>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            {frutas.map(fruta => (
+              <div
+                key={fruta.id}
+                className="bg-white border border-green-200 shadow rounded-2xl p-5 flex flex-col gap-2 hover:shadow-xl transition"
+              >
+                <div className="flex flex-col gap-1">
+                  <div className="text-lg font-bold text-gray-800">{fruta.nombre}</div>
+                  {fruta.descripcion && (
+                    <div className="ml-0 text-gray-500 text-sm italic">
+                      {fruta.descripcion}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    className="bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded-xl font-bold transition shadow"
+                    onClick={() => handleEliminar(fruta.id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

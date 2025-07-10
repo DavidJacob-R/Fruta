@@ -20,27 +20,38 @@ export default function RecepcionSeleccion() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-black via-gray-900 to-gray-800 py-8 px-2">
-      <div className="w-full max-w-xl mx-auto bg-gray-950 border border-orange-700 rounded-3xl shadow-2xl p-8 flex flex-col items-center">
-        <h1 className="text-3xl font-extrabold text-orange-500 mb-4 text-center drop-shadow">Recepción de Fruta</h1>
-        <div className="flex items-center gap-2 mb-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-tr from-[#191919] via-[#23211e] to-[#161a1e] py-10 px-3 relative">
+      {/* Branding badge */}
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10">
+        <div className="w-12 h-12 bg-white/10 border border-orange-500 shadow-lg rounded-full flex items-center justify-center">
+          <span className="text-3xl text-orange-500 font-black">🍊</span>
+        </div>
+        <span className="text-orange-400 font-bold tracking-widest uppercase text-lg drop-shadow">El Molinito</span>
+      </div>
+
+      {/* Card */}
+      <div className="w-full max-w-xl mx-auto bg-white/5 backdrop-blur-md border border-orange-400 rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-orange-500 mb-5 text-center drop-shadow-lg">Recepción de Fruta</h1>
+
+        {/* Número de nota */}
+        <div className="flex items-center gap-2 mb-10">
           <span className="text-orange-400 font-bold text-lg">Nota de N°:</span>
-          <span className="text-2xl text-white font-mono">{siguienteNumero ?? '...'}</span>
+          <span className="text-2xl font-mono bg-black/60 rounded px-3 py-1 border border-orange-400 text-white shadow">{siguienteNumero ?? '...'}</span>
         </div>
 
         {/* Opciones */}
-        <div className="w-full flex flex-col gap-7">
+        <div className="w-full flex flex-col gap-8">
           <div className="flex flex-col sm:flex-row gap-7 justify-center">
             <button
               onClick={() => handleSeleccion('empresa')}
-              className="flex-1 min-w-[170px] bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 shadow-lg hover:scale-105 transition-transform rounded-xl px-6 py-5 text-lg font-bold text-white border-2 border-orange-300 hover:from-orange-600 hover:to-orange-800 focus:ring-2 focus:ring-orange-400"
+              className="flex-1 min-w-[170px] bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 shadow-xl hover:scale-[1.03] transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide text-white border-2 border-orange-300 hover:from-orange-600 hover:to-orange-800 focus:ring-2 focus:ring-orange-300"
             >
               Nota para empresa
             </button>
 
             <button
               onClick={() => handleSeleccion('maquila')}
-              className="flex-1 min-w-[170px] bg-gradient-to-br from-green-500 via-green-600 to-green-700 shadow-lg hover:scale-105 transition-transform rounded-xl px-6 py-5 text-lg font-bold text-white border-2 border-green-300 hover:from-green-600 hover:to-green-800 focus:ring-2 focus:ring-green-400"
+              className="flex-1 min-w-[170px] bg-gradient-to-br from-green-500 via-green-600 to-green-700 shadow-xl hover:scale-[1.03] transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide text-white border-2 border-green-200 hover:from-green-600 hover:to-green-800 focus:ring-2 focus:ring-green-300"
             >
               Nota de maquila
             </button>
@@ -48,18 +59,22 @@ export default function RecepcionSeleccion() {
 
           <button
             onClick={() => router.push('/panel/Rutas/nota-recepcion')}
-            className="w-full mt-1 bg-gradient-to-r from-blue-500 via-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-900 shadow hover:scale-105 transition-transform px-6 py-4 text-lg font-bold text-white rounded-xl border border-blue-400"
+            className="w-full bg-gradient-to-r from-blue-500 via-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-900 shadow hover:scale-105 transition-transform px-6 py-4 text-lg font-bold text-white rounded-2xl border border-blue-400"
           >
             Ver notas del día (empresa y maquila)
           </button>
 
           <button
-            className="w-full mt-3 bg-gradient-to-r from-gray-700 to-black hover:from-blue-800 hover:to-blue-900 shadow px-6 py-4 text-lg font-bold rounded-xl border border-blue-700 text-white hover:scale-105 transition-transform"
+            className="w-full bg-gradient-to-r from-gray-700 to-black hover:from-orange-800 hover:to-orange-900 shadow px-6 py-4 text-lg font-bold rounded-2xl border border-orange-400 text-white hover:scale-105 transition-transform"
             onClick={() => router.push('/panel/empleado')}
           >
             Regresar al menú principal
           </button>
         </div>
+      </div>
+      {/* Footer */}
+      <div className="mt-12 text-xs text-gray-400 opacity-80 text-center w-full">
+        © {new Date().getFullYear()} El Molinito – Sistema de logística y control
       </div>
     </div>
   )

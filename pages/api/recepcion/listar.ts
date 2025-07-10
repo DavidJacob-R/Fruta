@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         tipo_nota: recepcion_fruta.tipo_nota,
         fecha_recepcion: recepcion_fruta.fecha_recepcion,
         notas: recepcion_fruta.notas,
-        empresa_nombre: empresa.nombre,
+        empresa_nombre: empresa.empresa,          
         agricultor_nombre: agricultores.nombre,
         agricultor_apellido: agricultores.apellido,
         fruta_nombre: tipos_fruta.nombre,

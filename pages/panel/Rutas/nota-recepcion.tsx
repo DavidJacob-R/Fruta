@@ -23,37 +23,35 @@ export default function NotasDelDia() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-blue-950 to-blue-900 text-white flex flex-col items-center py-8 px-2 sm:px-6">
-      <div className="w-full max-w-5xl mb-6">
-        <div className="flex flex-row items-center justify-between mb-4">
-          <h2 className="text-3xl font-extrabold text-blue-400 drop-shadow text-center w-full">
-            Notas creadas hoy
-          </h2>
-        </div>
-        <div className="flex flex-row justify-end mb-6">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-tr from-black via-blue-950 to-blue-900 py-10 px-2 sm:px-6">
+      <div className="w-full max-w-6xl">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-10">
           <button
-            className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-xl text-white font-bold shadow transition"
-            onClick={() => router.push('/panel/Rutas/recepcion')}>
+            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-2xl text-white font-bold shadow transition text-lg md:text-xl"
+            onClick={() => router.push('/panel/Rutas/recepcion')}
+          >
             <FiChevronLeft className="text-2xl" />
             Menú principal
           </button>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-orange-400 text-center w-full drop-shadow mt-6 md:mt-0">Notas creadas hoy</h2>
         </div>
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-blue-700 shadow-2xl overflow-x-auto p-6">
+
+        <div className="bg-white/10 backdrop-blur-lg rounded-3xl border-2 border-orange-500 shadow-2xl overflow-x-auto p-8">
           {cargando ? (
-            <div className="flex justify-center items-center py-16">
-              <span className="text-xl text-blue-200 animate-pulse">Cargando notas...</span>
+            <div className="flex justify-center items-center py-20">
+              <span className="text-2xl text-orange-300 animate-pulse">Cargando notas...</span>
             </div>
           ) : (
-            <table className="min-w-full table-auto text-base">
+            <table className="min-w-full table-auto text-lg" style={{ fontFamily: "inherit" }}>
               <thead>
-                <tr className="text-blue-300 border-b border-blue-700 bg-gradient-to-r from-blue-800/30 via-blue-900/60 to-blue-900/20">
-                  <th className="p-3 text-left font-semibold"># Nota</th>
-                  <th className="p-3 text-left font-semibold">Tipo</th>
-                  <th className="p-3 text-left font-semibold">Empresa/Agricultor</th>
-                  <th className="p-3 text-left font-semibold">Fruta</th>
-                  <th className="p-3 text-left font-semibold">Empaque (oz)</th>
-                  <th className="p-3 text-left font-semibold">Fecha</th>
-                  <th className="p-3 text-left w-52 font-semibold">Notas</th>
+                <tr className="text-orange-300 border-b-2 border-orange-700 bg-gradient-to-r from-orange-950/40 via-orange-900/60 to-orange-900/10">
+                  <th className="p-4 text-left font-bold"># Nota</th>
+                  <th className="p-4 text-left font-bold">Tipo</th>
+                  <th className="p-4 text-left font-bold">Empresa/Agricultor</th>
+                  <th className="p-4 text-left font-bold">Fruta</th>
+                  <th className="p-4 text-left font-bold">Empaque (oz)</th>
+                  <th className="p-4 text-left font-bold">Fecha</th>
+                  <th className="p-4 text-left w-52 font-bold">Notas</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,44 +59,43 @@ export default function NotasDelDia() {
                   notas.map((n, i) => (
                     <tr
                       key={i}
-                      className={`border-b border-blue-900/60 ${
-                        i % 2 === 0
-                          ? "bg-blue-950/70"
-                          : "bg-blue-900/70"
-                      } hover:bg-blue-800/50 transition`}
+                      className={`
+                        border-b border-orange-900/50
+                        ${i % 2 === 0
+                          ? "bg-orange-950/60"
+                          : "bg-orange-900/40"}
+                        hover:bg-orange-900/60 transition
+                        rounded-xl
+                      `}
+                      style={{ height: 76 }}
                     >
-                      <td className="p-3 font-bold text-lg text-blue-200">{n.numero_nota ?? '-'}</td>
-                      <td className="p-3">
+                      <td className="p-4 font-extrabold text-xl text-orange-200">{n.numero_nota ?? '-'}</td>
+                      <td className="p-4">
                         <span
-                          className={
-                            n.tipo_nota === 'empresa'
-                              ? "inline-flex items-center gap-2 bg-orange-700/80 text-orange-100 rounded-full px-3 py-1 text-xs font-bold shadow"
-                              : "inline-flex items-center gap-2 bg-green-700/80 text-green-100 rounded-full px-3 py-1 text-xs font-bold shadow"
-                          }
+                          className={`
+                            inline-flex items-center gap-2 
+                            ${n.tipo_nota === 'empresa'
+                              ? "bg-orange-700/90 text-orange-100"
+                              : "bg-green-700/90 text-green-100"}
+                            rounded-full px-4 py-2 text-base font-bold shadow-lg`}
                         >
                           {n.tipo_nota === 'empresa'
-                            ? <>
-                                <HiOutlineBuildingOffice2 className="text-lg" />
-                                Empresa
-                              </>
-                            : <>
-                                <HiOutlineUser className="text-lg" />
-                                Maquila
-                              </>
+                            ? (<><HiOutlineBuildingOffice2 className="text-xl" /> Empresa</>)
+                            : (<><HiOutlineUser className="text-xl" /> Maquila</>)
                           }
                         </span>
                       </td>
-                      <td className="p-3">
+                      <td className="p-4 text-white font-medium">
                         {n.tipo_nota === 'empresa'
                           ? (n.empresa_nombre || '-')
                           : (n.agricultor_nombre
                               ? `${n.agricultor_nombre} ${n.agricultor_apellido || ''}`.trim()
                               : '-')}
                       </td>
-                      <td className="p-3">{n.fruta_nombre || '-'}</td>
-                      {/* Empaque (oz): muestra siempre el peso con badge */}
-                      <td className="p-3">
-                        <span className="bg-blue-800/80 text-blue-100 px-3 py-1 rounded-full font-bold shadow text-sm">
+                      <td className="p-4 text-orange-100 font-semibold">{n.fruta_nombre || '-'}</td>
+                      {/* Empaque (oz): siempre muestra el peso con badge */}
+                      <td className="p-4">
+                        <span className="bg-orange-900/70 text-orange-200 px-4 py-2 rounded-full font-bold shadow text-base">
                           {n.empaque_nombre
                             ? n.empaque_nombre
                             : n.peso_caja_oz
@@ -106,12 +103,12 @@ export default function NotasDelDia() {
                               : '—'}
                         </span>
                       </td>
-                      <td className="p-3 whitespace-nowrap">
+                      <td className="p-4 whitespace-nowrap text-orange-100 font-semibold">
                         {n.fecha_recepcion
                           ? format(new Date(n.fecha_recepcion), 'yyyy-MM-dd HH:mm')
                           : '-'}
                       </td>
-                      <td className="p-3 w-52">
+                      <td className="p-4 w-52">
                         {n.notas
                           ? <span className="block max-w-xs truncate" title={n.notas}>{n.notas}</span>
                           : <span className="italic text-gray-400">Sin notas</span>
@@ -121,7 +118,7 @@ export default function NotasDelDia() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center text-blue-200 py-16 text-lg font-semibold">
+                    <td colSpan={7} className="text-center text-orange-200 py-20 text-2xl font-semibold">
                       No hay notas registradas hoy.
                     </td>
                   </tr>
@@ -129,6 +126,10 @@ export default function NotasDelDia() {
               </tbody>
             </table>
           )}
+        </div>
+
+        <div className="mt-10 text-center text-gray-400 opacity-70">
+          © {new Date().getFullYear()} El Molinito – Sistema de logística y control
         </div>
       </div>
     </div>

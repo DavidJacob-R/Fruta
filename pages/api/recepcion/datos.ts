@@ -17,14 +17,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         )
       )
 
-    // Empresas activas
+    // Empresas activas (corrige aquí)
     const empresasList = await db
-      .select({ id: empresa.id, nombre: empresa.nombre })
+      .select({ id: empresa.id, empresa: empresa.empresa })
       .from(empresa)
       .where(
         and(
-          isNotNull(empresa.nombre),
-          ne(empresa.nombre, ''),
+          isNotNull(empresa.empresa),
+          ne(empresa.empresa, ''),
           eq(empresa.activo, true)
         )
       )

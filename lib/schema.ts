@@ -49,8 +49,6 @@ export const agricultores = pgTable('agricultores', {
 // empresa 
 export const empresa = pgTable('empresa', {
   id: serial('id').primaryKey(),
-  nombre: varchar('nombre', { length: 100 }).notNull(),
-  apellido: varchar('apellido', { length: 100 }),
   empresa: varchar('empresa', { length: 100 }),
   telefono: varchar('telefono', { length: 20 }),
   email: varchar('email', { length: 100 }),
