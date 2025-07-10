@@ -33,8 +33,7 @@ export default function NotasDelDia() {
         <div className="flex flex-row justify-end mb-6">
           <button
             className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-xl text-white font-bold shadow transition"
-            onClick={() => router.push('/panel/empleado')}
-          >
+            onClick={() => router.push('/panel/Rutas/recepcion')}>
             <FiChevronLeft className="text-2xl" />
             Menú principal
           </button>
