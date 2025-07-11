@@ -36,8 +36,7 @@ export default function RecepcionSeleccion() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow border text-sm font-medium
             ${darkMode
               ? "bg-gray-900 border-gray-800 text-orange-200 hover:bg-gray-800"
-              : "bg-white border-gray-200 text-orange-800 hover:bg-gray-100"}`}
-        >
+              : "bg-white border-gray-200 text-orange-800 hover:bg-gray-100"}`} >
           {darkMode ? (
             <>
               <span role="img" aria-label="noche">🌙</span> Noche
@@ -91,8 +90,7 @@ export default function RecepcionSeleccion() {
                   ${darkMode
                     ? 'bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white border-orange-300 hover:from-orange-600 hover:to-orange-800 focus:ring-orange-300'
                     : 'bg-gradient-to-br from-orange-100 via-orange-200 to-orange-400 text-orange-800 border-orange-200 hover:from-orange-300 hover:to-orange-500 focus:ring-orange-200'
-                  }`}
-              >
+                  }`} >
                 Nota para empresa
               </button>
 
@@ -102,8 +100,7 @@ export default function RecepcionSeleccion() {
                   ${darkMode
                     ? 'bg-gradient-to-br from-green-600 via-green-700 to-green-800 text-white border-green-200 hover:from-green-600 hover:to-green-900 focus:ring-green-300'
                     : 'bg-gradient-to-br from-green-100 via-green-200 to-green-400 text-green-900 border-green-200 hover:from-green-200 hover:to-green-600 focus:ring-green-200'
-                  }`}
-              >
+                  }`} >
                 Nota de maquila
               </button>
             </div>
@@ -114,8 +111,7 @@ export default function RecepcionSeleccion() {
                 ${darkMode
                   ? 'bg-gradient-to-r from-blue-500 via-blue-700 to-indigo-800 border-blue-400 text-white hover:from-blue-600 hover:to-indigo-900 focus:ring-blue-300'
                   : 'bg-gradient-to-r from-blue-100 via-blue-300 to-blue-500 border-blue-200 text-blue-900 hover:from-blue-200 hover:to-indigo-200 focus:ring-blue-200'
-                }`}
-            >
+                }`}>
               Ver notas del día (empresa y maquila)
             </button>
 
@@ -125,8 +121,7 @@ export default function RecepcionSeleccion() {
                   ? 'bg-gradient-to-r from-gray-800 to-black border-orange-400 text-white hover:from-orange-800 hover:to-orange-900 focus:ring-orange-300'
                   : 'bg-gradient-to-r from-orange-200 to-orange-400 border-orange-300 text-orange-900 hover:from-orange-300 hover:to-orange-600 focus:ring-orange-200'
                 }`}
-              onClick={() => router.push('/panel/empleado')}
-            >
+              onClick={() => router.push('/panel/empleado')}>
               Regresar al menú principal
             </button>
           </div>

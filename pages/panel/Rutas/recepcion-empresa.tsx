@@ -124,8 +124,7 @@ export default function RecepcionEmpresa() {
           onClick={() => setDarkMode(d => !d)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow border 
             ${darkMode ? "bg-gray-900 border-gray-800 text-orange-400 hover:bg-gray-800" 
-              : "bg-white border-gray-200 text-orange-600 hover:bg-gray-100"}`}
-        >
+              : "bg-white border-gray-200 text-orange-600 hover:bg-gray-100"}`}>
           {darkMode ? (
             <>
               <span className="i-lucide-moon w-5 h-5" /> Modo noche
@@ -142,14 +141,12 @@ export default function RecepcionEmpresa() {
           ${darkMode
             ? "bg-[#23272f] border-orange-700"
             : "bg-white border-gray-200"
-          }`}
-        >
+          }`} >
           {/* HEADER */}
           <div className="w-full flex flex-col items-center py-6 border-b"
             style={{
               borderColor: darkMode ? "#ffac4b44" : "#f6ad55"
-            }}
-          >
+            }} >
             <div className="flex items-center gap-3 mb-2">
               <span className={`text-3xl ${darkMode ? "drop-shadow" : ""}`}>🍊</span>
               <span className={`font-semibold text-2xl tracking-wide
@@ -225,8 +222,7 @@ export default function RecepcionEmpresa() {
                           ? "bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950"
                           : "bg-white border-orange-200 text-gray-900 hover:bg-orange-50"
                         }`}
-                      style={{ minWidth: 170 }}
-                    >{fruta.nombre}</button>
+                      style={{ minWidth: 170 }}>{fruta.nombre}</button>
                   ))}
                 </div>
                 <div className="mt-6 flex justify-between">
@@ -252,8 +248,7 @@ export default function RecepcionEmpresa() {
                       : "bg-gray-50 border border-orange-200 text-gray-900 focus:ring-2 focus:ring-orange-400"
                     }`}
                   required
-                  min={1}
-                />
+                  min={1}/>
                 <div className="flex justify-between">
                   <button onClick={anterior} className="text-orange-400 font-semibold underline">Volver</button>
                   <button
@@ -309,8 +304,7 @@ export default function RecepcionEmpresa() {
                     ${darkMode
                       ? "bg-[#23272f] border border-orange-700 text-orange-100 focus:ring-2 focus:ring-orange-500"
                       : "bg-gray-50 border border-orange-200 text-gray-900 focus:ring-2 focus:ring-orange-400"
-                    }`}
-                />
+                    }`}/>
                 <div className="flex justify-between">
                   <button onClick={() => setPaso(4)} className="text-orange-400 font-semibold underline">Volver</button>
                   <button
