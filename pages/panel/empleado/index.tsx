@@ -28,6 +28,7 @@ export default function EmpleadoPanel() {
     { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
     { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
     { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' },
+    { nombre: 'Almacen cooler', ruta: '/panel/cooler' },
   ]
 
   const handleModuloClick = (ruta: Url) => {

@@ -29,8 +29,7 @@ export default function LoginPage() {
 
       const rol = result.usuario?.rol_id
       if (rol === 1) router.push('/panel/administrador')
-      else if (rol === 2) router.push('/panel/programador')
-      else if (rol === 3) router.push('/panel/empleado')
+      else if (rol === 2) router.push('/panel/empleado')
       else setError('Rol no válido')
     } catch (err) {
       console.error('Error en login:', err)
