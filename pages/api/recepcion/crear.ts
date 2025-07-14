@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { db } from '../../../lib/db'
-import { recepcion_fruta, empresa, agricultores } from '../../../lib/schema'
+import { db } from '@/lib/db'
+import { recepcion_fruta, empresa, agricultores } from '@/lib/schema'
 import { eq, desc } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,12 +8,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, message: 'Método no permitido' })
 
   const { 
-    agricultor_id, empresa_id, tipo_fruta_id, cantidad_cajas, peso_caja_oz, fecha_recepcion, usuario_recepcion_id, notas,
+    agricultor_id, empresa_id, tipo_fruta_id, cantidad_cajas, fecha_recepcion, usuario_recepcion_id, notas,
     tipo_nota, empaque_id
   } = req.body
 
   try {
-    // Validación: solo debe existir el id correspondiente, y debe ser válido
     if (tipo_nota === 'empresa') {
       if (!empresa_id) return res.status(400).json({ success: false, message: 'Falta empresa_id.' })
       const empresaExiste = await db.select().from(empresa).where(eq(empresa.id, Number(empresa_id)))
@@ -25,14 +24,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!agricultorExiste.length) return res.status(400).json({ success: false, message: 'El agricultor seleccionado no existe.' })
     }
 
-    // Validación de campos numéricos requeridos
     const cajas = Number(cantidad_cajas) > 0 ? Number(cantidad_cajas) : 1
-    const peso = Number(peso_caja_oz) > 0 ? Number(peso_caja_oz) : null
+    const peso = Number(empaque_id) > 0 ? Number(empaque_id) : null
     if (!tipo_fruta_id || !peso || !fecha_recepcion || !usuario_recepcion_id || !tipo_nota) {
       return res.status(400).json({ success: false, message: 'Faltan datos requeridos.' })
     }
 
-    // Calcular siguiente numero_nota
     const ultimaNota = await db
       .select({ numero_nota: recepcion_fruta.numero_nota })
       .from(recepcion_fruta)
@@ -43,7 +40,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? ultimaNota[0].numero_nota + 1
       : 1
 
-    // Preparar datos a insertar
     const insertData: any = {
       tipo_fruta_id: Number(tipo_fruta_id),
       cantidad_cajas: cajas,

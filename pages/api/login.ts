@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .where(
         and(
           eq(usuarios.email, email),
-          eq(usuarios.pass, password) // <--- campo correcto
+          eq(usuarios.pass, password)
         )
       );
 

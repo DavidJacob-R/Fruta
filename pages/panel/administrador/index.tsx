@@ -33,24 +33,24 @@ export default function AdminPanel() {
   }
 
   const modulos = [
-    { nombre: 'Recepción de fruta', ruta: '/panel/administradorRutas/recepcion' },
-    { nombre: 'Control de calidad', ruta: '/panel/administradorRutas/control-calidad' },
-    { nombre: 'Embalaje', ruta: '/panel/administradorRutas/embalaje' },
-    { nombre: 'Preenfriado', ruta: '/panel/administradorRutas/preenfriado' },
-    { nombre: 'Conservación', ruta: '/panel/administradorRutas/conservacion' },
-    { nombre: 'Carga y exportación', ruta: '/panel/administradorRutas/carga-exportacion' },
-    { nombre: 'Control de materiales', ruta: '/panel/administradorRutas/control-materiales' },
-    { nombre: 'Pagos', ruta: '/panel/administradorRutas/pagos' },
-    { nombre: 'Reportes', ruta: '/panel/administradorRutas/reportes' },
+    //{ nombre: 'Recepción de fruta', ruta: '/panel/administradorRutas/recepcion' },
+    //{ nombre: 'Control de calidad', ruta: '/panel/administradorRutas/control-calidad' },
+    { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques' },
+    //{ nombre: 'Preenfriado', ruta: '/panel/administradorRutas/preenfriado' },
+    //{ nombre: 'Conservación', ruta: '/panel/administradorRutas/conservacion' },
+    //{ nombre: 'Carga y exportación', ruta: '/panel/administradorRutas/carga-exportacion' },
+    //{ nombre: 'Control de materiales', ruta: '/panel/administradorRutas/control-materiales' },
+    //{ nombre: 'Pagos', ruta: '/panel/administradorRutas/pagos' },
+    //{ nombre: 'Reportes', ruta: '/panel/administradorRutas/reportes' },
     { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres' },
     { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas' },
     { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/agregar-agricultores' },
+    { nombre: 'Notas', ruta: '/panel/administradorRutas/notas' },
   ]
 
   const handleModuloClick = (ruta: Url) => router.push(ruta)
 
-  // Paletas suaves:
-  const bgDay = "bg-[#f6f4f2]"           // Gris muy claro, NO blanco puro
+  const bgDay = "bg-[#f6f4f2]"           
   const cardDay = "bg-[#f8f7f5] border border-orange-200"
   const headerDay = "bg-[#f2eae2] text-orange-800 border border-orange-300"
   const textDay = "text-[#1a1a1a]"

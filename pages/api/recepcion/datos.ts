@@ -5,7 +5,7 @@ import { and, isNotNull, ne, eq } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Agricultores activos
+
     const agricultoresList = await db
       .select({ id: agricultores.id, nombre: agricultores.nombre, apellido: agricultores.apellido })
       .from(agricultores)
@@ -17,7 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         )
       )
 
-    // Empresas activas (corrige aquí)
     const empresasList = await db
       .select({ id: empresa.id, empresa: empresa.empresa })
       .from(empresa)
@@ -29,7 +28,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         )
       )
 
-    // Tipos de fruta activas
     const frutas = await db
       .select()
       .from(tipos_fruta)

@@ -1,13 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { agricultores, empresa, recepcion_fruta,tipos_clamshell, tipos_fruta } from '@/lib/schema'
 import { db } from '@/lib/db'
-import {
-  recepcion_fruta,
-  agricultores,
-  empresa,
-  tipos_fruta,
-  tipos_clamshell
-} from '@/lib/schema'
-import { and, gte, lte, eq } from 'drizzle-orm'
+import { and, gte, lte, eq, lt } 
+from 'drizzle-orm' 
+import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -20,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       end.setDate(start.getDate() + 1)
       filtroFecha = and(
         gte(recepcion_fruta.fecha_recepcion, start),
-        lte(recepcion_fruta.fecha_recepcion, end)
+        lt(recepcion_fruta.fecha_recepcion, end) 
       )
     }
 

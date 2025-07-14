@@ -23,7 +23,6 @@ type Motivo = {
 export default function ControlCalidad() {
   const router = useRouter();
 
-  // Estados
   const [step, setStep] = useState<number>(1);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [motivos, setMotivos] = useState<Motivo[]>([]);
@@ -37,7 +36,6 @@ export default function ControlCalidad() {
   });
   const [email, setEmail] = useState<string>("");
 
-  // Cargar datos iniciales
   const cargarDatos = async () => {
     setMensaje("");
     try {
@@ -54,7 +52,6 @@ export default function ControlCalidad() {
     }
   };
 
-  // Al cargar
   useEffect(() => {
     const usuario = localStorage.getItem("usuario");
     if (usuario) {
@@ -67,7 +64,6 @@ export default function ControlCalidad() {
     cargarDatos();
   }, []);
 
-  // Cuando se selecciona un pedido, resetear el form
   const handleSelectPedido = (pedido: Pedido) => {
     setSelectedPedido(pedido);
     setForm({
@@ -80,7 +76,6 @@ export default function ControlCalidad() {
     setMensaje("");
   };
 
-  // Cambia el valor de rechazos/cajas finales
   useEffect(() => {
     if (selectedPedido) {
       setForm((prev) => ({
@@ -90,7 +85,6 @@ export default function ControlCalidad() {
     }
   }, [form.rechazos, selectedPedido]);
 
-  // Submit del control de calidad
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPedido) return;
@@ -161,8 +155,7 @@ export default function ControlCalidad() {
           <button
             onClick={handleRecargar}
             className="mt-4 md:mt-0 bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-xl font-bold shadow transition"
-            title="Recargar pedidos"
-          >
+            title="Recargar pedidos">
             🔄 Recargar
           </button>
         </div>
@@ -170,8 +163,7 @@ export default function ControlCalidad() {
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => router.push("/panel/empleado")}
-            className="flex items-center text-orange-400 hover:text-orange-300 transition"
-          >
+            className="flex items-center text-orange-400 hover:text-orange-300 transition">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
@@ -184,8 +176,7 @@ export default function ControlCalidad() {
           <div
             className={`mb-5 text-center px-4 py-3 rounded-xl font-bold ${
               mensaje.includes("correctamente") ? "bg-green-700 text-green-100" : "bg-red-800 text-red-100"
-            }`}
-          >
+            }`}>
             {mensaje}
           </div>
         )}
@@ -202,8 +193,7 @@ export default function ControlCalidad() {
                 <div
                   key={pedido.id}
                   onClick={() => handleSelectPedido(pedido)}
-                  className="bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-xl p-5 shadow-sm cursor-pointer group"
-                >
+                  className="bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-xl p-5 shadow-sm cursor-pointer group">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <p className="font-bold text-orange-400 text-sm">EMPRESA:</p>
@@ -283,8 +273,7 @@ export default function ControlCalidad() {
                         })
                       }
                       className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                      required
-                    />
+                      required/>
                   </div>
                   {form.rechazos > 0 && (
                     <div>
@@ -293,8 +282,7 @@ export default function ControlCalidad() {
                         value={form.motivo_rechazo_id}
                         onChange={(e) => setForm({ ...form, motivo_rechazo_id: e.target.value })}
                         className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                        required
-                      >
+                        required>
                         <option value="">Seleccione un motivo</option>
                         {motivos.map((motivo) => (
                           <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>
@@ -318,8 +306,7 @@ export default function ControlCalidad() {
                               rechazos: selectedPedido.cantidad_cajas - parseInt(newValue),
                             });
                           }
-                        }}
-                      >
+                        }}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
@@ -333,23 +320,20 @@ export default function ControlCalidad() {
                       value={form.comentarios}
                       onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
                       className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                      rows={3}
-                    />
+                      rows={3}/>
                   </div>
                 </div>
                 <div className="flex justify-between items-center mt-8">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-full font-medium shadow border border-gray-600 transition"
-                  >
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-full font-medium shadow border border-gray-600 transition">
                     Volver
                   </button>
                   <div className="flex items-center space-x-4">
                     <button
                       type="submit"
-                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2.5 rounded-full font-bold shadow-lg border-none transition"
-                    >
+                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2.5 rounded-full font-bold shadow-lg border-none transition">
                       Guardar y generar ticket
                     </button>
                   </div>
@@ -364,12 +348,6 @@ export default function ControlCalidad() {
 
         {/* Logout y footer */}
         <div className="text-center mt-10">
-          <button
-            onClick={handleLogout}
-            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200"
-          >
-            Cerrar sesión
-          </button>
         </div>
         <div className="mt-6 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} El Molinito

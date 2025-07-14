@@ -38,16 +38,11 @@ export default function NotasDelDia() {
           className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow border text-sm font-medium
             ${darkMode
               ? "bg-gray-900 border-gray-800 text-orange-200 hover:bg-gray-800"
-              : "bg-white border-gray-200 text-orange-800 hover:bg-gray-100"}`}
-        >
-          {darkMode ? (
-            <>
-              <span role="img" aria-label="noche">🌙</span> Noche
-            </>
-          ) : (
-            <>
-              <span role="img" aria-label="dia">☀️</span> Día
-            </>
+              : "bg-white border-gray-200 text-orange-800 hover:bg-gray-100"}`}>
+          {darkMode ? (<>
+              <span role="img" aria-label="noche">🌙</span> Noche</>
+          ) : (<>
+              <span role="img" aria-label="dia">☀️</span> Día</>
           )}
         </button>
       </div>
@@ -60,8 +55,7 @@ export default function NotasDelDia() {
                   ? "bg-orange-700 hover:bg-orange-800 border-orange-800 text-orange-50"
                   : "bg-orange-400 hover:bg-orange-500 border-orange-300 text-white"
                 }`}
-              onClick={() => router.push('/panel/Rutas/recepcion')}
-            >
+              onClick={() => router.push('/panel/Rutas/recepcion')}>
               <FiChevronLeft className="text-2xl" />
               Menú principal
             </button>
@@ -115,8 +109,7 @@ export default function NotasDelDia() {
                               : "bg-orange-50 border-orange-50"}
                           hover:bg-orange-200/30 transition
                         `}
-                        style={{ height: 72 }}
-                      >
+                        style={{ height: 72 }}>
                         <td className="p-4 font-extrabold text-xl">{n.numero_nota ?? '-'}</td>
                         <td className="p-4">
                           <span
@@ -128,8 +121,7 @@ export default function NotasDelDia() {
                                 : (darkMode
                                   ? "bg-green-700/90 text-green-100 border-green-700"
                                   : "bg-green-200 text-green-800 border-green-300")
-                              }`}
-                          >
+                              }`}>
                             {n.tipo_nota === 'empresa'
                               ? (<><HiOutlineBuildingOffice2 className="text-xl" /> Empresa</>)
                               : (<><HiOutlineUser className="text-xl" /> Maquila</>)
