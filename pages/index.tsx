@@ -12,10 +12,8 @@ export default function Home() {
         <p className="text-lg sm:text-xl text-gray-200 mb-8 font-medium">
           Sistema de logística y control para frutas frescas.
         </p>
-        <a
-          href="/login"
-          className="bg-orange-500 hover:bg-orange-600 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-lg transition transform hover:scale-105"
-        >
+        <a href="/login"
+          className="bg-orange-500 hover:bg-orange-600 text-white py-3 px-8 rounded-full text-lg font-semibold shadow-lg transition transform hover:scale-105">
           Iniciar sesión
         </a>
       </div>

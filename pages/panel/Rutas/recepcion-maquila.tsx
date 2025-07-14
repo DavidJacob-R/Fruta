@@ -6,7 +6,7 @@ export default function RecepcionMaquila() {
   const [siguienteNumero, setSiguienteNumero] = useState<number | null>(null)
   const [agricultores, setAgricultores] = useState<any[]>([])
   const [tiposFruta, setTiposFruta] = useState<any[]>([])
-  const [pesosDisponibles] = useState<string[]>(['8', '12', '16'])
+  const [empaques, setEmpaques] = useState<any[]>([])
   const [paso, setPaso] = useState(1)
   const [mensaje, setMensaje] = useState('')
   const [form, setForm] = useState({
@@ -14,9 +14,9 @@ export default function RecepcionMaquila() {
     tipo_fruta_id: '',
     cantidad_cajas: '',
     peso_caja_oz: '',
+    empaque_id: '',
   })
   const [notas, setNotas] = useState('')
-  // Modo oscuro por defecto
   const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
@@ -34,6 +34,12 @@ export default function RecepcionMaquila() {
         setAgricultores(Array.isArray(data.agricultores) ? data.agricultores : [])
         setTiposFruta(Array.isArray(data.frutas) ? data.frutas : [])
       })
+    // Carga de empaques (igual que en recepcion-empresa)
+    fetch('/api/empaques/listar')
+      .then(res => res.json())
+      .then(data => {
+        setEmpaques(Array.isArray(data.empaques) ? data.empaques : [])
+      })
   }, [])
 
   const siguiente = () => setPaso(p => p + 1)
@@ -50,6 +56,7 @@ export default function RecepcionMaquila() {
       tipo_fruta_id: form.tipo_fruta_id,
       cantidad_cajas: form.cantidad_cajas,
       peso_caja_oz: form.peso_caja_oz,
+      empaque_id: form.empaque_id,
       notas: notas,
       fecha_recepcion,
       usuario_recepcion_id: usuario.id,
@@ -71,6 +78,7 @@ export default function RecepcionMaquila() {
         tipo_fruta_id: '',
         cantidad_cajas: '',
         peso_caja_oz: '',
+        empaque_id: '',
       })
       setNotas('')
       setPaso(1)
@@ -87,6 +95,7 @@ export default function RecepcionMaquila() {
     ? `${agricultores.find(a => String(a.id) === form.agricultor_id)?.nombre} ${agricultores.find(a => String(a.id) === form.agricultor_id)?.apellido}`
     : ''
   const nombreFruta = tiposFruta.find(f => String(f.id) === form.tipo_fruta_id)?.nombre || ''
+  const nombreEmpaque = empaques.find(e => String(e.id) === form.empaque_id)?.tamanio || ''
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300
@@ -97,16 +106,11 @@ export default function RecepcionMaquila() {
           onClick={() => setDarkMode(d => !d)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow border text-sm font-medium
             ${darkMode ? "bg-gray-900 border-gray-800 text-green-300 hover:bg-gray-800"
-              : "bg-white border-gray-200 text-green-800 hover:bg-gray-100"}`}
-        >
-          {darkMode ? (
-            <>
-              <span className="i-lucide-moon w-5 h-5" /> Modo noche
-            </>
-          ) : (
-            <>
-              <span className="i-lucide-sun w-5 h-5" /> Modo día
-            </>
+              : "bg-white border-gray-200 text-green-800 hover:bg-gray-100"}`}>
+          {darkMode ? (<>
+            <span className="i-lucide-moon w-5 h-5" /> Modo noche</>
+          ) : (<>
+            <span className="i-lucide-sun w-5 h-5" /> Modo día</>
           )}
         </button>
       </div>
@@ -116,8 +120,7 @@ export default function RecepcionMaquila() {
           ${darkMode
             ? "bg-[#1a2220] border-green-700"
             : "bg-white border-green-200"
-          }`}
-        >
+          }`}>
           {/* Branding y header */}
           <div className="w-full flex flex-col items-center py-6 border-b"
             style={{ borderColor: darkMode ? "#33ff99aa" : "#5eead4" }}>
@@ -138,8 +141,7 @@ export default function RecepcionMaquila() {
                 ${darkMode
                   ? "bg-[#192119] border-green-700 text-green-300"
                   : "bg-gray-100 border-green-200 text-green-800"
-                }`}
-              >{siguienteNumero ?? '...'}</span>
+                }`}>{siguienteNumero ?? '...'}</span>
             </div>
           </div>
 
@@ -161,8 +163,8 @@ export default function RecepcionMaquila() {
                           ? "bg-[#222] border-green-700 text-green-200 hover:bg-green-950"
                           : "bg-white border-green-200 text-green-900 hover:bg-green-50"
                         }`}
-                      style={{ minWidth: 170 }}
-                    >{a.nombre} {a.apellido}</button>
+                      style={{ minWidth: 170 }}>{a.nombre} {a.apellido}
+                    </button>
                   ))}
                 </div>
                 <div className="mt-6 flex justify-between">
@@ -223,8 +225,7 @@ export default function RecepcionMaquila() {
                       : "bg-gray-50 border border-green-200 text-green-900 focus:ring-2 focus:ring-green-400"
                     }`}
                   required
-                  min={1}
-                />
+                  min={1}/>
                 <div className="flex justify-between">
                   <button onClick={anterior} className="text-green-400 font-semibold underline">Volver</button>
                   <button
@@ -240,24 +241,31 @@ export default function RecepcionMaquila() {
               </section>
             )}
 
-            {/* Paso 4: Peso por caja */}
+            {/* Paso 4: Empaque - DINÁMICO */}
             {paso === 4 && (
               <section>
                 <h3 className={`mb-3 text-lg font-bold 
-                  ${darkMode ? "text-green-100" : "text-green-800"}`}>Peso por caja (oz)</h3>
-                <div className="flex flex-wrap gap-4 justify-center mb-3">
-                  {pesosDisponibles.map(peso => (
+                  ${darkMode ? "text-green-100" : "text-green-800"}`}>Selecciona el tipo de empaque</h3>
+                <div className="flex flex-wrap gap-4 justify-center mb-2">
+                  {empaques.length === 0 && <span className="text-gray-400 text-base">No hay empaques registrados</span>}
+                  {empaques.map(empaque => (
                     <button
-                      key={peso}
-                      onClick={() => { setForm(f => ({ ...f, peso_caja_oz: peso })); setPaso(5); }}
+                      key={empaque.id}
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          peso_caja_oz: empaque.tamanio,
+                          empaque_id: String(empaque.id)
+                        }))
+                        setPaso(5)
+                      }}
                       className={`rounded-lg px-8 py-4 font-semibold border shadow-sm transition
                         ${darkMode
                           ? "bg-[#1d251d] border-green-700 text-green-200 hover:bg-green-950"
                           : "bg-white border-green-200 text-green-900 hover:bg-green-50"
-                        } ${form.peso_caja_oz === peso ? "ring-4 ring-green-300" : ""}`}
-                      style={{ minWidth: 140 }}
-                    >
-                      {peso} oz
+                        } ${form.empaque_id === String(empaque.id) ? "ring-4 ring-green-300" : ""}`}
+                      style={{ minWidth: 150 }}>
+                      {empaque.tamanio}
                     </button>
                   ))}
                 </div>
@@ -281,8 +289,7 @@ export default function RecepcionMaquila() {
                     ${darkMode
                       ? "bg-[#232a22] border border-green-700 text-green-100 focus:ring-2 focus:ring-green-400"
                       : "bg-gray-50 border border-green-200 text-green-900 focus:ring-2 focus:ring-green-400"
-                    }`}
-                />
+                    }`}/>
                 <div className="flex justify-between">
                   <button onClick={() => setPaso(4)} className="text-green-400 font-semibold underline">Volver</button>
                   <button
@@ -306,7 +313,7 @@ export default function RecepcionMaquila() {
                   <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Agricultor:</span> {nombreAgricultor}</li>
                   <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Tipo de fruta:</span> {nombreFruta}</li>
                   <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Cantidad de cajas:</span> {form.cantidad_cajas}</li>
-                  <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Peso por caja (oz):</span> {form.peso_caja_oz} oz</li>
+                  <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Tipo de empaque:</span> {nombreEmpaque}</li>
                   <li><span className={`font-semibold ${darkMode ? "text-green-200" : "text-green-800"}`}>Notas:</span> {notas ? notas : <span className="italic text-gray-400">Sin notas</span>}</li>
                 </ul>
                 <div className="flex justify-between">
@@ -317,8 +324,8 @@ export default function RecepcionMaquila() {
                       ${darkMode
                         ? "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-800"
                         : "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-200"
-                      }`}
-                  >Registrar nota</button>
+                      }`}>Registrar nota
+                  </button>
                 </div>
               </section>
             )}

@@ -24,10 +24,10 @@ export default function EmpleadoPanel() {
   const modulos = [
     { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
     { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
-    { nombre: 'Preenfriado', ruta: '/panel/Rutas/preenfriado' },
-    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
-    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
-    { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' },
+    { nombre: 'Preenfriado', ruta: '/panel/Rutas/preenfriado' },  // Checar esta ruta ya que no se a trabjaado en ella 
+    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
+    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
+    { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' }, // Checar esta ruta ya que no se a trabjaado en ella 
   ]
 
   const handleModuloClick = (ruta: Url) => {
@@ -51,8 +51,7 @@ export default function EmpleadoPanel() {
             <div
               key={idx}
               onClick={() => handleModuloClick(modulo.ruta)}
-              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-6 shadow-md hover:shadow-lg group"
-            >
+              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-6 shadow-md hover:shadow-lg group">
               <h2 className="text-lg font-semibold text-orange-400 mb-2 group-hover:text-orange-500 transition">{modulo.nombre}</h2>
               <p className="text-sm text-gray-400 group-hover:text-gray-200 transition">Accede al módulo de <span className="lowercase">{modulo.nombre}</span>.</p>
             </div>
@@ -62,8 +61,7 @@ export default function EmpleadoPanel() {
         <div className="text-center">
           <button
             onClick={handleLogout}
-            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200"
-          >
+            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200">
             Cerrar sesión
           </button>
         </div>

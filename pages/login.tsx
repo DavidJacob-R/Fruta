@@ -29,8 +29,7 @@ export default function LoginPage() {
 
       const rol = result.usuario?.rol_id
       if (rol === 1) router.push('/panel/administrador')
-      else if (rol === 2) router.push('/panel/programador')
-      else if (rol === 3) router.push('/panel/empleado')
+      else if (rol === 2) router.push('/panel/empleado')
       else setError('Rol no válido')
     } catch (err) {
       console.error('Error en login:', err)
@@ -62,20 +61,17 @@ export default function LoginPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             className="w-full bg-[#181414] text-white border border-orange-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-lg placeholder:text-orange-200/60"
-            required
-          />
+            required/>
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
             onChange={e => setPassword(e.target.value)}
             className="w-full bg-[#181414] text-white border border-orange-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-lg placeholder:text-orange-200/60"
-            required
-          />
+            required/>
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold shadow-lg text-lg transition duration-200 transform hover:scale-105"
-          >
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold shadow-lg text-lg transition duration-200 transform hover:scale-105">
             Entrar
           </button>
         </form>

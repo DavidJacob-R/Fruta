@@ -20,7 +20,6 @@ export default async function handler(
       motivos
     } = req.body
 
-    // Registrar control de calidad
     const [{ id: control_id }] = await db.insert(control_calidad).values({
       recepcion_id,
       usuario_control_id,
@@ -31,7 +30,6 @@ export default async function handler(
       fecha_control: new Date(),
     }).returning({ id: control_calidad.id });
 
-    // Registrar motivos si hay rechazos
     if (motivos && motivos.length > 0) {
       for (const motivo of motivos) {
         await db.insert(control_calidad_motivos).values({

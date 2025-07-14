@@ -1,4 +1,3 @@
-// pages/api/control_calidad/registrar.ts
 
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../../lib/db";
@@ -12,14 +11,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cajas_aprobadas,
       cajas_rechazadas,
       notas,
-      motivos // Array: [{ motivo_id, cantidad_cajas }]
+      motivos 
     } = req.body;
 
     try {
-      // Inserta control de calidad
       const result = await db.insert(control_calidad).values({
         recepcion_id,
-        pasa_calidad: cajas_aprobadas > 0, // o como gustes definir la lógica
+        pasa_calidad: cajas_aprobadas > 0,
         usuario_control_id,
         fecha_control: new Date(),
         cajas_aprobadas,
@@ -29,7 +27,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const controlId = result[0].id;
 
-      // Si hay motivos de rechazo, guarda cada uno
       if (Array.isArray(motivos) && motivos.length > 0) {
         for (const m of motivos) {
           await db.insert(control_calidad_motivos).values({

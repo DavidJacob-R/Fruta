@@ -20,10 +20,8 @@ export default function RecepcionEmpresa() {
     cantidad_oz: '',
     empaque_id: '',
   })
-  // DARK MODE
   const [darkMode, setDarkMode] = useState(true)
 
-  // Aplica dark/light al <html>
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark")
@@ -258,8 +256,7 @@ export default function RecepcionEmpresa() {
                         ? "bg-orange-600 hover:bg-orange-700 text-white border-orange-700"
                         : "bg-orange-500 hover:bg-orange-600 text-white border-orange-200"
                       }`}
-                    disabled={!form.cantidad_oz}
-                  >Siguiente</button>
+                    disabled={!form.cantidad_oz}>Siguiente</button>
                 </div>
               </section>
             )}
@@ -280,8 +277,8 @@ export default function RecepcionEmpresa() {
                           ? "bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950"
                           : "bg-white border-orange-200 text-gray-900 hover:bg-orange-50"
                         }`}
-                      style={{ minWidth: 150 }}
-                    >{empaque.tamanio}</button>
+                      style={{ minWidth: 150 }}>{empaque.tamanio}
+                      </button>
                   ))}
                 </div>
                 <div className="flex justify-between mt-6">
@@ -313,8 +310,8 @@ export default function RecepcionEmpresa() {
                       ${darkMode
                         ? "bg-orange-600 hover:bg-orange-700 text-white border-orange-700"
                         : "bg-orange-500 hover:bg-orange-600 text-white border-orange-200"
-                      }`}
-                  >Siguiente</button>
+                      }`}>Siguiente
+                  </button>
                 </div>
               </section>
             )}
@@ -339,8 +336,8 @@ export default function RecepcionEmpresa() {
                       ${darkMode
                         ? "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-800"
                         : "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-200"
-                      }`}
-                  >Registrar nota</button>
+                      }`}>Registrar nota
+                  </button>
                 </div>
               </section>
             )}
