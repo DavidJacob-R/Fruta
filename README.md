@@ -42,6 +42,9 @@ npm install pdfkit
 
 npm install --save-dev @types/pdfkit
 
+npm install @supabase/supabase-js
+
+
 
 
 Crear un archivo raiz llamdo :    .env.local
