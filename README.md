@@ -40,6 +40,9 @@ npm install pdf-lib
 
 npm install pdfkit
 
+npm install --save-dev @types/pdfkit
+
+
 
 Crear un archivo raiz llamdo :    .env.local
 
