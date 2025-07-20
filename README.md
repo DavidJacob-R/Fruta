@@ -36,6 +36,11 @@ npm install date-fns
 
 npm install drizzle-orm postgres
 
+npm install pdf-lib
+
+npm install pdfkit
+
+
 Crear un archivo raiz llamdo :    .env.local
 
      DB_HOST=localhost
