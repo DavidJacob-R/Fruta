@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FiDownload, FiPrinter, FiSend, FiSearch, FiSun, FiMoon } from 'react-icons/fi'
+import { FiSearch, FiSun, FiMoon, FiSend, FiPrinter } from 'react-icons/fi'
 import { useRouter } from 'next/router'
 
 export default function NotasAdmin() {
@@ -12,27 +12,36 @@ export default function NotasAdmin() {
   const [mensaje, setMensaje] = useState('')
   const [darkMode, setDarkMode] = useState(true)
 
+  // Nueva función para recargar notas
+  const recargarNotas = async () => {
+    setCargando(true);
+    const res = await fetch('/api/notas/listar');
+    const data = await res.json();
+    setNotas(Array.isArray(data.notas) ? data.notas : []);
+    setCargando(false);
+  };
+
   useEffect(() => {
-    fetch('/api/notas/listar')
-      .then(res => res.json())
-      .then(data => {
-        setNotas(Array.isArray(data.notas) ? data.notas : [])
-        setCargando(false)
-      })
-  }, [])
+    recargarNotas();
+  }, []);
 
   useEffect(() => {
     if (darkMode) document.documentElement.classList.add('dark')
     else document.documentElement.classList.remove('dark')
   }, [darkMode])
 
+  // Si quieres refrescar después de regresar del editor de nota, puedes escuchar cambios en el router:
   useEffect(() => {
-    if (modalNota) {
-      if (modalNota.tipo_nota === 'empresa' && modalNota.empresa_email) setEmailReenvio(modalNota.empresa_email)
-      else if (modalNota.tipo_nota === 'maquila' && modalNota.agricultor_email) setEmailReenvio(modalNota.agricultor_email)
-      else setEmailReenvio('')
+    const handleRouteChange = (url: string) => {
+      if (url.includes('/panel/administradorRutas/notas')) {
+        recargarNotas();
+      }
     }
-  }, [modalNota])
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    }
+  }, [router]);
 
   const notasFiltradas = notas.filter(n =>
     n.numero_nota?.toString().includes(busqueda) ||
@@ -40,10 +49,6 @@ export default function NotasAdmin() {
     n.agricultor_nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
     n.empresa_nombre?.toLowerCase().includes(busqueda.toLowerCase())
   )
-
-  const handleVerPdf = (notaId: number) => {
-    window.open(`/api/notas/pdf/${notaId}`, '_blank')
-  }
 
   const handleImprimir = (nota: any) => {
     setModalNota(nota)
@@ -68,6 +73,7 @@ export default function NotasAdmin() {
     setMensaje(data.success ? 'Correo enviado correctamente' : 'Error al enviar correo')
   }
 
+  // Botones y estilos igual que tu código original
   const tableBg = darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-white via-slate-50 to-slate-200'
   const cardBg = darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-slate-200'
   const thBg = darkMode ? 'bg-slate-800 text-orange-200 border-slate-700' : 'bg-orange-50 text-orange-700 border-orange-200'
@@ -75,6 +81,22 @@ export default function NotasAdmin() {
   const rowOdd = darkMode ? 'bg-gray-800' : 'bg-white'
   const textMain = darkMode ? 'text-orange-200' : 'text-orange-700'
   const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500'
+  const btnBase = "rounded-xl px-4 py-1 font-semibold shadow-sm border transition-colors"
+  const btnRecep = darkMode
+    ? "bg-yellow-900 border-yellow-800 text-yellow-100 hover:bg-yellow-800"
+    : "bg-yellow-100 border-yellow-300 text-yellow-700 hover:bg-yellow-200"
+  const btnCalid = darkMode
+    ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800"
+    : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
+  const btnIcon = darkMode
+    ? "bg-blue-900 border-blue-800 text-blue-100 hover:bg-blue-800"
+    : "bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200"
+  const btnPrint = darkMode
+    ? "bg-orange-900 border-orange-800 text-orange-100 hover:bg-orange-800"
+    : "bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200"
+  const btnSend = darkMode
+    ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800"
+    : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
 
   return (
     <div className={`min-h-screen ${tableBg} py-8 px-2 transition-colors`}>
@@ -134,7 +156,9 @@ export default function NotasAdmin() {
                   <th className="p-4 font-bold">Fruta</th>
                   <th className="p-4 font-bold">Fecha</th>
                   <th className="p-4 font-bold">Usuario/Empleado</th>
-                  <th className="p-4 font-bold">Acciones</th>
+                  <th className="p-4 font-bold">Nota Recepción</th>
+                  <th className="p-4 font-bold">Nota Calidad</th>
+                  <th className="p-4 font-bold">Opciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -169,30 +193,67 @@ export default function NotasAdmin() {
                       {n.usuario_nombre} {n.usuario_apellido}
                       <div className={`text-xs ${textSecondary}`}>{n.usuario_email}</div>
                     </td>
-                    <td className="p-4 flex gap-2">
-                      <button onClick={() => handleVerPdf(n.id)}
-                        className={`rounded-xl p-2 transition
-                          ${darkMode ? 'bg-blue-900 hover:bg-blue-800 text-blue-200' : 'bg-blue-100 hover:bg-blue-300 text-blue-800'}`}
-                        title="Ver PDF">
-                        <FiDownload />
-                      </button>
-                      <button onClick={() => handleImprimir(n)}
-                        className={`rounded-xl p-2 transition
-                          ${darkMode ? 'bg-orange-900 hover:bg-orange-800 text-orange-200' : 'bg-orange-100 hover:bg-orange-300 text-orange-700'}`}
-                        title="Imprimir">
-                        <FiPrinter />
-                      </button>
-                      <button onClick={() => setModalNota(n)}
-                        className={`rounded-xl p-2 transition
-                          ${darkMode ? 'bg-green-900 hover:bg-green-800 text-green-200' : 'bg-green-100 hover:bg-green-300 text-green-700'}`}
-                        title="Reenviar">
+                    {/* NOTA RECEPCION COMO BOTON */}
+                    <td className={`p-4 ${textMain}`}>
+                      {n.nota_recepcion_id ? (
+                        <button
+                          onClick={async () => {
+                            await router.push(
+                              `/panel/administradorRutas/notas/editar-recepcion/${n.nota_recepcion_id}?tipo=${n.tipo_nota}`
+                            );
+                            // Después de regresar del editor, recarga la lista:
+                            await recargarNotas();
+                          }}
+                          className={`${btnBase} ${btnRecep} w-full`}
+                          title="Editar Nota de Recepción"
+                        >
+                          {n.nota_recepcion_titulo || 'Nota recepción'}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    {/* NOTA CALIDAD COMO BOTON */}
+                    <td className={`p-4 ${textMain}`}>
+                      {n.nota_calidad_id ? (
+                        <button
+                          onClick={async () => {
+                            await router.push(`/panel/administradorRutas/notas/editar-calidad/${n.nota_calidad_id}`);
+                            // Después de regresar del editor, recarga la lista:
+                            await recargarNotas();
+                          }}
+                          className={`${btnBase} ${btnCalid} w-full`}
+                          title="Editar Nota de Calidad"
+                        >
+                          {n.nota_calidad_titulo || 'Nota calidad'}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    {/* OPCIONES de reenviar e imprimir */}
+                    <td className="p-4 flex flex-col gap-2">
+                      <button
+                        onClick={() => setModalNota(n)}
+                        className={`${btnBase} ${btnSend} flex items-center gap-2`}
+                        title="Reenviar"
+                      >
                         <FiSend />
+                        Reenviar
+                      </button>
+                      <button
+                        onClick={() => handleImprimir(n)}
+                        className={`${btnBase} ${btnPrint} flex items-center gap-2`}
+                        title="Imprimir"
+                      >
+                        <FiPrinter />
+                        Imprimir
                       </button>
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={7} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
+                    <td colSpan={9} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
                       No hay notas registradas.
                     </td>
                   </tr>
@@ -202,8 +263,7 @@ export default function NotasAdmin() {
           )}
         </div>
       </div>
-
-      {/* Modal de reenviar */}
+      {/* Modal para reenviar puedes mantener el tuyo aquí si lo necesitas */}
       {modalNota && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className={`max-w-lg w-full rounded-2xl shadow-2xl border-2 p-8 ${darkMode ? 'bg-gray-900 border-orange-700' : 'bg-white border-orange-300'}`}>

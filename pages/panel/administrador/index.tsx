@@ -45,7 +45,7 @@ export default function AdminPanel() {
     { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres' },
     { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas' },
     { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/agregar-agricultores' },
-    { nombre: 'Notas', ruta: '/panel/administradorRutas/notas' },
+    { nombre: 'Notas', ruta: '/panel/administradorRutas/notas/notas' },
   ]
 
   const handleModuloClick = (ruta: Url) => router.push(ruta)

@@ -11,6 +11,18 @@ export const moduloEnum = pgEnum('modulo', [
   'recepcion', 'calidad', 'embalaje', 'preenfriado', 'conservacion', 'carga', 'materiales', 'pagos', 'general'
 ]);
 
+
+// Tabla de proveedores (nueva)
+export const proveedores = pgTable('proveedores', {
+  id: serial('id').primaryKey(),
+  nombre: varchar('nombre', { length: 100 }).notNull(),
+  telefono: varchar('telefono', { length: 20 }),
+  email: varchar('email', { length: 100 }),
+  direccion: text('direccion'),
+  activo: boolean('activo').default(true),
+  creado_en: timestamp('creado_en', { mode: 'date' }).defaultNow(),
+});
+
 // Tabla de roles
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -238,10 +250,13 @@ export const movimientos_materiales = pgTable('movimientos_materiales', {
   tipo_material_id: integer('tipo_material_id').references(() => tipos_material.id),
   cantidad: decimal('cantidad', { precision: 10, scale: 2 }),
   agricultor_id: integer('agricultor_id').references(() => agricultores.id),
-  fecha_movimiento: timestamp('fecha_movimiento', { mode: 'date' }),
   usuario_movimiento_id: integer('usuario_movimiento_id').references(() => usuarios.id),
   notas: text('notas'),
   creado_en: timestamp('creado_en', { mode: 'date' }).defaultNow(),
+  identificador: varchar('identificador', { length: 50 }),
+  empresa_id: integer('empresa_id').references(() => empresa.id),
+  proveedor_id: integer('proveedor_id').references(() => proveedores.id),
+  fecha_movimiento: timestamp('fecha_movimiento', { mode: 'date' }).defaultNow(),
 })
 
 // Pagos a agricultores

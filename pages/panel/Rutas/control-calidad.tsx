@@ -115,10 +115,7 @@ export default function ControlCalidad() {
       if (result.success) {
         setMensaje("✅ Control de calidad registrado correctamente");
         setTimeout(() => {
-          setStep(1);
-          setSelectedPedido(null);
-          setMensaje("");
-          cargarDatos();
+          router.push("/panel/empleado"); // Redirige al menú principal
         }, 1500);
       } else {
         setMensaje("Error al guardar: " + (result.message || ""));
@@ -126,11 +123,6 @@ export default function ControlCalidad() {
     } catch (err) {
       setMensaje("Error al registrar el control de calidad");
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("usuario");
-    router.push("/");
   };
 
   const handleRecargar = () => {
@@ -171,7 +163,7 @@ export default function ControlCalidad() {
           </button>
         </div>
 
-        {/* Mensaje de éxito/error */}
+        {/*Mensaje de éxito/error*/}
         {mensaje && (
           <div
             className={`mb-5 text-center px-4 py-3 rounded-xl font-bold ${
@@ -181,7 +173,7 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        {/* Paso 1: Listado de pedidos pendientes */}
+        {/*Listado de pedidos pendientes*/}
         {step === 1 && (
           <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md mb-8">
             <h2 className="text-xl font-semibold text-orange-400 mb-6">Pedidos pendientes</h2>
@@ -227,7 +219,7 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        {/* Paso 2: Control de calidad del pedido seleccionado */}
+        {/*Control de calidad del pedido seleccionado*/}
         {step === 2 && selectedPedido && (
           <div className="relative">
             <div className="bg-[#232117] border-2 border-orange-400 rounded-xl p-4 mb-7 shadow-lg sticky top-2 z-10">
@@ -346,9 +338,7 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        {/* Logout y footer */}
-        <div className="text-center mt-10">
-        </div>
+        {/* Footer */}
         <div className="mt-6 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} El Molinito
         </div>
