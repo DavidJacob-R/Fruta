@@ -115,7 +115,7 @@ export default function ControlCalidad() {
       if (result.success) {
         setMensaje("✅ Control de calidad registrado correctamente");
         setTimeout(() => {
-          router.push("/panel/empleado"); // Redirige al menú principal
+          router.push("/panel/empleado");
         }, 1500);
       } else {
         setMensaje("Error al guardar: " + (result.message || ""));
@@ -130,85 +130,112 @@ export default function ControlCalidad() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white p-6">
-      <div className="w-full max-w-4xl mx-auto">
-
+    <div className="min-h-screen bg-gradient-to-br from-[#23272a] via-[#2c2f33] to-[#1a1d1f] text-white p-6 flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-7">
-          <div className="flex flex-col items-center md:items-start">
-            <div className="bg-orange-100 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
-              <span className="text-3xl">🍊</span>
-            </div>
-            <h1 className="text-3xl font-bold text-orange-500 mb-1 drop-shadow">Control de Calidad</h1>
-            <p className="text-gray-300 text-base">
-              Bienvenido, <span className="font-semibold">{email}</span>
-            </p>
+        <div className="flex flex-col items-center mb-7">
+          <div className="bg-[#27ae60]/20 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
+            <span className="text-3xl">🛡️</span>
           </div>
+          <h1 className="text-3xl font-bold text-[#27ae60] mb-2 drop-shadow">
+            Control de Calidad
+          </h1>
+          <p className="text-gray-200 text-base">
+            Bienvenido, <span className="font-semibold">{email}</span>
+          </p>
+        </div>
+
+        {/* Botón Recargar y volver */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
           <button
             onClick={handleRecargar}
-            className="mt-4 md:mt-0 bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-xl font-bold shadow transition"
-            title="Recargar pedidos">
+            className="bg-[#2ecc71] hover:bg-[#27ae60] text-white font-bold px-6 py-2 rounded-full shadow-xl border-none transition duration-200"
+            title="Recargar pedidos"
+          >
             🔄 Recargar
           </button>
-        </div>
-
-        <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => router.push("/panel/empleado")}
-            className="flex items-center text-orange-400 hover:text-orange-300 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Volver al panel
+            className="bg-gradient-to-r from-[#4fa3ff] via-[#3566b2] to-[#23272a] hover:from-[#3566b2] hover:to-[#2c2f33] text-white font-bold px-7 py-3 rounded-full shadow-xl border-none transition duration-200"
+          >
+            Volver al Panel principal
           </button>
         </div>
 
-        {/*Mensaje de éxito/error*/}
+        {/* Mensaje de éxito/error */}
         {mensaje && (
           <div
             className={`mb-5 text-center px-4 py-3 rounded-xl font-bold ${
-              mensaje.includes("correctamente") ? "bg-green-700 text-green-100" : "bg-red-800 text-red-100"
-            }`}>
+              mensaje.includes("correctamente")
+                ? "bg-[#27ae60] text-white"
+                : "bg-[#e74c3c] text-white"
+            }`}
+          >
             {mensaje}
           </div>
         )}
 
-        {/*Listado de pedidos pendientes*/}
+        {/* Listado de pedidos pendientes */}
         {step === 1 && (
-          <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md mb-8">
-            <h2 className="text-xl font-semibold text-orange-400 mb-6">Pedidos pendientes</h2>
+          <div className="bg-[#23272a]/80 border border-[#2ecc71] rounded-2xl p-6 shadow-md mb-8">
+            <h2 className="text-xl font-semibold text-[#2ecc71] mb-6">
+              Pedidos pendientes
+            </h2>
             <div className="space-y-4">
               {pedidos.length === 0 && (
-                <div className="text-center text-gray-400">No hay pedidos pendientes de control de calidad.</div>
+                <div className="text-center text-gray-400">
+                  No hay pedidos pendientes de control de calidad.
+                </div>
               )}
               {pedidos.map((pedido) => (
                 <div
                   key={pedido.id}
                   onClick={() => handleSelectPedido(pedido)}
-                  className="bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-xl p-5 shadow-sm cursor-pointer group">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  className="bg-[#23272a]/80 border border-[#27ae60] hover:border-[#2ecc71] hover:shadow-[#2ecc71]/30 transition rounded-xl p-5 shadow-sm cursor-pointer group"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="font-bold text-orange-400 text-sm">EMPRESA:</p>
-                      <p className="group-hover:text-orange-300 transition">{pedido.empresa_nombre ?? '-'}</p>
+                      <p className="font-bold text-[#27ae60] text-sm">
+                        EMPRESA:
+                      </p>
+                      <p className="group-hover:text-[#2ecc71] transition">
+                        {pedido.empresa_nombre ?? "-"}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-bold text-orange-400 text-sm">FRUTA:</p>
-                      <p className="group-hover:text-orange-300 transition">{pedido.fruta_nombre ?? '-'}</p>
+                      <p className="font-bold text-[#27ae60] text-sm">FRUTA:</p>
+                      <p className="group-hover:text-[#2ecc71] transition">
+                        {pedido.fruta_nombre ?? "-"}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-bold text-orange-400 text-sm">AGRICULTOR:</p>
-                      <p className="group-hover:text-orange-300 transition">{(pedido.agricultor_nombre || '') + ' ' + (pedido.agricultor_apellido || '')}</p>
+                      <p className="font-bold text-[#27ae60] text-sm">
+                        AGRICULTOR:
+                      </p>
+                      <p className="group-hover:text-[#2ecc71] transition">
+                        {(pedido.agricultor_nombre || "") +
+                          " " +
+                          (pedido.agricultor_apellido || "")}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-bold text-orange-400 text-sm">CANTIDAD:</p>
-                      <p className="group-hover:text-orange-300 transition">{pedido.cantidad_cajas}</p>
+                      <p className="font-bold text-[#27ae60] text-sm">
+                        CANTIDAD:
+                      </p>
+                      <p className="group-hover:text-[#2ecc71] transition">
+                        {pedido.cantidad_cajas}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-bold text-orange-400 text-sm">EMPAQUE:</p>
-                      <p className="group-hover:text-orange-300 transition">{pedido.empaque_nombre ?? '-'}</p>
+                      <p className="font-bold text-[#27ae60] text-sm">
+                        EMPAQUE:
+                      </p>
+                      <p className="group-hover:text-[#2ecc71] transition">
+                        {pedido.empaque_nombre ?? "-"}
+                      </p>
                     </div>
                     <div className="flex items-end justify-end">
-                      <span className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow">
+                      <span className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-4 py-2 rounded-full text-sm font-medium shadow">
                         SELECCIONAR
                       </span>
                     </div>
@@ -219,39 +246,57 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        {/*Control de calidad del pedido seleccionado*/}
+        {/* Control de calidad del pedido seleccionado */}
         {step === 2 && selectedPedido && (
           <div className="relative">
-            <div className="bg-[#232117] border-2 border-orange-400 rounded-xl p-4 mb-7 shadow-lg sticky top-2 z-10">
+            <div className="bg-[#23272a] border-2 border-[#2ecc71] rounded-xl p-4 mb-7 shadow-lg sticky top-2 z-10">
               <div className="flex flex-wrap gap-4 justify-between">
                 <div>
-                  <span className="text-orange-400 font-bold text-sm">EMPRESA:</span>{" "}
-                  <span>{selectedPedido.empresa_nombre ?? '-'}</span>
+                  <span className="text-[#2ecc71] font-bold text-sm">
+                    EMPRESA:
+                  </span>{" "}
+                  <span>{selectedPedido.empresa_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-orange-400 font-bold text-sm">AGRICULTOR:</span>{" "}
-                  <span>{(selectedPedido.agricultor_nombre || '') + ' ' + (selectedPedido.agricultor_apellido || '')}</span>
+                  <span className="text-[#2ecc71] font-bold text-sm">
+                    AGRICULTOR:
+                  </span>{" "}
+                  <span>
+                    {(selectedPedido.agricultor_nombre || "") +
+                      " " +
+                      (selectedPedido.agricultor_apellido || "")}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-orange-400 font-bold text-sm">FRUTA:</span>{" "}
-                  <span>{selectedPedido.fruta_nombre ?? '-'}</span>
+                  <span className="text-[#2ecc71] font-bold text-sm">
+                    FRUTA:
+                  </span>{" "}
+                  <span>{selectedPedido.fruta_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-orange-400 font-bold text-sm">EMPAQUE:</span>{" "}
-                  <span>{selectedPedido.empaque_nombre ?? '-'}</span>
+                  <span className="text-[#2ecc71] font-bold text-sm">
+                    EMPAQUE:
+                  </span>{" "}
+                  <span>{selectedPedido.empaque_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-orange-400 font-bold text-sm">CANTIDAD INICIAL:</span>{" "}
+                  <span className="text-[#2ecc71] font-bold text-sm">
+                    CANTIDAD INICIAL:
+                  </span>{" "}
                   <span>{selectedPedido.cantidad_cajas}</span>
                 </div>
               </div>
             </div>
-            <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md">
-              <h2 className="text-xl font-semibold text-orange-400 mb-6">Confirmar Control de Calidad</h2>
+            <div className="bg-[#2c2f33] border border-[#27ae60] rounded-2xl p-6 shadow-md">
+              <h2 className="text-xl font-semibold text-[#27ae60] mb-6">
+                Confirmar Control de Calidad
+              </h2>
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label className="block font-bold mb-2 text-orange-400">Cajas rechazadas</label>
+                    <label className="block font-bold mb-2 text-[#27ae60]">
+                      Cajas rechazadas
+                    </label>
                     <input
                       type="number"
                       min="0"
@@ -261,85 +306,120 @@ export default function ControlCalidad() {
                         setForm({
                           ...form,
                           rechazos: parseInt(e.target.value) || 0,
-                          cajas_finales: selectedPedido.cantidad_cajas - (parseInt(e.target.value) || 0)
+                          cajas_finales:
+                            selectedPedido.cantidad_cajas -
+                            (parseInt(e.target.value) || 0),
                         })
                       }
-                      className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                      required/>
+                      className="w-full p-3 rounded-lg bg-[#f4f7fa] border border-[#27ae60] text-gray-900 focus:border-[#2ecc71] focus:ring-2 focus:ring-[#27ae60]/40"
+                      required
+                    />
                   </div>
                   {form.rechazos > 0 && (
                     <div>
-                      <label className="block font-bold mb-2 text-orange-400">Motivo de rechazo</label>
+                      <label className="block font-bold mb-2 text-[#e74c3c]">
+                        Motivo de rechazo
+                      </label>
                       <select
                         value={form.motivo_rechazo_id}
-                        onChange={(e) => setForm({ ...form, motivo_rechazo_id: e.target.value })}
-                        className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                        required>
+                        onChange={(e) =>
+                          setForm({ ...form, motivo_rechazo_id: e.target.value })
+                        }
+                        className="w-full p-3 rounded-lg bg-[#fff4f4] border border-[#e74c3c] text-gray-900 focus:border-[#e74c3c] focus:ring-2 focus:ring-[#e74c3c]/40"
+                        required
+                      >
                         <option value="">Seleccione un motivo</option>
                         {motivos.map((motivo) => (
-                          <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>
+                          <option key={motivo.id} value={motivo.id}>
+                            {motivo.nombre}
+                          </option>
                         ))}
                       </select>
                     </div>
                   )}
                   <div>
-                    <label className="block font-bold mb-2 text-orange-400">Cajas finales</label>
+                    <label className="block font-bold mb-2 text-[#27ae60]">
+                      Cajas finales
+                    </label>
                     <div className="flex items-center">
                       <p className="mr-3 text-gray-300">{form.cajas_finales}</p>
                       <button
                         type="button"
-                        className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center"
+                        className="text-[#27ae60] hover:text-[#3566b2] text-sm font-medium flex items-center"
                         onClick={() => {
-                          const newValue = prompt("Editar cantidad final:", form.cajas_finales.toString());
+                          const newValue = prompt(
+                            "Editar cantidad final:",
+                            form.cajas_finales.toString()
+                          );
                           if (newValue && !isNaN(parseInt(newValue))) {
                             setForm({
                               ...form,
                               cajas_finales: parseInt(newValue),
-                              rechazos: selectedPedido.cantidad_cajas - parseInt(newValue),
+                              rechazos:
+                                selectedPedido.cantidad_cajas -
+                                parseInt(newValue),
                             });
                           }
-                        }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
                         </svg>
                         EDITAR
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block font-bold mb-2 text-orange-400">Comentarios</label>
+                    <label className="block font-bold mb-2 text-[#3566b2]">
+                      Comentarios
+                    </label>
                     <textarea
                       value={form.comentarios}
-                      onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
-                      className="w-full p-3 rounded-lg bg-[#242424] border border-gray-700 text-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-                      rows={3}/>
+                      onChange={(e) =>
+                        setForm({ ...form, comentarios: e.target.value })
+                      }
+                      className="w-full p-3 rounded-lg bg-[#f4f7fa] border border-[#c8d6e5] text-gray-900 focus:border-[#3566b2] focus:ring-2 focus:ring-[#3566b2]/30"
+                      rows={3}
+                    />
                   </div>
                 </div>
                 <div className="flex justify-between items-center mt-8">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-full font-medium shadow border border-gray-600 transition">
+                    className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-5 py-2.5 rounded-full font-medium shadow border border-[#c8d6e5] transition"
+                  >
                     Volver
                   </button>
-                  <div className="flex items-center space-x-4">
-                    <button
-                      type="submit"
-                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2.5 rounded-full font-bold shadow-lg border-none transition">
-                      Guardar y generar ticket
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-6 py-2.5 rounded-full font-bold shadow-lg border-none transition"
+                  >
+                    Guardar y generar ticket
+                  </button>
                 </div>
               </form>
-              <div className="mt-8 pt-6 border-t border-gray-700">
-                <p className="text-sm text-gray-400">NOTA: Solo puedes cambiar el número de rechazos/cajas finales.</p>
+              <div className="mt-8 pt-6 border-t border-[#c8d6e5]">
+                <p className="text-sm text-gray-400">
+                  NOTA: Solo puedes cambiar el número de rechazos/cajas finales.
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-6 text-xs text-gray-400 text-center">
+        <div className="mt-10 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} El Molinito
         </div>
       </div>
