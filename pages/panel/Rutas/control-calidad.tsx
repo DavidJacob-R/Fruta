@@ -115,7 +115,7 @@ export default function ControlCalidad() {
       if (result.success) {
         setMensaje("✅ Control de calidad registrado correctamente");
         setTimeout(() => {
-          router.push("/panel/empleado");
+          router.push("/panel/Rutas/control-calidad");
         }, 1500);
       } else {
         setMensaje("Error al guardar: " + (result.message || ""));
@@ -130,33 +130,33 @@ export default function ControlCalidad() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#23272a] via-[#2c2f33] to-[#1a1d1f] text-white p-6 flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-[#23272a] via-[#2c2f33] to-[#1a1d1f] text-white p-4 md:p-8 flex flex-col items-center justify-center">
+      <div className="w-full max-w-3xl md:max-w-4xl">
         {/* Header */}
-        <div className="flex flex-col items-center mb-7">
-          <div className="bg-[#27ae60]/20 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
-            <span className="text-3xl">🛡️</span>
+        <div className="flex flex-col items-center mb-8 md:mb-10">
+          <div className="bg-[#27ae60]/20 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-2">
+            <span className="text-4xl md:text-5xl">🛡️</span>
           </div>
-          <h1 className="text-3xl font-bold text-[#27ae60] mb-2 drop-shadow">
+          <h1 className="text-2xl md:text-4xl font-bold text-[#27ae60] mb-2 drop-shadow">
             Control de Calidad
           </h1>
-          <p className="text-gray-200 text-base">
+          <p className="text-gray-200 text-lg md:text-xl">
             Bienvenido, <span className="font-semibold">{email}</span>
           </p>
         </div>
 
         {/* Botón Recargar y volver */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-7 gap-4">
           <button
             onClick={handleRecargar}
-            className="bg-[#2ecc71] hover:bg-[#27ae60] text-white font-bold px-6 py-2 rounded-full shadow-xl border-none transition duration-200"
+            className="bg-[#2ecc71] hover:bg-[#27ae60] text-white font-bold px-8 py-4 rounded-2xl shadow-xl border-none text-lg active:scale-95 transition duration-200"
             title="Recargar pedidos"
           >
             🔄 Recargar
           </button>
           <button
             onClick={() => router.push("/panel/empleado")}
-            className="bg-gradient-to-r from-[#4fa3ff] via-[#3566b2] to-[#23272a] hover:from-[#3566b2] hover:to-[#2c2f33] text-white font-bold px-7 py-3 rounded-full shadow-xl border-none transition duration-200"
+            className="bg-gradient-to-r from-[#4fa3ff] via-[#3566b2] to-[#23272a] hover:from-[#3566b2] hover:to-[#2c2f33] text-white font-bold px-8 py-4 rounded-2xl shadow-xl border-none text-lg active:scale-95 transition duration-200"
           >
             Volver al Panel principal
           </button>
@@ -165,7 +165,7 @@ export default function ControlCalidad() {
         {/* Mensaje de éxito/error */}
         {mensaje && (
           <div
-            className={`mb-5 text-center px-4 py-3 rounded-xl font-bold ${
+            className={`mb-7 text-center px-4 py-5 rounded-2xl font-bold text-lg ${
               mensaje.includes("correctamente")
                 ? "bg-[#27ae60] text-white"
                 : "bg-[#e74c3c] text-white"
@@ -177,13 +177,13 @@ export default function ControlCalidad() {
 
         {/* Listado de pedidos pendientes */}
         {step === 1 && (
-          <div className="bg-[#23272a]/80 border border-[#2ecc71] rounded-2xl p-6 shadow-md mb-8">
-            <h2 className="text-xl font-semibold text-[#2ecc71] mb-6">
+          <div className="bg-[#23272a]/90 border border-[#2ecc71] rounded-3xl p-6 md:p-10 shadow-md mb-8">
+            <h2 className="text-2xl font-semibold text-[#2ecc71] mb-8">
               Pedidos pendientes
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {pedidos.length === 0 && (
-                <div className="text-center text-gray-400">
+                <div className="text-center text-gray-400 text-lg">
                   No hay pedidos pendientes de control de calidad.
                 </div>
               )}
@@ -191,51 +191,52 @@ export default function ControlCalidad() {
                 <div
                   key={pedido.id}
                   onClick={() => handleSelectPedido(pedido)}
-                  className="bg-[#23272a]/80 border border-[#27ae60] hover:border-[#2ecc71] hover:shadow-[#2ecc71]/30 transition rounded-xl p-5 shadow-sm cursor-pointer group"
+                  className="bg-[#23272a]/80 border border-[#27ae60] hover:border-[#2ecc71] focus:border-[#2ecc71] hover:shadow-[#2ecc71]/30 active:bg-[#27ae60]/10 transition rounded-2xl p-6 md:p-7 shadow-md cursor-pointer group"
+                  tabIndex={0}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div>
-                      <p className="font-bold text-[#27ae60] text-sm">
+                      <p className="font-bold text-[#27ae60] text-base md:text-lg">
                         EMPRESA:
                       </p>
-                      <p className="group-hover:text-[#2ecc71] transition">
+                      <p className="group-hover:text-[#2ecc71] transition text-base">
                         {pedido.empresa_nombre ?? "-"}
                       </p>
                     </div>
                     <div>
-                      <p className="font-bold text-[#27ae60] text-sm">FRUTA:</p>
-                      <p className="group-hover:text-[#2ecc71] transition">
+                      <p className="font-bold text-[#27ae60] text-base md:text-lg">FRUTA:</p>
+                      <p className="group-hover:text-[#2ecc71] transition text-base">
                         {pedido.fruta_nombre ?? "-"}
                       </p>
                     </div>
                     <div>
-                      <p className="font-bold text-[#27ae60] text-sm">
+                      <p className="font-bold text-[#27ae60] text-base md:text-lg">
                         AGRICULTOR:
                       </p>
-                      <p className="group-hover:text-[#2ecc71] transition">
+                      <p className="group-hover:text-[#2ecc71] transition text-base">
                         {(pedido.agricultor_nombre || "") +
                           " " +
                           (pedido.agricultor_apellido || "")}
                       </p>
                     </div>
                     <div>
-                      <p className="font-bold text-[#27ae60] text-sm">
+                      <p className="font-bold text-[#27ae60] text-base md:text-lg">
                         CANTIDAD:
                       </p>
-                      <p className="group-hover:text-[#2ecc71] transition">
+                      <p className="group-hover:text-[#2ecc71] transition text-base">
                         {pedido.cantidad_cajas}
                       </p>
                     </div>
                     <div>
-                      <p className="font-bold text-[#27ae60] text-sm">
+                      <p className="font-bold text-[#27ae60] text-base md:text-lg">
                         EMPAQUE:
                       </p>
-                      <p className="group-hover:text-[#2ecc71] transition">
+                      <p className="group-hover:text-[#2ecc71] transition text-base">
                         {pedido.empaque_nombre ?? "-"}
                       </p>
                     </div>
                     <div className="flex items-end justify-end">
-                      <span className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-4 py-2 rounded-full text-sm font-medium shadow">
+                      <span className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-5 py-3 rounded-2xl text-base font-medium shadow">
                         SELECCIONAR
                       </span>
                     </div>
@@ -249,16 +250,16 @@ export default function ControlCalidad() {
         {/* Control de calidad del pedido seleccionado */}
         {step === 2 && selectedPedido && (
           <div className="relative">
-            <div className="bg-[#23272a] border-2 border-[#2ecc71] rounded-xl p-4 mb-7 shadow-lg sticky top-2 z-10">
-              <div className="flex flex-wrap gap-4 justify-between">
+            <div className="bg-[#23272a] border-2 border-[#2ecc71] rounded-2xl p-5 md:p-8 mb-8 shadow-lg sticky top-2 z-10">
+              <div className="flex flex-wrap gap-6 justify-between">
                 <div>
-                  <span className="text-[#2ecc71] font-bold text-sm">
+                  <span className="text-[#2ecc71] font-bold text-base md:text-lg">
                     EMPRESA:
                   </span>{" "}
                   <span>{selectedPedido.empresa_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-[#2ecc71] font-bold text-sm">
+                  <span className="text-[#2ecc71] font-bold text-base md:text-lg">
                     AGRICULTOR:
                   </span>{" "}
                   <span>
@@ -268,33 +269,33 @@ export default function ControlCalidad() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#2ecc71] font-bold text-sm">
+                  <span className="text-[#2ecc71] font-bold text-base md:text-lg">
                     FRUTA:
                   </span>{" "}
                   <span>{selectedPedido.fruta_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-[#2ecc71] font-bold text-sm">
+                  <span className="text-[#2ecc71] font-bold text-base md:text-lg">
                     EMPAQUE:
                   </span>{" "}
                   <span>{selectedPedido.empaque_nombre ?? "-"}</span>
                 </div>
                 <div>
-                  <span className="text-[#2ecc71] font-bold text-sm">
+                  <span className="text-[#2ecc71] font-bold text-base md:text-lg">
                     CANTIDAD INICIAL:
                   </span>{" "}
                   <span>{selectedPedido.cantidad_cajas}</span>
                 </div>
               </div>
             </div>
-            <div className="bg-[#2c2f33] border border-[#27ae60] rounded-2xl p-6 shadow-md">
-              <h2 className="text-xl font-semibold text-[#27ae60] mb-6">
+            <div className="bg-[#2c2f33] border border-[#27ae60] rounded-2xl p-6 md:p-10 shadow-md">
+              <h2 className="text-2xl font-semibold text-[#27ae60] mb-8">
                 Confirmar Control de Calidad
               </h2>
               <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div>
-                    <label className="block font-bold mb-2 text-[#27ae60]">
+                    <label className="block font-bold mb-3 text-[#27ae60] text-lg">
                       Cajas rechazadas
                     </label>
                     <input
@@ -311,13 +312,13 @@ export default function ControlCalidad() {
                             (parseInt(e.target.value) || 0),
                         })
                       }
-                      className="w-full p-3 rounded-lg bg-[#f4f7fa] border border-[#27ae60] text-gray-900 focus:border-[#2ecc71] focus:ring-2 focus:ring-[#27ae60]/40"
+                      className="w-full p-4 rounded-2xl bg-[#f4f7fa] border border-[#27ae60] text-gray-900 text-lg focus:border-[#2ecc71] focus:ring-2 focus:ring-[#27ae60]/40"
                       required
                     />
                   </div>
                   {form.rechazos > 0 && (
                     <div>
-                      <label className="block font-bold mb-2 text-[#e74c3c]">
+                      <label className="block font-bold mb-3 text-[#e74c3c] text-lg">
                         Motivo de rechazo
                       </label>
                       <select
@@ -325,7 +326,7 @@ export default function ControlCalidad() {
                         onChange={(e) =>
                           setForm({ ...form, motivo_rechazo_id: e.target.value })
                         }
-                        className="w-full p-3 rounded-lg bg-[#fff4f4] border border-[#e74c3c] text-gray-900 focus:border-[#e74c3c] focus:ring-2 focus:ring-[#e74c3c]/40"
+                        className="w-full p-4 rounded-2xl bg-[#fff4f4] border border-[#e74c3c] text-gray-900 text-lg focus:border-[#e74c3c] focus:ring-2 focus:ring-[#e74c3c]/40"
                         required
                       >
                         <option value="">Seleccione un motivo</option>
@@ -338,14 +339,14 @@ export default function ControlCalidad() {
                     </div>
                   )}
                   <div>
-                    <label className="block font-bold mb-2 text-[#27ae60]">
+                    <label className="block font-bold mb-3 text-[#27ae60] text-lg">
                       Cajas finales
                     </label>
-                    <div className="flex items-center">
-                      <p className="mr-3 text-gray-300">{form.cajas_finales}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="mr-2 text-gray-300 text-lg">{form.cajas_finales}</p>
                       <button
                         type="button"
-                        className="text-[#27ae60] hover:text-[#3566b2] text-sm font-medium flex items-center"
+                        className="text-[#27ae60] hover:text-[#3566b2] text-base font-medium flex items-center active:scale-95"
                         onClick={() => {
                           const newValue = prompt(
                             "Editar cantidad final:",
@@ -364,7 +365,7 @@ export default function ControlCalidad() {
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
+                          className="h-5 w-5 mr-1"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -381,7 +382,7 @@ export default function ControlCalidad() {
                     </div>
                   </div>
                   <div>
-                    <label className="block font-bold mb-2 text-[#3566b2]">
+                    <label className="block font-bold mb-3 text-[#3566b2] text-lg">
                       Comentarios
                     </label>
                     <textarea
@@ -389,29 +390,29 @@ export default function ControlCalidad() {
                       onChange={(e) =>
                         setForm({ ...form, comentarios: e.target.value })
                       }
-                      className="w-full p-3 rounded-lg bg-[#f4f7fa] border border-[#c8d6e5] text-gray-900 focus:border-[#3566b2] focus:ring-2 focus:ring-[#3566b2]/30"
+                      className="w-full p-4 rounded-2xl bg-[#f4f7fa] border border-[#c8d6e5] text-gray-900 text-lg focus:border-[#3566b2] focus:ring-2 focus:ring-[#3566b2]/30"
                       rows={3}
                     />
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mt-8 gap-5">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-5 py-2.5 rounded-full font-medium shadow border border-[#c8d6e5] transition"
+                    className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-8 py-4 rounded-2xl font-medium shadow border border-[#c8d6e5] text-lg active:scale-95 transition"
                   >
                     Volver
                   </button>
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-6 py-2.5 rounded-full font-bold shadow-lg border-none transition"
+                    className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-8 py-4 rounded-2xl font-bold shadow-lg border-none text-lg active:scale-95 transition"
                   >
                     Guardar y generar ticket
                   </button>
                 </div>
               </form>
-              <div className="mt-8 pt-6 border-t border-[#c8d6e5]">
-                <p className="text-sm text-gray-400">
+              <div className="mt-10 pt-6 border-t border-[#c8d6e5]">
+                <p className="text-base text-gray-400">
                   NOTA: Solo puedes cambiar el número de rechazos/cajas finales.
                 </p>
               </div>
@@ -419,7 +420,7 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        <div className="mt-10 text-xs text-gray-400 text-center">
+        <div className="mt-10 text-base text-gray-400 text-center">
           © {new Date().getFullYear()} El Molinito
         </div>
       </div>

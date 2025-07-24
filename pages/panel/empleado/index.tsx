@@ -25,9 +25,9 @@ export default function EmpleadoPanel() {
     { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
     { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
     { nombre: 'Preenfriado', ruta: '/panel/preenfriado' }, 
-    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
-    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
-    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacen-materiales' }, // Checar esta ruta ya que no se a trabjaado en ella 
+    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
+    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
+    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacen-materiales' },
   ]
 
   const handleModuloClick = (ruta: Url) => {
@@ -35,25 +35,27 @@ export default function EmpleadoPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white p-6 flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white px-2 py-8 flex flex-col items-center justify-center">
+      <div className="w-full max-w-3xl md:max-w-4xl">
         {/* Header con icono */}
-        <div className="flex flex-col items-center mb-7">
-          <div className="bg-orange-100 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
-            <span className="text-3xl">🍊</span>
+        <div className="flex flex-col items-center mb-10">
+          <div className="bg-orange-100 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-3">
+            <span className="text-4xl">🍊</span>
           </div>
-          <h1 className="text-3xl font-bold text-orange-500 mb-2 drop-shadow">Panel del Empleado</h1>
-          <p className="text-gray-300 text-base">Bienvenido, <span className="font-semibold">{email}</span></p>
+          <h1 className="text-2xl md:text-4xl font-bold text-orange-500 mb-2 drop-shadow">Panel del Empleado</h1>
+          <p className="text-gray-300 text-lg">Bienvenido, <span className="font-semibold">{email}</span></p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-7 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-16">
           {modulos.map((modulo, idx) => (
             <div
               key={idx}
               onClick={() => handleModuloClick(modulo.ruta)}
-              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-6 shadow-md hover:shadow-lg group">
-              <h2 className="text-lg font-semibold text-orange-400 mb-2 group-hover:text-orange-500 transition">{modulo.nombre}</h2>
-              <p className="text-sm text-gray-400 group-hover:text-gray-200 transition">Accede al módulo de <span className="lowercase">{modulo.nombre}</span>.</p>
+              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-8 shadow-md hover:shadow-lg group active:scale-95"
+              tabIndex={0}
+            >
+              <h2 className="text-xl font-semibold text-orange-400 mb-4 group-hover:text-orange-500 transition">{modulo.nombre}</h2>
+              <p className="text-base text-gray-400 group-hover:text-gray-200 transition">Accede al módulo de <span className="lowercase">{modulo.nombre}</span>.</p>
             </div>
           ))}
         </div>
@@ -61,12 +63,12 @@ export default function EmpleadoPanel() {
         <div className="text-center">
           <button
             onClick={handleLogout}
-            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200">
+            className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 hover:from-red-600 hover:to-orange-600 text-white px-8 py-4 rounded-full font-bold shadow-xl border-none text-lg transition duration-200 active:scale-95">
             Cerrar sesión
           </button>
         </div>
       </div>
-      <div className="mt-10 text-xs text-gray-400">© {new Date().getFullYear()} El Molinito</div>
+      <div className="mt-12 text-base text-gray-400 text-center">© {new Date().getFullYear()} El Molinito</div>
     </div>
   )
 }
