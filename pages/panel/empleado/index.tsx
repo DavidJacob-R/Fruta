@@ -25,7 +25,7 @@ export default function EmpleadoPanel() {
     { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
     { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
     { nombre: 'Preenfriado', ruta: '/panel/preenfriado' }, 
-    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
+    { nombre: 'Conservación', ruta: '/panel/conservacion' },
     { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
     { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacen-materiales' },
   ]

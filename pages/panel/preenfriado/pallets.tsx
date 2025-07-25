@@ -1,18 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
+
+interface Pallet {
+  id: string;
+  fruit: string;
+  size: string;
+  quantity: number;
+  farmer: string;
+  finalTemp?: string;
+  entryTime: Date;
+  coolingTime?: string;
+}
 
 export default function PreEnfriado() {
   const router = useRouter();
   const [view, setView] = useState<'general' | 'detailed'>('general');
   const [selectedPallets, setSelectedPallets] = useState<string[]>([]);
+  const [pallets, setPallets] = useState<Pallet[]>([]);
+  const [editingTemp, setEditingTemp] = useState<{palletId: string, temp: string} | null>(null);
 
-  // Datos de ejemplo - reemplazar con datos reales
-  const palletsData = [
-    { id: '0010', fruit: 'Zarzamora', size: '6oz', quantity: 200, farmer: 'Juan Perez', temp: '4°C', time: '2h 30m' },
-    { id: '0026', fruit: 'Arándano', size: '6oz', quantity: 180, farmer: 'Pedro S.', temp: '3.5°C', time: '3h 15m' },
-    { id: '0034', fruit: 'Frambuesa', size: '12oz', quantity: 150, farmer: 'Julian C.', temp: '4.2°C', time: '2h 45m' },
-    { id: '0042', fruit: 'Zarzamora', size: '12oz', quantity: 220, farmer: 'Maria G.', temp: '3.8°C', time: '3h 00m' },
-  ];
+  // Inicializar datos de ejemplo con tiempos de entrada
+  useEffect(() => {
+    const initialPallets: Pallet[] = [
+      { id: '0010', fruit: 'Zarzamora', size: '6oz', quantity: 200, farmer: 'Juan Perez', entryTime: new Date(Date.now() - 2.5 * 60 * 60 * 1000) },
+      { id: '0026', fruit: 'Arándano', size: '6oz', quantity: 180, farmer: 'Pedro S.', entryTime: new Date(Date.now() - 3.25 * 60 * 60 * 1000) },
+      { id: '0034', fruit: 'Frambuesa', size: '12oz', quantity: 150, farmer: 'Julian C.', entryTime: new Date(Date.now() - 2.75 * 60 * 60 * 1000) },
+      { id: '0042', fruit: 'Zarzamora', size: '12oz', quantity: 220, farmer: 'Maria G.', entryTime: new Date(Date.now() - 3 * 60 * 60 * 1000) },
+    ];
+    setPallets(initialPallets);
+  }, []);
+
+  // Calcular tiempo transcurrido
+  const calculateCoolingTime = useCallback((entryTime: Date) => {
+    const diff = Date.now() - entryTime.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  }, []);
+
+  // Actualizar tiempos cada minuto
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPallets(prevPallets => [...prevPallets]);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const togglePalletSelection = (palletId: string) => {
     setSelectedPallets(prev => 
@@ -22,10 +54,37 @@ export default function PreEnfriado() {
     );
   };
 
+  const handleTempChange = (palletId: string, temp: string) => {
+    setEditingTemp({palletId, temp});
+  };
+
+  const saveTemp = () => {
+    if (editingTemp) {
+      setPallets(prevPallets => 
+        prevPallets.map(pallet => 
+          pallet.id === editingTemp.palletId 
+            ? {...pallet, finalTemp: editingTemp.temp} 
+            : pallet
+        )
+      );
+      setEditingTemp(null);
+    }
+  };
+
   const transferToStorage = () => {
-    // Lógica para transferir pallets seleccionados al almacén
+    // Calcular tiempos finales antes de transferir
+    const updatedPallets = pallets.map(pallet => {
+      if (selectedPallets.includes(pallet.id)) {
+        return {
+          ...pallet,
+          coolingTime: calculateCoolingTime(pallet.entryTime)
+        };
+      }
+      return pallet;
+    });
+    
+    setPallets(updatedPallets);
     console.log('Pallets transferidos:', selectedPallets);
-    // Aquí iría la llamada a la API o actualización de estado
     alert(`Pallets ${selectedPallets.join(', ')} transferidos al almacén`);
     setSelectedPallets([]);
   };
@@ -63,7 +122,7 @@ export default function PreEnfriado() {
             <h2 className="text-xl font-bold text-blue-400 mb-6">Pallets Pre-Enfriados</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              {palletsData.map(pallet => (
+              {pallets.map(pallet => (
                 <div 
                   key={pallet.id}
                   onClick={() => togglePalletSelection(pallet.id)}
@@ -80,6 +139,14 @@ export default function PreEnfriado() {
                   </div>
                   <p className="mt-2">{pallet.fruit} {pallet.size}</p>
                   <p className="text-sm text-gray-400">Cantidad: {pallet.quantity}</p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Tiempo: {calculateCoolingTime(pallet.entryTime)}
+                  </p>
+                  {pallet.finalTemp && (
+                    <p className="text-sm text-green-400 mt-1">
+                      Temp: {pallet.finalTemp}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -118,7 +185,7 @@ export default function PreEnfriado() {
                   </tr>
                 </thead>
                 <tbody>
-                  {palletsData.map(pallet => (
+                  {pallets.map(pallet => (
                     <tr key={pallet.id}>
                       <td className="border border-gray-600 p-3 text-center">
                         <input 
@@ -133,8 +200,34 @@ export default function PreEnfriado() {
                       <td className="border border-gray-600 p-3 text-center">{pallet.size}</td>
                       <td className="border border-gray-600 p-3 text-center">{pallet.quantity}</td>
                       <td className="border border-gray-600 p-3 text-center">{pallet.farmer}</td>
-                      <td className="border border-gray-600 p-3 text-center">{pallet.temp}</td>
-                      <td className="border border-gray-600 p-3 text-center">{pallet.time}</td>
+                      <td className="border border-gray-600 p-3 text-center">
+                        {editingTemp?.palletId === pallet.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={editingTemp.temp}
+                              onChange={(e) => setEditingTemp({...editingTemp, temp: e.target.value})}
+                              className="w-16 bg-gray-700 border border-gray-500 rounded px-2 py-1 text-center"
+                            />
+                            <button 
+                              onClick={saveTemp}
+                              className="text-green-400 hover:text-green-300"
+                            >
+                              ✓
+                            </button>
+                          </div>
+                        ) : (
+                          <div 
+                            onClick={() => handleTempChange(pallet.id, pallet.finalTemp || '')}
+                            className="cursor-pointer hover:bg-gray-800 rounded p-1"
+                          >
+                            {pallet.finalTemp || 'Registrar'}
+                          </div>
+                        )}
+                      </td>
+                      <td className="border border-gray-600 p-3 text-center">
+                        {calculateCoolingTime(pallet.entryTime)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
