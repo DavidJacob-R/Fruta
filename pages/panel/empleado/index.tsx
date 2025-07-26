@@ -27,7 +27,7 @@ export default function EmpleadoPanel() {
     { nombre: 'Preenfriado', ruta: '/panel/preenfriado' }, 
     { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' },
     { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
-    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacen-materiales' },
+    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacenMateriales/almacen-materiales' },
   ]
 
   const handleModuloClick = (ruta: Url) => {

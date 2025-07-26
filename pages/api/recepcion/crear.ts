@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
-import { recepcion_fruta, empresa, agricultores, empaques,tipos_fruta, notas } from '@/lib/schema' // ← Asegúrate que empaques esté importado
+import { recepcion_fruta, empresa, agricultores, empaques,tipos_fruta, notas } from '@/lib/schema'
 import { eq, desc } from 'drizzle-orm'
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
@@ -22,9 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } = req.body
 
   try {
-    // ... (validaciones iguales)
-
-    // 1. Validación igual a tu código actual...
 
     const cajas = Number(cantidad_cajas) > 0 ? Number(cantidad_cajas) : 1
     const peso = Number(empaque_id) > 0 ? Number(empaque_id) : null
@@ -63,12 +60,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       insertData.agricultor_id = Number(agricultor_id)
       insertData.empresa_id = null
     }
-
-    // Insertar la recepción y obtener el id generado
     const [recepcionCreada] = await db.insert(recepcion_fruta).values(insertData).returning({ id: recepcion_fruta.id })
     const recepcionId = recepcionCreada.id
 
-    // Crear notas (igual que tu código)
 
     await db.insert(notas).values({
       titulo: 'Nota de recepción',
@@ -109,41 +103,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       nombreEmpaque = empaqueRow ? (empaqueRow.tamanio ?? '') : ''
     }
 
-    // Usuario que recibe
-    // Si tienes tabla de usuarios, consúltala aquí para poner el nombre, si no, usa el ID:
+  
     nombreUsuario = String(usuario_recepcion_id)
 
-    // Notas divididas
     const notasArr = (insertData.notas || '').split('\n')
 
-    // 2. Cargar plantilla PDF
     const pdfPath = path.resolve(process.cwd(), 'pages/api/pdf/NotaRecepcionMaquila.pdf')
     const pdfBuffer = fs.readFileSync(pdfPath)
     const pdfDoc = await PDFDocument.load(pdfBuffer)
     const page = pdfDoc.getPages()[0]
 
-    // 3. Sobrescribir los datos en el PDF (usa las nuevas coordenadas)
 page.drawText(`${siguienteNumero}`, { x: 145, y: 735, size: 12 })
 page.drawText(`${new Date(fecha_recepcion).toLocaleDateString()}`, { x: 395, y: 735, size: 12 })
 page.drawText(agricultorNombre, { x: 130, y: 704, size: 12 })
-page.drawText(nombreFruta, { x: 140, y: 680, size: 12 })           // ← Ajustado
-page.drawText(String(cajas), { x: 180, y: 651, size: 12 })         // ← Ajustado
+page.drawText(nombreFruta, { x: 140, y: 680, size: 12 })         
+page.drawText(String(cajas), { x: 180, y: 651, size: 12 })         
 page.drawText(nombreEmpaque, { x: 255, y: 620, size: 12 })
 
-page.drawText(notasArr[0] || '', { x: 85, y: 555, size: 12 }) // ← Más abajo
+page.drawText(notasArr[0] || '', { x: 85, y: 555, size: 12 })
 page.drawText(notasArr[1] || '', { x: 85, y: 540, size: 12 })
 page.drawText(notasArr[2] || '', { x: 85, y: 525, size: 12 })
 
-page.drawText(nombreUsuario, { x: 240, y: 500, size: 12 })     // ← Más abajo
-page.drawText('', { x: 180, y: 475, size: 12 })                     // ← Ajustado (más abajo)
+page.drawText(nombreUsuario, { x: 240, y: 500, size: 12 })     
+page.drawText('', { x: 180, y: 475, size: 12 })                  
 
 
     const pdfBytes = await pdfDoc.save()
 
-    // Definir el nombre del archivo PDF
     const nombreArchivo = `nota-recepcion-${siguienteNumero}.pdf`
 
-    // Subir a Supabase Storage
+    // Subir a Supabase
     const { error } = await supabase
       .storage
       .from('elmolinito')
