@@ -25,10 +25,9 @@ export default function EmpleadoPanel() {
     { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
     { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
     { nombre: 'Preenfriado', ruta: '/panel/preenfriado' },  // Checar esta ruta ya que no se a trabjaado en ella 
-    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
+    { nombre: 'Conservación', ruta: '/panel/conservacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
     { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' }, // Checar esta ruta ya que no se a trabjaado en ella 
     { nombre: 'Control de materiales', ruta: '/panel/Rutas/control-materiales' }, // Checar esta ruta ya que no se a trabjaado en ella
-    { nombre: 'Almacen cooler', ruta: '/panel/cooler' },
   ]
 
   const handleModuloClick = (ruta: Url) => {
