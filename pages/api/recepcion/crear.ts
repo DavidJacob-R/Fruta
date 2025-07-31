@@ -7,15 +7,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST')
     return res.status(405).json({ success: false, message: 'Método no permitido' })
 
-  const { 
-    agricultor_id, 
-    empresa_id, 
-    tipo_fruta_id, 
-    cantidad_cajas, 
-    fecha_recepcion, 
-    usuario_recepcion_id, 
+  const {
+    agricultor_id,
+    empresa_id,
+    tipo_fruta_id,
+    cantidad_cajas,
+    fecha_recepcion,
+    usuario_recepcion_id,
     notas: notasRecepcion,
-    tipo_nota, 
+    tipo_nota,
     empaque_id,
     sector,
     marca,
@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const insertData: any = {
       tipo_fruta_id: Number(tipo_fruta_id),
       cantidad_cajas: cajas,
-      peso_caja_oz: req.body.peso_caja_oz || '', // pon aquí el campo correcto si viene en el body
+      peso_caja_oz: req.body.peso_caja_oz || '',
       fecha_recepcion: new Date(fecha_recepcion),
       usuario_recepcion_id: Number(usuario_recepcion_id),
       notas: typeof notasRecepcion === 'string' ? notasRecepcion.trim() : (notasRecepcion ? JSON.stringify(notasRecepcion) : ''),
@@ -70,6 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const [recepcionCreada] = await db.insert(recepcion_fruta).values(insertData).returning({ id: recepcion_fruta.id })
     const recepcionId = recepcionCreada.id
 
+    // Crear nota de recepción
     await db.insert(notas).values({
       titulo: 'Nota de recepción',
       contenido: '',
@@ -78,6 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       usuario_creacion_id: Number(usuario_recepcion_id),
     })
 
+    // Crear nota de calidad
     await db.insert(notas).values({
       titulo: 'Nota de calidad',
       contenido: '',

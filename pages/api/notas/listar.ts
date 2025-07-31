@@ -108,9 +108,10 @@ export default async function handler(
       })
     }
 
-    const ordenadas = Object.values(agrupado).sort((a, b) => {
-      return new Date(b.fecha_recepcion).getTime() - new Date(a.fecha_recepcion).getTime()
-    })
+    const ordenadas = Object.values(agrupado).sort((a, b) => b.numero_nota - a.numero_nota)
+
+    res.status(200).json({ notas: ordenadas })
+
 
     res.status(200).json({ notas: ordenadas })
   } catch (error) {
