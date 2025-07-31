@@ -1,7 +1,6 @@
-import { agricultores, empresa, recepcion_fruta,tipos_clamshell, tipos_fruta } from '@/lib/schema'
+import { agricultores, empresa, recepcion_fruta, tipos_clamshell, tipos_fruta } from '@/lib/schema'
 import { db } from '@/lib/db'
-import { and, gte, lte, eq, lt } 
-from 'drizzle-orm' 
+import { and, gte, lt, eq } from 'drizzle-orm'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       end.setDate(start.getDate() + 1)
       filtroFecha = and(
         gte(recepcion_fruta.fecha_recepcion, start),
-        lt(recepcion_fruta.fecha_recepcion, end) 
+        lt(recepcion_fruta.fecha_recepcion, end)
       )
     }
 
@@ -25,12 +24,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         tipo_nota: recepcion_fruta.tipo_nota,
         fecha_recepcion: recepcion_fruta.fecha_recepcion,
         notas: recepcion_fruta.notas,
-        empresa_nombre: empresa.empresa,          
+        empresa_nombre: empresa.empresa,
         agricultor_nombre: agricultores.nombre,
         agricultor_apellido: agricultores.apellido,
         fruta_nombre: tipos_fruta.nombre,
         empaque_nombre: tipos_clamshell.tamanio,
-        peso_caja_oz: recepcion_fruta.peso_caja_oz, 
+        peso_caja_oz: recepcion_fruta.peso_caja_oz,
       })
       .from(recepcion_fruta)
       .leftJoin(agricultores, eq(recepcion_fruta.agricultor_id, agricultores.id))
@@ -39,7 +38,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .leftJoin(tipos_clamshell, eq(recepcion_fruta.empaque_id, tipos_clamshell.id))
       .where(filtroFecha ? filtroFecha : undefined)
 
-    return res.status(200).json({ recepciones: result })
+const agrupado = Object.values(
+  result.reduce((acc, item) => {
+    if (item.numero_nota === null) return acc // ignora registros sin nota
+
+    const key = item.numero_nota
+    if (!acc[key]) {
+      acc[key] = {
+        numero_nota: item.numero_nota,
+        tipo_nota: item.tipo_nota,
+        fecha_recepcion: item.fecha_recepcion,
+        empresa_nombre: item.empresa_nombre,
+        agricultor_nombre: item.agricultor_nombre,
+        agricultor_apellido: item.agricultor_apellido,
+        frutas: [],
+      }
+    }
+
+    acc[key].frutas.push({
+      fruta_nombre: item.fruta_nombre,
+      empaque_nombre: item.empaque_nombre,
+      peso_caja_oz: item.peso_caja_oz,
+      notas: item.notas,
+    })
+
+    return acc
+  }, {} as Record<number, any>)
+)
+
+
+    return res.status(200).json({ recepciones: agrupado })
   } catch (error) {
     res.status(500).json({ recepciones: [], error: 'Error al obtener recepciones' })
   }

@@ -1,12 +1,9 @@
-// pages/panel/administradorRutas/notas/editar-recepcion/[id].tsx
-
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function EditarRecepcionNota() {
   const router = useRouter()
   const { id } = router.query
-
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
   const [data, setData] = useState<any>(null)
@@ -37,22 +34,26 @@ export default function EditarRecepcionNota() {
   }
 }
 
-// --------------- MAQUILA -----------------
 function EditarNotaMaquila({ data }: { data: any }) {
   const router = useRouter()
   const [agricultores, setAgricultores] = useState<any[]>([])
   const [frutas, setFrutas] = useState<any[]>([])
   const [empaques, setEmpaques] = useState<any[]>([])
   const [mensaje, setMensaje] = useState('')
-  const [form, setForm] = useState({
-    agricultor_id: data.agricultor_id || '',
-    tipo_fruta_id: data.tipo_fruta_id || '',
-    cantidad_cajas: data.cantidad_cajas || '',
-    peso_caja_oz: data.peso_caja_oz || '',
-    empaque_id: data.empaque_id || '',
-    notas: data.notas || '',
-    tipo_nota: 'maquila'
-  })
+  const [form, setForm] = useState<any[]>(data.frutas.map((f: any) => ({
+    agricultor_id: f.agricultor_id || '',
+    tipo_fruta_id: f.tipo_fruta_id || '',
+    cantidad_cajas: f.cantidad_cajas || '',
+    peso_caja_oz: f.peso_caja_oz || '',
+    empaque_id: f.empaque_id || '',
+    sector: f.sector || '',
+    marca: f.marca || '',
+    destino: f.destino || '',
+    tipo_produccion: f.tipo_produccion || 'convencional',
+    variedad: f.variedad || '',
+    notas: f.notas || '',
+    id: f.id
+  })))
   const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
@@ -72,19 +73,53 @@ function EditarNotaMaquila({ data }: { data: any }) {
       .then(json => setEmpaques(Array.isArray(json.empaques) ? json.empaques : []))
   }, [])
 
+  const handleChange = (idx: number, field: string, value: any) => {
+    setForm((old: any[]) =>
+      old.map((f, i) => i === idx ? { ...f, [field]: value } : f)
+    )
+  }
+
   const handleSubmit = async () => {
     setMensaje('Guardando...')
-    const res = await fetch(`/api/notas/recepcion/${data.id}/editar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form), // tipo_nota SIEMPRE va
-    })
-    const result = await res.json()
-    if (result.success) {
-      setMensaje('Nota actualizada correctamente')
+    let success = true
+    for (let i = 0; i < form.length; i++) {
+      const f = form[i]
+      const res = await fetch(`/api/notas/recepcion/${f.id}/editar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agricultor_id: f.agricultor_id,
+          tipo_fruta_id: f.tipo_fruta_id,
+          cantidad_cajas: f.cantidad_cajas,
+          peso_caja_oz: f.peso_caja_oz,
+          empaque_id: f.empaque_id,
+          sector: f.sector,
+          marca: f.marca,
+          destino: f.destino,
+          tipo_produccion: f.tipo_produccion,
+          variedad: f.variedad,
+          notas: f.notas,
+          tipo_nota: 'maquila'
+        })
+      })
+      const result = await res.json()
+      if (!result.success) {
+        setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
+        success = false
+        break
+      }
+    }
+    if (success) {
+      await fetch('/api/pdf/crea-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numero_nota: data.numero_nota,
+          fecha: new Date().toLocaleDateString()
+        })
+      })
+      setMensaje('Notas actualizadas correctamente')
       setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
-    } else {
-      setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
     }
   }
 
@@ -102,72 +137,124 @@ function EditarNotaMaquila({ data }: { data: any }) {
             Volver
           </button>
         </div>
-        <div className="p-8 space-y-5">
-          <div>
-            <label className="font-semibold">Agricultor</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.agricultor_id}
-              onChange={e => setForm(f => ({ ...f, agricultor_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {agricultores.map(a => (
-                <option value={a.id} key={a.id}>{a.nombre} {a.apellido}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Tipo de fruta</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.tipo_fruta_id}
-              onChange={e => setForm(f => ({ ...f, tipo_fruta_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {frutas.map(f => (
-                <option value={f.id} key={f.id}>{f.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Cantidad de cajas</label>
-            <input
-              className="w-full rounded-xl border p-2 mt-1"
-              type="number"
-              value={form.cantidad_cajas}
-              onChange={e => setForm(f => ({ ...f, cantidad_cajas: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="font-semibold">Peso por caja (oz)</label>
-            <input
-              className="w-full rounded-xl border p-2 mt-1"
-              type="number"
-              value={form.peso_caja_oz}
-              onChange={e => setForm(f => ({ ...f, peso_caja_oz: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="font-semibold">Empaque</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.empaque_id}
-              onChange={e => setForm(f => ({ ...f, empaque_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {empaques.map(e => (
-                <option value={e.id} key={e.id}>{e.tamanio}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Notas</label>
-            <textarea
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.notas}
-              onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
-            />
-          </div>
+        <div className="p-8 space-y-7">
+          {form.map((f, idx) => (
+            <div key={f.id} className="mb-7 p-6 border rounded-2xl shadow bg-gray-50 dark:bg-[#162017]">
+              <div className="font-bold mb-3">Fruta #{idx + 1}</div>
+              <div className="mb-2">
+                <label className="font-semibold">Agricultor</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.agricultor_id}
+                  onChange={e => handleChange(idx, 'agricultor_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {agricultores.map(a => (
+                    <option value={a.id} key={a.id}>{a.nombre} {a.apellido}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Tipo de fruta</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.tipo_fruta_id}
+                  onChange={e => handleChange(idx, 'tipo_fruta_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {frutas.map(fru => (
+                    <option value={fru.id} key={fru.id}>{fru.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Cantidad de cajas</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="number"
+                  value={f.cantidad_cajas}
+                  onChange={e => handleChange(idx, 'cantidad_cajas', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Peso por caja (oz)</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="number"
+                  value={f.peso_caja_oz}
+                  onChange={e => handleChange(idx, 'peso_caja_oz', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Empaque</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.empaque_id}
+                  onChange={e => handleChange(idx, 'empaque_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {empaques.map(e => (
+                    <option value={e.id} key={e.id}>{e.tamanio}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Sector</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.sector}
+                  onChange={e => handleChange(idx, 'sector', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Marca</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.marca}
+                  onChange={e => handleChange(idx, 'marca', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Destino</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.destino}
+                  onChange={e => handleChange(idx, 'destino', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Tipo de producción</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.tipo_produccion}
+                  onChange={e => handleChange(idx, 'tipo_produccion', e.target.value)}
+                >
+                  <option value="convencional">Convencional</option>
+                  <option value="organica">Orgánica</option>
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Variedad</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.variedad}
+                  onChange={e => handleChange(idx, 'variedad', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Notas</label>
+                <textarea
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.notas}
+                  onChange={e => handleChange(idx, 'notas', e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
           <div className="flex justify-between">
             <button
               className="rounded-xl px-6 py-2 font-bold bg-gray-100 text-green-800 border border-green-300 hover:bg-gray-200"
@@ -189,21 +276,25 @@ function EditarNotaMaquila({ data }: { data: any }) {
   )
 }
 
-// -------------- EMPRESA ---------------
 function EditarNotaEmpresa({ data }: { data: any }) {
   const router = useRouter()
   const [empresas, setEmpresas] = useState<any[]>([])
   const [frutas, setFrutas] = useState<any[]>([])
   const [empaques, setEmpaques] = useState<any[]>([])
   const [mensaje, setMensaje] = useState('')
-  const [form, setForm] = useState({
-    empresa_id: data.empresa_id || '',
-    tipo_fruta_id: data.tipo_fruta_id || '',
-    cantidad_oz: data.peso_caja_oz || '',
-    empaque_id: data.empaque_id || '',
-    notas: data.notas || '',
-    tipo_nota: 'empresa'
-  })
+  const [form, setForm] = useState<any[]>(data.frutas.map((f: any) => ({
+    empresa_id: f.empresa_id || '',
+    tipo_fruta_id: f.tipo_fruta_id || '',
+    cantidad_oz: f.peso_caja_oz || '',
+    empaque_id: f.empaque_id || '',
+    sector: f.sector || '',
+    marca: f.marca || '',
+    destino: f.destino || '',
+    tipo_produccion: f.tipo_produccion || 'convencional',
+    variedad: f.variedad || '',
+    notas: f.notas || '',
+    id: f.id
+  })))
   const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
@@ -223,28 +314,54 @@ function EditarNotaEmpresa({ data }: { data: any }) {
       .then(json => setEmpaques(Array.isArray(json.empaques) ? json.empaques : []))
   }, [])
 
+  const handleChange = (idx: number, field: string, value: any) => {
+    setForm((old: any[]) =>
+      old.map((f, i) => i === idx ? { ...f, [field]: value } : f)
+    )
+  }
+
   const handleSubmit = async () => {
     setMensaje('Guardando...')
-    const body = {
-      empresa_id: form.empresa_id,
-      tipo_fruta_id: form.tipo_fruta_id,
-      cantidad_cajas: 1,
-      peso_caja_oz: form.cantidad_oz,
-      empaque_id: form.empaque_id,
-      notas: form.notas,
-      tipo_nota: 'empresa'
+    let success = true
+    for (let i = 0; i < form.length; i++) {
+      const f = form[i]
+      const body = {
+        empresa_id: f.empresa_id,
+        tipo_fruta_id: f.tipo_fruta_id,
+        cantidad_cajas: 1,
+        peso_caja_oz: f.cantidad_oz,
+        empaque_id: f.empaque_id,
+        sector: f.sector,
+        marca: f.marca,
+        destino: f.destino,
+        tipo_produccion: f.tipo_produccion,
+        variedad: f.variedad,
+        notas: f.notas,
+        tipo_nota: 'empresa'
+      }
+      const res = await fetch(`/api/notas/recepcion/${f.id}/editar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+      const result = await res.json()
+      if (!result.success) {
+        setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
+        success = false
+        break
+      }
     }
-    const res = await fetch(`/api/notas/recepcion/${data.id}/editar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    const result = await res.json()
-    if (result.success) {
-      setMensaje('Nota actualizada correctamente')
+    if (success) {
+      await fetch('/api/pdf/crea-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numero_nota: data.numero_nota,
+          fecha: new Date().toLocaleDateString()
+        })
+      })
+      setMensaje('Notas actualizadas correctamente')
       setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
-    } else {
-      setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
     }
   }
 
@@ -262,63 +379,115 @@ function EditarNotaEmpresa({ data }: { data: any }) {
             Volver
           </button>
         </div>
-        <div className="p-8 space-y-5">
-          <div>
-            <label className="font-semibold">Empresa</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.empresa_id}
-              onChange={e => setForm(f => ({ ...f, empresa_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {empresas.map(emp => (
-                <option value={emp.id} key={emp.id}>{emp.empresa}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Tipo de fruta</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.tipo_fruta_id}
-              onChange={e => setForm(f => ({ ...f, tipo_fruta_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {frutas.map(f => (
-                <option value={f.id} key={f.id}>{f.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Cantidad (oz)</label>
-            <input
-              className="w-full rounded-xl border p-2 mt-1"
-              type="number"
-              value={form.cantidad_oz}
-              onChange={e => setForm(f => ({ ...f, cantidad_oz: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="font-semibold">Empaque</label>
-            <select
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.empaque_id}
-              onChange={e => setForm(f => ({ ...f, empaque_id: e.target.value }))}
-            >
-              <option value="">-- Selecciona --</option>
-              {empaques.map(e => (
-                <option value={e.id} key={e.id}>{e.tamanio}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="font-semibold">Notas</label>
-            <textarea
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.notas}
-              onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
-            />
-          </div>
+        <div className="p-8 space-y-7">
+          {form.map((f, idx) => (
+            <div key={f.id} className="mb-7 p-6 border rounded-2xl shadow bg-gray-50 dark:bg-[#23272f]">
+              <div className="font-bold mb-3">Fruta #{idx + 1}</div>
+              <div className="mb-2">
+                <label className="font-semibold">Empresa</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.empresa_id}
+                  onChange={e => handleChange(idx, 'empresa_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {empresas.map(emp => (
+                    <option value={emp.id} key={emp.id}>{emp.empresa}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Tipo de fruta</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.tipo_fruta_id}
+                  onChange={e => handleChange(idx, 'tipo_fruta_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {frutas.map(fru => (
+                    <option value={fru.id} key={fru.id}>{fru.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Cantidad (oz)</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="number"
+                  value={f.cantidad_oz}
+                  onChange={e => handleChange(idx, 'cantidad_oz', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Empaque</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.empaque_id}
+                  onChange={e => handleChange(idx, 'empaque_id', e.target.value)}
+                >
+                  <option value="">-- Selecciona --</option>
+                  {empaques.map(e => (
+                    <option value={e.id} key={e.id}>{e.tamanio}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Sector</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.sector}
+                  onChange={e => handleChange(idx, 'sector', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Marca</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.marca}
+                  onChange={e => handleChange(idx, 'marca', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Destino</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.destino}
+                  onChange={e => handleChange(idx, 'destino', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Tipo de producción</label>
+                <select
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.tipo_produccion}
+                  onChange={e => handleChange(idx, 'tipo_produccion', e.target.value)}
+                >
+                  <option value="convencional">Convencional</option>
+                  <option value="organica">Orgánica</option>
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Variedad</label>
+                <input
+                  className="w-full rounded-xl border p-2 mt-1"
+                  type="text"
+                  value={f.variedad}
+                  onChange={e => handleChange(idx, 'variedad', e.target.value)}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="font-semibold">Notas</label>
+                <textarea
+                  className="w-full rounded-xl border p-2 mt-1"
+                  value={f.notas}
+                  onChange={e => handleChange(idx, 'notas', e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
           <div className="flex justify-between">
             <button
               className="rounded-xl px-6 py-2 font-bold bg-gray-100 text-orange-800 border border-orange-300 hover:bg-gray-200"

@@ -55,7 +55,7 @@ export default function NotasDelDia() {
                   ? "bg-orange-700 hover:bg-orange-800 border-orange-800 text-orange-50"
                   : "bg-orange-400 hover:bg-orange-500 border-orange-300 text-white"
                 }`}
-              onClick={() => router.push('/panel/Rutas/recepcion')}>
+              onClick={() => router.push('/panel/Rutas/recepcion/recepcion')}>
               <FiChevronLeft className="text-2xl" />
               Menú principal
             </button>
@@ -94,82 +94,84 @@ export default function NotasDelDia() {
                   </tr>
                 </thead>
                 <tbody>
-                  {notas.length > 0 ? (
-                    notas.map((n, i) => (
-                      <tr
-                        key={i}
-                        className={`
-                          border-b
-                          ${darkMode
-                            ? i % 2 === 0
-                              ? "bg-orange-950/60 border-orange-950"
-                              : "bg-orange-900/40 border-orange-900"
-                            : i % 2 === 0
-                              ? "bg-orange-100/60 border-orange-100"
-                              : "bg-orange-50 border-orange-50"}
-                          hover:bg-orange-200/30 transition
-                        `}
-                        style={{ height: 72 }}>
-                        <td className="p-4 font-extrabold text-xl">{n.numero_nota ?? '-'}</td>
-                        <td className="p-4">
-                          <span
-                            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold shadow-lg border
-                              ${n.tipo_nota === 'empresa'
-                                ? (darkMode
-                                  ? "bg-orange-700/90 text-orange-100 border-orange-700"
-                                  : "bg-orange-200 text-orange-800 border-orange-300")
-                                : (darkMode
-                                  ? "bg-green-700/90 text-green-100 border-green-700"
-                                  : "bg-green-200 text-green-800 border-green-300")
-                              }`}>
-                            {n.tipo_nota === 'empresa'
-                              ? (<><HiOutlineBuildingOffice2 className="text-xl" /> Empresa</>)
-                              : (<><HiOutlineUser className="text-xl" /> Maquila</>)
-                            }
-                          </span>
-                        </td>
-                        <td className="p-4 font-medium">
-                          {n.tipo_nota === 'empresa'
-                            ? (n.empresa_nombre || '-')
-                            : (n.agricultor_nombre
-                                ? `${n.agricultor_nombre} ${n.agricultor_apellido || ''}`.trim()
-                                : '-')}
-                        </td>
-                        <td className="p-4 font-semibold">{n.fruta_nombre || '-'}</td>
-                        <td className="p-4">
-                          <span className={`px-4 py-2 rounded-full font-bold shadow text-base border
-                            ${darkMode
-                              ? "bg-orange-900/70 text-orange-200 border-orange-700"
-                              : "bg-orange-100 text-orange-700 border-orange-300"
-                            }`}>
-                            {n.empaque_nombre
-                              ? n.empaque_nombre
-                              : n.peso_caja_oz
-                                ? `${parseInt(n.peso_caja_oz)} oz`
-                                : '—'}
-                          </span>
-                        </td>
-                        <td className="p-4 whitespace-nowrap font-semibold">
-                          {n.fecha_recepcion
-                            ? format(new Date(n.fecha_recepcion), 'yyyy-MM-dd HH:mm')
-                            : '-'}
-                        </td>
-                        <td className="p-4 w-52">
-                          {n.notas
-                            ? <span className="block max-w-xs truncate" title={n.notas}>{n.notas}</span>
-                            : <span className="italic text-gray-400">Sin notas</span>
-                          }
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} className="text-center py-20 text-2xl font-semibold">
-                        No hay notas registradas hoy.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
+  {notas.length > 0 ? (
+    notas.map((n, i) => (
+      n.frutas && n.frutas.length > 0 ? (
+        n.frutas.map((f: any, idx: number) => (
+          <tr
+            key={`${n.numero_nota}-${idx}`}
+            className={`border-b
+              ${darkMode
+                ? (i % 2 === 0 ? "bg-orange-950/60 border-orange-950" : "bg-orange-900/40 border-orange-900")
+                : (i % 2 === 0 ? "bg-orange-100/60 border-orange-100" : "bg-orange-50 border-orange-50")}
+              hover:bg-orange-200/30 transition`}
+            style={{ height: 72 }}
+          >
+            <td className="p-4 font-extrabold text-xl">
+              {idx === 0 ? n.numero_nota : ''}
+            </td>
+            <td className="p-4">
+              {idx === 0 && (
+                <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-base font-bold shadow-lg border
+                  ${n.tipo_nota === 'empresa'
+                    ? (darkMode
+                      ? "bg-orange-700/90 text-orange-100 border-orange-700"
+                      : "bg-orange-200 text-orange-800 border-orange-300")
+                    : (darkMode
+                      ? "bg-green-700/90 text-green-100 border-green-700"
+                      : "bg-green-200 text-green-800 border-green-300")}`}>
+                  {n.tipo_nota === 'empresa'
+                    ? (<><HiOutlineBuildingOffice2 className="text-xl" /> Empresa</>)
+                    : (<><HiOutlineUser className="text-xl" /> Maquila</>)}
+                </span>
+              )}
+            </td>
+            <td className="p-4 font-medium">
+              {idx === 0 && (
+                n.tipo_nota === 'empresa'
+                  ? (n.empresa_nombre || '-')
+                  : (n.agricultor_nombre
+                      ? `${n.agricultor_nombre} ${n.agricultor_apellido || ''}`.trim()
+                      : '-')
+              )}
+            </td>
+            <td className="p-4 font-semibold">{f.fruta_nombre || '-'}</td>
+            <td className="p-4">
+              <span className={`px-4 py-2 rounded-full font-bold shadow text-base border
+                ${darkMode
+                  ? "bg-orange-900/70 text-orange-200 border-orange-700"
+                  : "bg-orange-100 text-orange-700 border-orange-300"}`}>
+                {f.empaque_nombre
+                  ? f.empaque_nombre
+                  : f.peso_caja_oz
+                    ? `${parseInt(f.peso_caja_oz)} oz`
+                    : '—'}
+              </span>
+            </td>
+            <td className="p-4 whitespace-nowrap font-semibold">
+              {idx === 0 && n.fecha_recepcion
+                ? format(new Date(n.fecha_recepcion), 'yyyy-MM-dd HH:mm')
+                : ''}
+            </td>
+            <td className="p-4 w-52">
+              {f.notas
+                ? <span className="block max-w-xs truncate" title={f.notas}>{f.notas}</span>
+                : <span className="italic text-gray-400">Sin notas</span>
+              }
+            </td>
+          </tr>
+        ))
+      ) : null
+    ))
+  ) : (
+    <tr>
+      <td colSpan={7} className="text-center py-20 text-2xl font-semibold">
+        No hay notas registradas hoy.
+      </td>
+    </tr>
+  )}
+</tbody>
+
               </table>
             )}
           </div>

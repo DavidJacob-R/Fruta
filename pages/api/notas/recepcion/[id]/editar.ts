@@ -30,6 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     peso_caja_oz: (body.peso_caja_oz !== undefined) ? body.peso_caja_oz : prev.peso_caja_oz,
     notas: (body.notas !== undefined) ? body.notas : prev.notas,
     empaque_id: (body.empaque_id !== undefined) ? body.empaque_id : prev.empaque_id,
+    sector: (body.sector !== undefined) ? body.sector : prev.sector,
+    marca: (body.marca !== undefined) ? body.marca : prev.marca,
+    destino: (body.destino !== undefined) ? body.destino : prev.destino,
+    tipo_produccion: (body.tipo_produccion !== undefined) ? body.tipo_produccion : prev.tipo_produccion,
+    variedad: (body.variedad !== undefined) ? body.variedad : prev.variedad,
   }
 
   try {

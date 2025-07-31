@@ -12,36 +12,34 @@ export default function NotasAdmin() {
   const [mensaje, setMensaje] = useState('')
   const [darkMode, setDarkMode] = useState(true)
 
-  // Nueva función para recargar notas
   const recargarNotas = async () => {
-    setCargando(true);
-    const res = await fetch('/api/notas/listar');
-    const data = await res.json();
-    setNotas(Array.isArray(data.notas) ? data.notas : []);
-    setCargando(false);
-  };
+    setCargando(true)
+    const res = await fetch('/api/notas/listar')
+    const data = await res.json()
+    setNotas(Array.isArray(data.notas) ? data.notas : [])
+    setCargando(false)
+  }
 
   useEffect(() => {
-    recargarNotas();
-  }, []);
+    recargarNotas()
+  }, [])
 
   useEffect(() => {
     if (darkMode) document.documentElement.classList.add('dark')
     else document.documentElement.classList.remove('dark')
   }, [darkMode])
 
-  // Si quieres refrescar después de regresar del editor de nota, puedes escuchar cambios en el router:
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       if (url.includes('/panel/administradorRutas/notas')) {
-        recargarNotas();
+        recargarNotas()
       }
     }
-    router.events.on('routeChangeComplete', handleRouteChange);
+    router.events.on('routeChangeComplete', handleRouteChange)
     return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
+      router.events.off('routeChangeComplete', handleRouteChange)
     }
-  }, [router]);
+  }, [router])
 
   const notasFiltradas = notas.filter(n =>
     n.numero_nota?.toString().includes(busqueda) ||
@@ -50,12 +48,28 @@ export default function NotasAdmin() {
     n.empresa_nombre?.toLowerCase().includes(busqueda.toLowerCase())
   )
 
-  const handleImprimir = (nota: any) => {
-    setModalNota(nota)
-    setTimeout(() => {
-      window.print()
-      setModalNota(null)
-    }, 400)
+  // LOG para debugging
+  useEffect(() => {
+    if (!cargando) {
+      console.log('Notas filtradas:', notasFiltradas)
+    }
+  }, [notasFiltradas, cargando])
+
+  const handleImprimir = async (nota: any) => {
+    const idNota = nota.id || nota.nota_id || nota.numero_nota
+    if (!idNota) {
+      alert('Nota sin id valido')
+      return
+    }
+    const res = await fetch(`/api/notas/pdf-storage/${idNota}`)
+    const data = await res.json()
+    const pdfUrl = data.url
+
+    if (!pdfUrl) {
+      alert('PDF no encontrado')
+      return
+    }
+    window.open(pdfUrl, '_blank')
   }
 
   const handleReenviar = async (notaId: number) => {
@@ -73,7 +87,6 @@ export default function NotasAdmin() {
     setMensaje(data.success ? 'Correo enviado correctamente' : 'Error al enviar correo')
   }
 
-  // Botones y estilos igual que tu código original
   const tableBg = darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-white via-slate-50 to-slate-200'
   const cardBg = darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-slate-200'
   const thBg = darkMode ? 'bg-slate-800 text-orange-200 border-slate-700' : 'bg-orange-50 text-orange-700 border-orange-200'
@@ -88,9 +101,6 @@ export default function NotasAdmin() {
   const btnCalid = darkMode
     ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800"
     : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
-  const btnIcon = darkMode
-    ? "bg-blue-900 border-blue-800 text-blue-100 hover:bg-blue-800"
-    : "bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200"
   const btnPrint = darkMode
     ? "bg-orange-900 border-orange-800 text-orange-100 hover:bg-orange-800"
     : "bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200"
@@ -101,7 +111,6 @@ export default function NotasAdmin() {
   return (
     <div className={`min-h-screen ${tableBg} py-8 px-2 transition-colors`}>
       <div className="w-full max-w-7xl mx-auto">
-        {/* Toggle modo noche/día y botón menú principal */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-5 gap-3">
           <div className="flex gap-3">
             <button
@@ -121,7 +130,6 @@ export default function NotasAdmin() {
             </button>
           </div>
         </div>
-
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <h2 className={`text-3xl font-extrabold ${textMain} mb-6 md:mb-0`}>
             Gestión de Notas 
@@ -140,7 +148,6 @@ export default function NotasAdmin() {
               onChange={e => setBusqueda(e.target.value)}/>
           </div>
         </div>
-
         <div className={`rounded-3xl border-2 shadow-2xl overflow-x-auto p-6 transition-colors ${cardBg}`}>
           {cargando ? (
             <div className="flex justify-center items-center py-16">
@@ -162,115 +169,115 @@ export default function NotasAdmin() {
                 </tr>
               </thead>
               <tbody>
-                {notasFiltradas.length > 0 ? notasFiltradas.map((n, i) => (
-                  <tr
-                    key={i}
-                    className={`${i % 2 === 0 ? rowEven : rowOdd} border-b transition`}>
-                    <td className={`p-4 font-bold ${textMain}`}>{n.numero_nota}</td>
-                    <td className="p-4">
-                      <span className={`rounded-full px-4 py-1 font-semibold text-xs 
-                        ${n.tipo_nota === 'empresa'
-                          ? (darkMode ? 'bg-orange-900 text-orange-200' : 'bg-orange-100 text-orange-700')
-                          : (darkMode ? 'bg-green-900 text-green-100' : 'bg-green-100 text-green-700')}`}>
-                        {n.tipo_nota === 'empresa' ? 'Empresa' : 'Maquila'}
-                      </span>
-                    </td>
-                    <td className={`p-4 ${textMain}`}>
-                      {n.tipo_nota === 'empresa'
-                        ? (<>
-                            <div className="font-bold">{n.empresa_nombre}</div>
-                            <div className={`text-xs ${textSecondary}`}>{n.empresa_email} <br />{n.empresa_telefono}</div>
-                          </>)
-                        : (<>
-                            <div className="font-bold">{n.agricultor_nombre} {n.agricultor_apellido}</div>
-                            <div className={`text-xs ${textSecondary}`}>{n.agricultor_email} <br />{n.agricultor_telefono}</div>
-                          </>)
-                      }
-                    </td>
-                    <td className={`p-4 ${textMain}`}>{n.fruta_nombre}</td>
-                    <td className={`p-4 ${textMain}`}>{n.fecha_recepcion?.slice(0, 16).replace('T', ' ')}</td>
-                    <td className={`p-4 ${textMain}`}>
-                      {n.usuario_nombre} {n.usuario_apellido}
-                      <div className={`text-xs ${textSecondary}`}>{n.usuario_email}</div>
-                    </td>
-                    {/* NOTA RECEPCION COMO BOTON */}
-                    <td className={`p-4 ${textMain}`}>
-                      {n.nota_recepcion_id ? (
-                        <button
-                          onClick={async () => {
-                            await router.push(
-                              `/panel/administradorRutas/notas/editar-recepcion/${n.nota_recepcion_id}?tipo=${n.tipo_nota}`
-                            );
-                            // Después de regresar del editor, recarga la lista:
-                            await recargarNotas();
-                          }}
-                          className={`${btnBase} ${btnRecep} w-full`}
-                          title="Editar Nota de Recepción"
-                        >
-                          {n.nota_recepcion_titulo || 'Nota recepción'}
-                        </button>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    {/* NOTA CALIDAD COMO BOTON */}
-                    <td className={`p-4 ${textMain}`}>
-                      {n.nota_calidad_id ? (
-                        <button
-                          onClick={async () => {
-                            await router.push(`/panel/administradorRutas/notas/editar-calidad/${n.nota_calidad_id}`);
-                            // Después de regresar del editor, recarga la lista:
-                            await recargarNotas();
-                          }}
-                          className={`${btnBase} ${btnCalid} w-full`}
-                          title="Editar Nota de Calidad"
-                        >
-                          {n.nota_calidad_titulo || 'Nota calidad'}
-                        </button>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    {/* OPCIONES de reenviar e imprimir */}
-                    <td className="p-4 flex flex-col gap-2">
-                      <button
-                        onClick={() => setModalNota(n)}
-                        className={`${btnBase} ${btnSend} flex items-center gap-2`}
-                        title="Reenviar"
-                      >
-                        <FiSend />
-                        Reenviar
-                      </button>
-                      <button
-                        onClick={() => handleImprimir(n)}
-                        className={`${btnBase} ${btnPrint} flex items-center gap-2`}
-                        title="Imprimir"
-                      >
-                        <FiPrinter />
-                        Imprimir
-                      </button>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan={9} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
-                      No hay notas registradas.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+  {notasFiltradas.length > 0 ? notasFiltradas.map((n, i) => (
+    <tr
+      key={i}
+      className={`${i % 2 === 0 ? rowEven : rowOdd} border-b transition`}>
+      <td className={`p-4 font-bold ${textMain}`}>{n.numero_nota}</td>
+      <td className="p-4">
+        <span className={`rounded-full px-4 py-1 font-semibold text-xs 
+          ${n.tipo_nota === 'empresa'
+            ? (darkMode ? 'bg-orange-900 text-orange-200' : 'bg-orange-100 text-orange-700')
+            : (darkMode ? 'bg-green-900 text-green-100' : 'bg-green-100 text-green-700')}`}>
+          {n.tipo_nota === 'empresa' ? 'Empresa' : 'Maquila'}
+        </span>
+      </td>
+      <td className={`p-4 ${textMain}`}>
+        {n.tipo_nota === 'empresa'
+          ? (<>
+              <div className="font-bold">{n.empresa_nombre}</div>
+              <div className={`text-xs ${textSecondary}`}>{n.empresa_email} <br />{n.empresa_telefono}</div>
+            </>)
+          : (<>
+              <div className="font-bold">{n.agricultor_nombre} {n.agricultor_apellido}</div>
+              <div className={`text-xs ${textSecondary}`}>{n.agricultor_email} <br />{n.agricultor_telefono}</div>
+            </>)
+        }
+      </td>
+      <td className={`p-4 ${textMain}`}>
+        {n.frutas && n.frutas.length > 0
+          ? n.frutas.map((f: any, idx: number) => (
+              <div key={idx}>{f.fruta_nombre}</div>
+            ))
+          : '-'}
+      </td>
+      <td className={`p-4 ${textMain}`}>{n.fecha_recepcion?.slice(0, 16).replace('T', ' ')}</td>
+      <td className={`p-4 ${textMain}`}>
+        {n.usuario_nombre} {n.usuario_apellido}
+        <div className={`text-xs ${textSecondary}`}>{n.usuario_email}</div>
+      </td>
+      <td className={`p-4 ${textMain}`}>
+        {n.nota_recepcion_id ? (
+          <button
+            onClick={async () => {
+              await router.push(
+                `/panel/administradorRutas/notas/editar-recepcion/${n.nota_recepcion_id}?tipo=${n.tipo_nota}`
+              );
+              await recargarNotas();
+            }}
+            className={`${btnBase} ${btnRecep} w-full`}
+            title="Editar Nota de Recepción"
+          >
+            Nota recepción
+          </button>
+        ) : (
+          <span className="text-gray-400">-</span>
+        )}
+      </td>
+      <td className={`p-4 ${textMain}`}>
+        {n.nota_calidad_id ? (
+          <button
+            onClick={async () => {
+              await router.push(`/panel/administradorRutas/notas/editar-calidad/${n.nota_calidad_id}`);
+              await recargarNotas();
+            }}
+            className={`${btnBase} ${btnCalid} w-full`}
+            title="Editar Nota de Calidad"
+          >
+            Nota calidad
+          </button>
+        ) : (
+          <span className="text-gray-400">-</span>
+        )}
+      </td>
+      <td className="p-4 flex flex-col gap-2">
+        <button
+          onClick={() => setModalNota(n)}
+          className={`${btnBase} ${btnSend} flex items-center gap-2`}
+          title="Reenviar"
+        >
+          <FiSend />
+          Reenviar
+        </button>
+        <button
+          onClick={() => handleImprimir(n)}
+          className={`${btnBase} ${btnPrint} flex items-center gap-2`}
+          title="Imprimir"
+        >
+          <FiPrinter />
+          Imprimir
+        </button>
+      </td>
+    </tr>
+  )) : (
+    <tr>
+      <td colSpan={9} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
+        No hay notas registradas.
+      </td>
+    </tr>
+  )}
+</tbody>
+
             </table>
           )}
         </div>
       </div>
-      {/* Modal para reenviar puedes mantener el tuyo aquí si lo necesitas */}
       {modalNota && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
           <div className={`max-w-lg w-full rounded-2xl shadow-2xl border-2 p-8 ${darkMode ? 'bg-gray-900 border-orange-700' : 'bg-white border-orange-300'}`}>
             <h3 className={`text-2xl font-bold mb-4 ${textMain}`}>Reenviar Nota #{modalNota.numero_nota}</h3>
             <p className={`mb-4 ${textMain}`}>Elige el email destino:</p>
             <div className="flex flex-col gap-2 mb-4">
-              {/* Email registrado */}
               {modalNota.tipo_nota === 'empresa' && modalNota.empresa_email && (
                 <button
                   className={`w-full rounded-lg px-4 py-2 border font-medium text-left transition
@@ -293,11 +300,10 @@ export default function NotasAdmin() {
                   📧 Usar email registrado agricultor: <b>{modalNota.agricultor_email}</b>
                 </button>
               )}
-              {/* Personalizado */}
               <button
                 className={`w-full rounded-lg px-4 py-2 border font-medium text-left transition
                   ${emailReenvio && emailReenvio !== modalNota.empresa_email && emailReenvio !== modalNota.agricultor_email
-                    ? (darkMode ? 'bg-green-900 text-green-100 border-green-600' : 'bg-green-100 text-green-800 border-green-400')
+                    ? (darkMode ? 'bg-green-900 text-green-100 border-green-600' : 'bg-green-100 border-green-800')
                     : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')
                   }`}
                 onClick={() => setEmailReenvio('')}>
