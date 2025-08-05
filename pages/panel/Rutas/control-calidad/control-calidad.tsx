@@ -4,7 +4,7 @@ import HeaderControlCalidad from "./HeaderControlCalidad";
 import ListaPedidos from "./ListaPedidos";
 import PedidoDetalle from "./PedidoDetalle";
 import FormularioCalidad from "./FormularioCalidad";
-import { Pedido, Motivo } from "./types";
+import { Pedido, Motivo } from "../../../api/control_calidad/types";
 
 export default function ControlCalidad() {
   const router = useRouter();

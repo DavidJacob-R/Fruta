@@ -1,4 +1,4 @@
-import { Agricultor, Empresa, Material, MovimientoSalida } from './types'
+import { Agricultor, Empresa, Material, MovimientoSalida } from '../../../api/almacenmateriales/types'
 
 
 interface RegistrarSalidaProps {

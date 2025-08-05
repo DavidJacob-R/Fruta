@@ -1,4 +1,4 @@
-import { Material } from './types'
+import { Material } from '../../../api/almacenmateriales/types'
 
 interface ExistenciasMaterialesProps {
   darkMode: boolean

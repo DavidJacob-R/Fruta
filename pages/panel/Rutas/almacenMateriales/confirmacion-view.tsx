@@ -1,4 +1,4 @@
-import { MovimientoData } from './types'
+import { MovimientoData } from '../../../api/almacenmateriales/types'
 
 interface ConfirmacionViewProps {
   darkMode: boolean

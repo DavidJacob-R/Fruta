@@ -1,4 +1,4 @@
-import { Motivo, Pedido } from './types'
+import { Motivo, Pedido } from '../../../api/control_calidad/types'
 
 interface Props {
   form: {
