@@ -15,6 +15,25 @@ interface Props {
 }
 
 export default function FormularioCalidad({ form, setForm, motivos, pedido, onVolver, onSubmit }: Props) {
+  // Protección para build/prerender
+  if (!pedido || typeof pedido.cantidad_cajas === 'undefined') {
+    return (
+      <div className="p-8 text-center text-red-400">
+        No se encontraron datos del pedido.<br />
+        Por favor, vuelve al paso anterior.
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={onVolver}
+            className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-8 py-4 rounded-2xl font-medium shadow border border-[#c8d6e5] text-lg active:scale-95 transition"
+          >
+            Volver
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <form onSubmit={onSubmit} className="bg-[#2c2f33] border border-[#27ae60] rounded-3xl p-8 sm:p-10 shadow-md max-w-5xl mx-auto">
       <h2 className="text-2xl sm:text-3xl font-semibold text-[#27ae60] mb-8 text-center">Confirmar Control de Calidad</h2>
