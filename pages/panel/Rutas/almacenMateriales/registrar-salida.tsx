@@ -1,6 +1,5 @@
 import { Agricultor, Empresa, Material, MovimientoSalida } from '../../../api/almacenmateriales/types'
 
-
 interface RegistrarSalidaProps {
   darkMode: boolean
   data: MovimientoSalida
@@ -12,23 +11,6 @@ interface RegistrarSalidaProps {
   onBack: () => void
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export default function RegistrarSalida({ 
   darkMode, 
   data, 
@@ -39,6 +21,28 @@ export default function RegistrarSalida({
   onConfirm, 
   onBack 
 }: RegistrarSalidaProps) {
+  // Protección para build/prerender
+  if (!data) {
+    return (
+      <div className="p-8 text-center text-red-400">
+        No se encontraron datos para la salida.<br />
+        Por favor, vuelve al paso anterior.
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={onBack}
+            className={`mt-8 px-6 py-3 rounded-xl border-2 font-bold transition
+              ${darkMode
+                ? 'border-orange-400 text-orange-300 hover:bg-orange-900/30'
+                : 'border-orange-300 text-orange-700 hover:bg-orange-100'
+              }`}>
+            Regresar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
       ${darkMode
@@ -85,131 +89,6 @@ export default function RegistrarSalida({
               <option key={agr.id} value={agr.id}>{agr.nombre}</option>
             ))}
           </select>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
         <div>
           <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>

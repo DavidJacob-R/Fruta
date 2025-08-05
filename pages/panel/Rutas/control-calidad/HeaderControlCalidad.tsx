@@ -5,7 +5,12 @@ interface Props {
   mensaje: string
 }
 
-export default function HeaderControlCalidad({ email, onReload, onBack, mensaje }: Props) {
+export default function HeaderControlCalidad({
+  email = "",
+  onReload = () => {},
+  onBack = () => {},
+  mensaje = ""
+}: Props) {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center mb-10">

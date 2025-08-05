@@ -14,7 +14,7 @@ export default function ExistenciasMateriales({
   darkMode, 
   onEntrada, 
   onSalida, 
-  existencias, 
+  existencias = [],
   searchTerm, 
   onSearchChange, 
   onBack 

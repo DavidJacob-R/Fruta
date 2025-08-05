@@ -98,15 +98,14 @@ export default function ControlCalidad() {
         body: JSON.stringify(body),
       });
       const result = await res.json();
-if (result.success) {
-  setMensaje("✅ Control de calidad registrado correctamente");
-  setTimeout(() => {
-    setStep(1);
-    setSelectedPedido(null);
-    cargarDatos();
-  }, 1500);
-}
- else {
+      if (result.success) {
+        setMensaje("✅ Control de calidad registrado correctamente");
+        setTimeout(() => {
+          setStep(1);
+          setSelectedPedido(null);
+          cargarDatos();
+        }, 1500);
+      } else {
         setMensaje("Error al guardar: " + (result.message || ""));
       }
     } catch {
@@ -127,6 +126,7 @@ if (result.success) {
         {step === 1 && (
           <div className="rounded-3xl bg-[#23272a] border border-[#2ecc71] shadow-xl p-6 sm:p-8">
             <ListaPedidos pedidos={pedidos} onSelect={handleSelectPedido} />
+
           </div>
         )}
 
@@ -149,5 +149,5 @@ if (result.success) {
         </div>
       </div>
     </div>
-  )
+  );
 }
