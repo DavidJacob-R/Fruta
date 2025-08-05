@@ -7,27 +7,31 @@ interface Props {
 
 export default function ListaPedidos({ pedidos, onSelect }: Props) {
   if (!pedidos.length) {
-    return (
-      <div className="p-6 text-center text-gray-400">
-        No hay pedidos pendientes de control de calidad.
-      </div>
-    );
+    return <div className="p-6 text-center text-gray-400">No hay pedidos pendientes.</div>;
   }
   return (
-    <div className="divide-y divide-[#2ecc71]/30">
+    <div>
       {pedidos.map((pedido) => (
-        <div key={pedido.id} className="py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div key={pedido.id} style={{ borderBottom: "1px solid #444", marginBottom: 8, paddingBottom: 8 }}>
           <div>
-            <div className="text-lg font-bold text-[#2ecc71]">
-              Nota #{pedido.numero_nota} – {pedido.empresa_nombre}
-            </div>
-            <div className="text-sm text-gray-300">
-              {pedido.fruta_nombre} / {pedido.cantidad_cajas} cajas
-            </div>
+            <span style={{ fontWeight: "bold" }}>Nota:</span> #{pedido.numero_nota} &nbsp; 
+            <span style={{ color: "#2ecc71" }}>{pedido.empresa_nombre}</span>
+          </div>
+          <div>
+            {pedido.fruta_nombre} / {pedido.cantidad_cajas} cajas
           </div>
           <button
+            style={{
+              background: "#27ae60",
+              color: "#fff",
+              padding: "8px 16px",
+              border: "none",
+              borderRadius: 8,
+              marginTop: 4,
+              cursor: "pointer",
+              fontWeight: "bold"
+            }}
             onClick={() => onSelect(pedido)}
-            className="bg-gradient-to-r from-[#2ecc71] to-[#27ae60] hover:from-[#27ae60] hover:to-[#2ecc71] text-white font-bold px-8 py-3 rounded-2xl shadow transition active:scale-95"
           >
             Seleccionar
           </button>
