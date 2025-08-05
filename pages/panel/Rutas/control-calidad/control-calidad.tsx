@@ -1,58 +1,152 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import HeaderControlCalidad from "./HeaderControlCalidad";
+import ListaPedidos from "./ListaPedidos";
+import PedidoDetalle from "./PedidoDetalle";
+import FormularioCalidad from "./FormularioCalidad";
+import { Pedido, Motivo } from "../../../api/control_calidad/types";
 
-type Pedido = {
-  id: number;
-  numero: string;
-  empresa: string;
-  fruta: string;
-  cantidad: number;
-};
+export default function ControlCalidad() {
+  const router = useRouter();
 
-const pedidosFake: Pedido[] = [
-  { id: 1, numero: "A-100", empresa: "El Molinito", fruta: "Fresa", cantidad: 10 },
-  { id: 2, numero: "B-200", empresa: "Healthy Harvest", fruta: "Mora", cantidad: 15 },
-  { id: 3, numero: "C-300", empresa: "FrutaMex", fruta: "Arándano", cantidad: 8 },
-];
+  const [step, setStep] = useState<number>(1);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [motivos, setMotivos] = useState<Motivo[]>([]);
+  const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null);
+  const [mensaje, setMensaje] = useState<string>("");
+  const [form, setForm] = useState({
+    rechazos: 0,
+    motivo_rechazo_id: "",
+    comentarios: "",
+    cajas_finales: 0,
+  });
+  const [email, setEmail] = useState<string>("");
 
-export default function PruebaPedidos() {
-  const [selected, setSelected] = useState<Pedido | null>(null);
+  const cargarDatos = async () => {
+    setMensaje("");
+    try {
+      const [pedidosRes, motivosRes] = await Promise.all([
+        fetch("/api/control_calidad/listar"),
+        fetch("/api/control_calidad/motivos"),
+      ]);
+      const pedidosData = await pedidosRes.json();
+      const motivosData = await motivosRes.json();
+      setPedidos(Array.isArray(pedidosData) ? pedidosData : pedidosData.pedidos || []);
+      setMotivos(Array.isArray(motivosData) ? motivosData : motivosData.motivos || []);
+    } catch {
+      setMensaje("Error al cargar pedidos o motivos");
+    }
+  };
+
+  useEffect(() => {
+    const usuario = localStorage.getItem("usuario");
+    if (usuario) {
+      const user = JSON.parse(usuario);
+      setEmail(user.email || "");
+    } else {
+      router.push("/login");
+      return;
+    }
+    cargarDatos();
+  }, []);
+
+  const handleSelectPedido = (pedido: Pedido) => {
+    setSelectedPedido(pedido);
+    setForm({
+      rechazos: 0,
+      motivo_rechazo_id: "",
+      comentarios: "",
+      cajas_finales: pedido.cantidad_cajas,
+    });
+    setStep(2);
+    setMensaje("");
+  };
+
+  useEffect(() => {
+    if (selectedPedido) {
+      setForm((prev) => ({
+        ...prev,
+        cajas_finales: selectedPedido.cantidad_cajas - prev.rechazos,
+      }));
+    }
+  }, [form.rechazos, selectedPedido]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPedido) return;
+    if (form.rechazos > 0 && !form.motivo_rechazo_id) {
+      setMensaje("Debe seleccionar un motivo para los rechazos");
+      return;
+    }
+    if (form.rechazos > selectedPedido.cantidad_cajas) {
+      setMensaje("Los rechazos no pueden superar la cantidad total");
+      return;
+    }
+    try {
+      const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+      const body = {
+        recepcion_id: selectedPedido.id,
+        usuario_control_id: usuario.id,
+        cajas_aprobadas: form.cajas_finales,
+        cajas_rechazadas: form.rechazos,
+        notas: form.comentarios,
+        motivos: form.rechazos > 0 ? [{ motivo_id: Number(form.motivo_rechazo_id), cantidad_cajas: form.rechazos }] : [],
+      };
+      const res = await fetch("/api/control_calidad/guardar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setMensaje("✅ Control de calidad registrado correctamente");
+        setTimeout(() => {
+          setStep(1);
+          setSelectedPedido(null);
+          cargarDatos();
+        }, 1500);
+      } else {
+        setMensaje("Error al guardar: " + (result.message || ""));
+      }
+    } catch {
+      setMensaje("Error al registrar el control de calidad");
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto", background: "#23272a", color: "#fff", padding: 32, borderRadius: 18 }}>
-      <h2 style={{ fontSize: 28, fontWeight: "bold", color: "#2ecc71", marginBottom: 30 }}>Lista de Pedidos</h2>
+    <div className="min-h-screen bg-[#1a1d1f] text-white flex flex-col items-center px-4 py-8 sm:px-6 md:px-10">
+      <div className="w-full max-w-6xl space-y-10">
+        <HeaderControlCalidad
+          email={email}
+          onReload={cargarDatos}
+          onBack={() => router.push("/panel/empleado")}
+          mensaje={mensaje}
+        />
 
-      {!selected ? (
-        <ul>
-          {pedidosFake.map((p) => (
-            <li key={p.id} style={{ marginBottom: 22, padding: 14, border: "1px solid #444", borderRadius: 10 }}>
-              <div><b>Nota:</b> {p.numero}</div>
-              <div><b>Empresa:</b> {p.empresa}</div>
-              <div><b>Fruta:</b> {p.fruta}</div>
-              <div><b>Cantidad:</b> {p.cantidad}</div>
-              <button
-                style={{ marginTop: 10, background: "#27ae60", color: "#fff", padding: "8px 16px", border: "none", borderRadius: 8, fontWeight: "bold" }}
-                onClick={() => setSelected(p)}
-              >
-                Seleccionar
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div>
-          <h3 style={{ fontWeight: "bold", fontSize: 22, marginBottom: 20, color: "#3498db" }}>Detalle del Pedido Seleccionado</h3>
-          <p><b>Nota:</b> {selected.numero}</p>
-          <p><b>Empresa:</b> {selected.empresa}</p>
-          <p><b>Fruta:</b> {selected.fruta}</p>
-          <p><b>Cantidad:</b> {selected.cantidad}</p>
-          <button
-            style={{ marginTop: 22, background: "#e74c3c", color: "#fff", padding: "8px 18px", border: "none", borderRadius: 8, fontWeight: "bold" }}
-            onClick={() => setSelected(null)}
-          >
-            Volver a la lista
-          </button>
+        {step === 1 && (
+          <div className="rounded-3xl bg-[#23272a] border border-[#2ecc71] shadow-xl p-6 sm:p-8">
+            <ListaPedidos pedidos={pedidos} onSelect={handleSelectPedido} />
+          </div>
+        )}
+
+        {step === 2 && selectedPedido && (
+          <div className="space-y-8">
+            <PedidoDetalle pedido={selectedPedido} />
+            <FormularioCalidad
+              form={form}
+              setForm={setForm}
+              motivos={motivos}
+              pedido={selectedPedido}
+              onVolver={() => setStep(1)}
+              onSubmit={handleSubmit}
+            />
+          </div>
+        )}
+
+        <div className="mt-10 text-lg text-gray-400 text-center">
+          © {new Date().getFullYear()} El Molinito
         </div>
-      )}
+      </div>
     </div>
   );
 }
