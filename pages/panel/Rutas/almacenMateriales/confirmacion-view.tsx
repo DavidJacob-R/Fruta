@@ -8,6 +8,35 @@ interface ConfirmacionViewProps {
 }
 
 export default function ConfirmacionView({ darkMode, data, onGenerarTicket, onBack }: ConfirmacionViewProps) {
+  // Protección para build/prerender
+  if (!data || !data.tipo) {
+    return (
+      <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
+        ${darkMode
+          ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-400'
+          : 'bg-white border-2 border-orange-200'
+        }`}>
+        <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
+          ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+          Información incompleta
+        </h1>
+        <p className={darkMode ? 'text-orange-100' : 'text-gray-700'}>
+          No se encontró la información del movimiento.<br />
+          Por favor regresa e inténtalo de nuevo.
+        </p>
+        <button
+          onClick={onBack}
+          className={`mt-8 px-6 py-3 rounded-xl border-2 font-bold transition
+            ${darkMode
+              ? 'border-orange-400 text-orange-300 hover:bg-orange-900/30'
+              : 'border-orange-300 text-orange-700 hover:bg-orange-100'
+            }`}>
+          Regresar
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
       ${darkMode
