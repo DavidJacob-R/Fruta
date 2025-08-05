@@ -67,7 +67,7 @@ export default function ExistenciasMateriales({
             Existencias Actuales
           </h3>
           <div className="space-y-2">
-            {existencias.length > 0 ? (
+            {(existencias?.length ?? 0) > 0 ? (
               existencias.map((item) => (
                 <div key={item.id} className="flex justify-between items-center">
                   <span className={darkMode ? 'text-white' : 'text-gray-800'}>{item.nombre}</span>
