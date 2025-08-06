@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FiSearch, FiSun, FiMoon, FiSend, FiPrinter, FiMenu, FiX, FiFilter, FiXCircle } from 'react-icons/fi'
+import { FiSearch, FiSun, FiMoon, FiSend, FiPrinter, FiMenu, FiX, FiHome, FiXCircle } from 'react-icons/fi'
 import { useRouter } from 'next/router'
 
 export default function NotasAdmin() {
@@ -12,7 +12,6 @@ export default function NotasAdmin() {
   const [darkMode, setDarkMode] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  // FILTROS
   const [filtroFechaInicio, setFiltroFechaInicio] = useState('')
   const [filtroFechaFin, setFiltroFechaFin] = useState('')
   const [filtroTipoNota, setFiltroTipoNota] = useState('')
@@ -32,7 +31,6 @@ export default function NotasAdmin() {
     router.push(ruta)
   }
 
-  // Traer notas
   const recargarNotas = async () => {
     setCargando(true)
     const res = await fetch('/api/notas/listar')
@@ -57,7 +55,6 @@ export default function NotasAdmin() {
     return () => { router.events.off('routeChangeComplete', handleRouteChange) }
   }, [router])
 
-  // FUNCIONES QUE PIDES
   const handleImprimir = async (nota: any) => {
     const idNota = nota.id || nota.nota_id || nota.numero_nota
     if (!idNota) {
@@ -89,21 +86,17 @@ export default function NotasAdmin() {
     setMensaje(data.success ? 'Correo enviado correctamente' : 'Error al enviar correo')
   }
 
-  // FILTRO AVANZADO DE NOTAS
   const notasFiltradas = notas.filter(n => {
-    // Filtrar por fecha
     const fecha = n.fecha_recepcion ? n.fecha_recepcion.slice(0, 10) : ''
     let pasaFecha = true
     if (filtroFechaInicio && fecha < filtroFechaInicio) pasaFecha = false
     if (filtroFechaFin && fecha > filtroFechaFin) pasaFecha = false
 
-    // Tipo de nota
     let pasaTipo = true
     if (filtroTipoNota && filtroTipoNota !== '') {
       pasaTipo = n.tipo_nota === filtroTipoNota
     }
 
-    // Nombre empresa o agricultor
     let pasaNombre = true
     if (filtroNombre.trim() !== '') {
       const buscar = filtroNombre.toLowerCase()
@@ -113,7 +106,6 @@ export default function NotasAdmin() {
         (n.agricultor_apellido && n.agricultor_apellido.toLowerCase().includes(buscar))
     }
 
-    // Número de nota
     let pasaNumero = true
     if (filtroNumeroNota.trim() !== '') {
       pasaNumero = n.numero_nota?.toString().includes(filtroNumeroNota)
@@ -122,7 +114,6 @@ export default function NotasAdmin() {
     return pasaFecha && pasaTipo && pasaNombre && pasaNumero
   })
 
-  // Colores y estilos
   const bgDay = "bg-[#f6f4f2]"
   const cardDay = "bg-[#f8f7f5] border border-orange-200"
   const textDay = "text-[#1a1a1a]"
@@ -226,6 +217,15 @@ export default function NotasAdmin() {
         <div className="w-full max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-5 gap-3">
             <h2 className={`text-3xl font-extrabold ${textMain} mb-2`}>Gestión de Notas</h2>
+            <button
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm shadow-sm font-semibold transition-colors
+                ${darkMode ? 'bg-[#232323] border-orange-700 text-orange-300 hover:bg-orange-900' : 'bg-white border-orange-200 text-orange-700 hover:bg-orange-100'}`}
+              onClick={() => router.push('/panel/administrador')}
+              title="Ir al menú principal"
+            >
+              <FiHome className="text-lg" />
+              <span className="hidden sm:inline">Menú principal</span>
+            </button>
           </div>
           {/* FILTROS AVANZADOS */}
           <div className={`rounded-2xl p-4 mb-8 border ${darkMode ? 'bg-[#1e1914] border-orange-900' : 'bg-orange-50 border-orange-200'} ${softShadow}`}>
@@ -347,10 +347,14 @@ export default function NotasAdmin() {
                           : '-'}
                       </td>
                       <td className={`p-4 ${textMain}`}>{n.fecha_recepcion?.slice(0, 16).replace('T', ' ')}</td>
-                      <td className={`p-4 ${textMain}`}>
-                        {n.usuario_nombre} {n.usuario_apellido}
-                        <div className={`text-xs ${textSecondary}`}>{n.usuario_email}</div>
-                      </td>
+                          <td className={`p-4 ${textMain}`}>
+                            {n.usuario_nombre && n.usuario_apellido
+                              ? `${n.usuario_nombre} ${n.usuario_apellido}`
+                              : '-'}
+                            <div className={`text-xs ${textSecondary}`}>
+                              {n.usuario_email}
+                            </div>
+                          </td>
                       <td className={`p-4 ${textMain}`}>
                         {n.nota_recepcion_id ? (
                           <button
@@ -416,7 +420,6 @@ export default function NotasAdmin() {
             )}
           </div>
         </div>
-        {/* Modal para reenviar */}
         {modalNota && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
             <div className={`max-w-lg w-full rounded-2xl shadow-2xl border-2 p-8 ${darkMode ? 'bg-gray-900 border-orange-700' : 'bg-white border-orange-300'}`}>

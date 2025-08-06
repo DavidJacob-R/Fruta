@@ -112,6 +112,7 @@ export const recepcion_fruta = pgTable("recepcion_fruta", {
   numero_nota: integer("numero_nota"),
   tipo_nota: varchar("tipo_nota", { length: 20 }),
   empaque_id: integer("empaque_id").references(() => empaques.id),
+  temporada_id: integer('temporada_id').references(() => temporadas.id),
   sector: text("sector"),
   marca: text("marca"),
   destino: text("destino"),
@@ -314,6 +315,7 @@ export const notas = pgTable('notas', {
   creado_en: timestamp('creado_en', { mode: 'date' }).defaultNow(),
   actualizado_en: timestamp('actualizado_en', { mode: 'date' }).defaultNow(),
   pdf: varchar('pdf', { length: 255 }), 
+   temporada_id: integer('temporada_id').references(() => temporadas.id),
 })
 
 // Contador de notas

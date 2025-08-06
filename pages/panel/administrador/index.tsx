@@ -32,7 +32,6 @@ export default function AdminPanel() {
     router.push('/')
   }
 
-  // Puedes cambiar emojis por logos si quieres, sólo remplázalos
   const modulos = [
     { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques', icon: '📦' },
     { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres', icon: '🏢' },
@@ -59,7 +58,6 @@ export default function AdminPanel() {
   return (
     <div className={`${modoNoche ? bgNight : bgDay} min-h-screen ${modoNoche ? textNight : textDay} transition-colors duration-300 flex`}>
 
-      {/* Sidebar izquierda */}
       <aside className={`flex flex-col h-screen w-[260px] md:w-[280px] ${modoNoche ? cardNight : cardDay} p-6 ${softShadow} border-r sticky top-0 z-20`}>
         <div className="flex flex-col items-center mb-8">
           <div className={`rounded-full p-3 mb-2 ${modoNoche ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
@@ -105,7 +103,6 @@ export default function AdminPanel() {
         </div>
       </aside>
 
-      {/* Área derecha, por ahora vacía */}
      
 <main className="flex-1 p-8 flex flex-col gap-8">
   {/* Bienvenida */}
@@ -136,7 +133,7 @@ export default function AdminPanel() {
     </div>
   </section>
 
-  {/* Acciones recientes */}
+  {/* Acciones recientes (no funcionales)*/}
   <section>
     <h3 className="text-xl font-semibold mb-3">Actividad reciente</h3>
     <ul className="space-y-2">
