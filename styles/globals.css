@@ -24,3 +24,19 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print\\:block, .print\\:flex, .print\\:inline-block, .print\\:inline {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .print\\:flex {
+    display: flex !important;
+  }
+}

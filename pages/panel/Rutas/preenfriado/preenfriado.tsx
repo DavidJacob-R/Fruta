@@ -17,9 +17,9 @@ export default function PreenfriadoPanel() {
   }, [])
 
   const submodulos = [
-    { nombre: 'Pallets', ruta: '/panel/preenfriado/pallets' },
-    { nombre: 'Recepcion', ruta: '/panel/preenfriado/almacen' },
-    { nombre: 'Gestión de Pallets', ruta: '/panel/preenfriado/gestion_pallets' },
+    { nombre: 'Pallets', ruta: '/panel/Rutas/preenfriado/pallets' },
+    { nombre: 'Recepcion', ruta: '/panel/Rutas/preenfriado/almacen' },
+    { nombre: 'Gestión de Pallets', ruta: '/panel/Rutas/preenfriado/gestion_pallets' },
   ]
 
   const handleSubmoduloClick = (ruta: Url) => {

@@ -19,9 +19,9 @@ export default function RecepcionSeleccion() {
 
   const handleSeleccion = (tipo: 'empresa' | 'maquila') => {
     if (tipo === 'empresa') {
-      router.push('/panel/Rutas/recepcion-empresa')
+      router.push('/panel/Rutas/recepcion/recepcion-empresa')
     } else {
-      router.push('/panel/Rutas/recepcion-maquila')
+      router.push('/panel/Rutas/recepcion/recepcion-maquila')
     }
   }
 
@@ -98,7 +98,7 @@ export default function RecepcionSeleccion() {
             </div>
 
             <button
-              onClick={() => router.push('/panel/Rutas/nota-recepcion')}
+              onClick={() => router.push('/panel/Rutas/recepcion/nota-recepcion')}
               className="w-full shadow hover:scale-105 transition-transform px-6 py-4 text-lg font-bold rounded-2xl border-2 focus:ring-2 outline-none
                 bg-white border-orange-200 text-orange-800 hover:bg-orange-50">
               Ver notas del día

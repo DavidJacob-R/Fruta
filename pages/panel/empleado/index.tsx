@@ -22,12 +22,12 @@ export default function EmpleadoPanel() {
   }
 
   const modulos = [
-    { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion' },
-    { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad' },
-    { nombre: 'Preenfriado', ruta: '/panel/preenfriado' }, 
-    { nombre: 'Conservación', ruta: '/panel/conservacion' },
-    { nombre: 'Carga y exportación', ruta: '/panel/Rutas/carga-exportacion' },
-    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacen-materiales' },
+    { nombre: 'Recepción de fruta', ruta: '/panel/Rutas/recepcion/recepcion' },
+    { nombre: 'Control de calidad', ruta: '/panel/Rutas/control-calidad/control-calidad' },
+    { nombre: 'Preenfriado', ruta: '/panel/Rutas/preenfriado/preenfriado' }, 
+    { nombre: 'Conservación', ruta: '/panel/Rutas/conservacion/conservacion' },
+    { nombre: 'Salidas', ruta: '/panel/Rutas/salidas/salida' },
+    { nombre: 'Almacen de materiales', ruta: '/panel/Rutas/almacenMateriales/almacen-materiales' },
   ]
 
   const handleModuloClick = (ruta: Url) => {

@@ -96,6 +96,8 @@ export const empaques = pgTable('empaques', {
 })
 
 // Tabla de recepción de fruta
+export const tipoProduccionEnum = pgEnum('tipo_produccion', ['convencional', 'organica'])
+
 export const recepcion_fruta = pgTable("recepcion_fruta", {
   id: serial("id").primaryKey(),
   agricultor_id: integer("agricultor_id").references(() => agricultores.id),
@@ -109,8 +111,15 @@ export const recepcion_fruta = pgTable("recepcion_fruta", {
   creado_en: timestamp("creado_en", { mode: "date" }).defaultNow(),
   numero_nota: integer("numero_nota"),
   tipo_nota: varchar("tipo_nota", { length: 20 }),
-  empaque_id: integer("empaque_id").references(() => empaques.id)
+  empaque_id: integer("empaque_id").references(() => empaques.id),
+  temporada_id: integer('temporada_id').references(() => temporadas.id),
+  sector: text("sector"),
+  marca: text("marca"),
+  destino: text("destino"),
+  variedad: text("variedad"),
+  tipo_produccion: tipoProduccionEnum("tipo_produccion")
 })
+
 
 // Motivos de rechazo
 export const motivos_rechazo = pgTable('motivos_rechazo', {
@@ -305,6 +314,8 @@ export const notas = pgTable('notas', {
   usuario_creacion_id: integer('usuario_creacion_id').references(() => usuarios.id),
   creado_en: timestamp('creado_en', { mode: 'date' }).defaultNow(),
   actualizado_en: timestamp('actualizado_en', { mode: 'date' }).defaultNow(),
+  pdf: varchar('pdf', { length: 255 }), 
+   temporada_id: integer('temporada_id').references(() => temporadas.id),
 })
 
 // Contador de notas
