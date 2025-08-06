@@ -32,25 +32,18 @@ export default function AdminPanel() {
     router.push('/')
   }
 
+  // Puedes cambiar emojis por logos si quieres, sólo remplázalos
   const modulos = [
-    //{ nombre: 'Recepción de fruta', ruta: '/panel/administradorRutas/recepcion' },
-    //{ nombre: 'Control de calidad', ruta: '/panel/administradorRutas/control-calidad' },
-    { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques' },
-    //{ nombre: 'Preenfriado', ruta: '/panel/administradorRutas/preenfriado' },
-    //{ nombre: 'Conservación', ruta: '/panel/administradorRutas/conservacion' },
-    //{ nombre: 'Carga y exportación', ruta: '/panel/administradorRutas/carga-exportacion' },
-    //{ nombre: 'Control de materiales', ruta: '/panel/administradorRutas/control-materiales' },
-    //{ nombre: 'Pagos', ruta: '/panel/administradorRutas/pagos' },
-    //{ nombre: 'Reportes', ruta: '/panel/administradorRutas/reportes' },
-    { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres' },
-    { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas' },
-    { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/agregar-agricultores' },
-    { nombre: 'Notas', ruta: '/panel/administradorRutas/notas/notas' },
+    { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques', icon: '📦' },
+    { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres', icon: '🏢' },
+    { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas', icon: '🍓' },
+    { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/agregar-agricultores', icon: '👨‍🌾' },
+    { nombre: 'Notas', ruta: '/panel/administradorRutas/notas/notas', icon: '📝' },
   ]
 
   const handleModuloClick = (ruta: Url) => router.push(ruta)
 
-  const bgDay = "bg-[#f6f4f2]"           
+  const bgDay = "bg-[#f6f4f2]"
   const cardDay = "bg-[#f8f7f5] border border-orange-200"
   const headerDay = "bg-[#f2eae2] text-orange-800 border border-orange-300"
   const textDay = "text-[#1a1a1a]"
@@ -64,62 +57,105 @@ export default function AdminPanel() {
   const accentNight = "text-orange-400"
 
   return (
-    <div className={`${modoNoche ? bgNight : bgDay} min-h-screen ${modoNoche ? textNight : textDay} p-6 transition-colors duration-300`}>
-      {/* Toggle modo noche/día */}
-      <div className="flex justify-end max-w-5xl mx-auto mb-6">
-        <button
-          aria-label="Cambiar modo"
-          onClick={cambiarModo}
-          className={`flex items-center gap-2 focus:outline-none border border-orange-400 ${modoNoche ? 'bg-[#232323]' : 'bg-orange-50'} rounded-full px-4 py-2 ${softShadow} transition hover:bg-orange-100 dark:hover:bg-orange-700/20`}
-        >
-          <span className={`text-xs font-semibold ${modoNoche ? 'text-orange-400' : 'text-orange-600'}`}>{modoNoche ? 'Noche' : 'Día'}</span>
-          <div className="relative w-10 h-5">
-            <span className={`absolute left-0 top-0 w-10 h-5 rounded-full ${modoNoche ? 'bg-orange-500/60' : 'bg-orange-200'}`}></span>
-            <span
-              className={`absolute z-10 top-0.5 left-1 ${modoNoche ? 'translate-x-5' : ''} transition-transform w-4 h-4 ${modoNoche ? 'bg-[#161616] border-orange-500' : 'bg-white border-orange-400'} border rounded-full shadow`}
-            ></span>
+    <div className={`${modoNoche ? bgNight : bgDay} min-h-screen ${modoNoche ? textNight : textDay} transition-colors duration-300 flex`}>
+
+      {/* Sidebar izquierda */}
+      <aside className={`flex flex-col h-screen w-[260px] md:w-[280px] ${modoNoche ? cardNight : cardDay} p-6 ${softShadow} border-r sticky top-0 z-20`}>
+        <div className="flex flex-col items-center mb-8">
+          <div className={`rounded-full p-3 mb-2 ${modoNoche ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+            <span className="text-3xl">🛠️</span>
           </div>
-        </button>
-      </div>
-
-      {/* Encabezado */}
-      <div className={`${modoNoche ? headerNight : headerDay} rounded-2xl ${softShadow} p-6 mb-6`}>
-        <h1 className="text-3xl font-extrabold mb-2 tracking-tight">Panel del Administrador</h1>
-        <p className={`text-sm ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-          Bienvenido, <span className="font-semibold">{email}</span>
-        </p>
-      </div>
-
-      {/* Grid de módulos */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {modulos.map((modulo, idx) => (
-          <div
-            key={idx}
-            onClick={() => handleModuloClick(modulo.ruta)}
-            className={`
-              cursor-pointer rounded-2xl p-5 ${softShadow} border transition
-              ${modoNoche
-                ? `${cardNight} hover:bg-[#1e1914] hover:border-orange-400`
-                : `${cardDay} hover:bg-orange-50 hover:border-orange-400`}
-            `}
+          <h2 className="text-lg font-bold mb-1 text-center">Panel del Administrador</h2>
+          <span className={`text-xs ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>{email}</span>
+        </div>
+        <nav className="flex-1 flex flex-col gap-1">
+          {modulos.map((modulo, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleModuloClick(modulo.ruta)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition
+                ${modoNoche ? 'hover:bg-[#1e1914]' : 'hover:bg-orange-100'} ${modoNoche ? accentNight : accentDay}
+              `}
+            >
+              <span className="text-xl">{modulo.icon}</span>
+              <span>{modulo.nombre}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="mt-10 flex flex-col items-center">
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold shadow-lg mb-3"
           >
-            <h2 className={`text-lg font-bold mb-1 ${modoNoche ? accentNight : accentDay}`}>{modulo.nombre}</h2>
-            <p className={`text-xs ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-              Accede al módulo de {modulo.nombre.toLowerCase()}.
-            </p>
-          </div>
-        ))}
-      </div>
+            Cerrar sesión
+          </button>
+          <button
+            aria-label="Cambiar modo"
+            onClick={cambiarModo}
+            className={`flex items-center gap-2 focus:outline-none border border-orange-400 ${modoNoche ? 'bg-[#232323]' : 'bg-orange-50'} rounded-full px-4 py-2 ${softShadow} transition hover:bg-orange-100 dark:hover:bg-orange-700/20`}
+          >
+            <span className={`text-xs font-semibold ${modoNoche ? 'text-orange-400' : 'text-orange-600'}`}>{modoNoche ? 'Noche' : 'Día'}</span>
+            <div className="relative w-10 h-5">
+              <span className={`absolute left-0 top-0 w-10 h-5 rounded-full ${modoNoche ? 'bg-orange-500/60' : 'bg-orange-200'}`}></span>
+              <span
+                className={`absolute z-10 top-0.5 left-1 ${modoNoche ? 'translate-x-5' : ''} transition-transform w-4 h-4 ${modoNoche ? 'bg-[#161616] border-orange-500' : 'bg-white border-orange-400'} border rounded-full shadow`}
+              ></span>
+            </div>
+          </button>
+        </div>
+      </aside>
 
-      {/* Botón cerrar sesión */}
-      <div className="mt-10 text-center">
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold shadow-lg"
-        >
-          Cerrar sesión
-        </button>
-      </div>
+      {/* Área derecha, por ahora vacía */}
+     
+<main className="flex-1 p-8 flex flex-col gap-8">
+  {/* Bienvenida */}
+  <section>
+    <h2 className="text-2xl font-bold mb-2">¡Bienvenido{email ? ',' : ''} {email}!</h2>
+    <p className="text-base text-orange-500">Resumen de tu operación hoy</p>
+  </section>
+
+  {/* Tarjetas principales */}
+  <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {/* Notas generadas hoy */}
+    <div className={`rounded-2xl p-6 flex flex-col items-center ${modoNoche ? 'bg-[#232323] border border-orange-700' : 'bg-orange-50 border border-orange-200'} ${softShadow}`}>
+      <span className="text-3xl mb-2">📝</span>
+      <span className="text-2xl font-bold">12</span>
+      <span className="text-sm text-gray-400">Notas generadas hoy</span>
+    </div>
+    {/* Recepciones hoy */}
+    <div className={`rounded-2xl p-6 flex flex-col items-center ${modoNoche ? 'bg-[#232323] border border-orange-700' : 'bg-orange-50 border border-orange-200'} ${softShadow}`}>
+      <span className="text-3xl mb-2">🍓</span>
+      <span className="text-2xl font-bold">3</span>
+      <span className="text-sm text-gray-400">Recepciones de fruta hoy</span>
+    </div>
+    {/* Alertas */}
+    <div className={`rounded-2xl p-6 flex flex-col items-center ${modoNoche ? 'bg-[#232323] border border-orange-700' : 'bg-orange-50 border border-orange-200'} ${softShadow}`}>
+      <span className="text-3xl mb-2">⚠️</span>
+      <span className="text-2xl font-bold text-red-500">2</span>
+      <span className="text-sm text-gray-400">Alertas pendientes</span>
+    </div>
+  </section>
+
+  {/* Acciones recientes */}
+  <section>
+    <h3 className="text-xl font-semibold mb-3">Actividad reciente</h3>
+    <ul className="space-y-2">
+      <li className="flex items-center gap-2">
+        <span className="text-lg">➕</span>
+        <span>Se registró una nueva recepción de fruta (hace 5 min)</span>
+      </li>
+      <li className="flex items-center gap-2">
+        <span className="text-lg">📝</span>
+        <span>Se generó la nota #1211 (hace 12 min)</span>
+      </li>
+      <li className="flex items-center gap-2">
+        <span className="text-lg">⚠️</span>
+        <span>Carga en almacén lleva más de 2 días (hace 1 h)</span>
+      </li>
+    </ul>
+  </section>
+</main>
+
     </div>
   )
 }
