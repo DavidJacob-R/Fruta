@@ -1,19 +1,24 @@
 import { useEffect, useState } from 'react'
-import { FiSearch, FiSun, FiMoon, FiSend, FiPrinter, FiMenu, FiX } from 'react-icons/fi'
+import { FiSearch, FiSun, FiMoon, FiSend, FiPrinter, FiMenu, FiX, FiFilter, FiXCircle } from 'react-icons/fi'
 import { useRouter } from 'next/router'
 
 export default function NotasAdmin() {
   const router = useRouter()
   const [notas, setNotas] = useState<any[]>([])
-  const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
   const [modalNota, setModalNota] = useState<any | null>(null)
   const [emailReenvio, setEmailReenvio] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [darkMode, setDarkMode] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(true) // abierto por default
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
-  // Menú lateral igual al principal
+  // FILTROS
+  const [filtroFechaInicio, setFiltroFechaInicio] = useState('')
+  const [filtroFechaFin, setFiltroFechaFin] = useState('')
+  const [filtroTipoNota, setFiltroTipoNota] = useState('')
+  const [filtroNombre, setFiltroNombre] = useState('')
+  const [filtroNumeroNota, setFiltroNumeroNota] = useState('')
+
   const modulos = [
     { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques', icon: '📦' },
     { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres', icon: '🏢' },
@@ -52,38 +57,6 @@ export default function NotasAdmin() {
     return () => { router.events.off('routeChangeComplete', handleRouteChange) }
   }, [router])
 
-  const notasFiltradas = notas.filter(n =>
-    n.numero_nota?.toString().includes(busqueda) ||
-    n.tipo_nota?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    n.agricultor_nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    n.empresa_nombre?.toLowerCase().includes(busqueda.toLowerCase())
-  )
-
-  // Colores y estilos
-  const bgDay = "bg-[#f6f4f2]"
-  const cardDay = "bg-[#f8f7f5] border border-orange-200"
-  const textDay = "text-[#1a1a1a]"
-  const accentDay = "text-orange-600"
-  const bgNight = "bg-[#161616]"
-  const cardNight = "bg-[#232323] border border-[#353535]"
-  const textNight = "text-white"
-  const accentNight = "text-orange-400"
-  const softShadow = "shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]"
-
-  const tableBg = darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-white via-slate-50 to-slate-200'
-  const cardBg = darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-slate-200'
-  const thBg = darkMode ? 'bg-slate-800 text-orange-200 border-slate-700' : 'bg-orange-50 text-orange-700 border-orange-200'
-  const rowEven = darkMode ? 'bg-slate-900' : 'bg-orange-50'
-  const rowOdd = darkMode ? 'bg-gray-800' : 'bg-white'
-  const textMain = darkMode ? 'text-orange-200' : 'text-orange-700'
-  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500'
-
-  const btnBase = "rounded-xl px-4 py-1 font-semibold shadow-sm border transition-colors"
-  const btnRecep = darkMode ? "bg-yellow-900 border-yellow-800 text-yellow-100 hover:bg-yellow-800" : "bg-yellow-100 border-yellow-300 text-yellow-700 hover:bg-yellow-200"
-  const btnCalid = darkMode ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800" : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
-  const btnPrint = darkMode ? "bg-orange-900 border-orange-800 text-orange-100 hover:bg-orange-800" : "bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200"
-  const btnSend = darkMode ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800" : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
-
   // FUNCIONES QUE PIDES
   const handleImprimir = async (nota: any) => {
     const idNota = nota.id || nota.nota_id || nota.numero_nota
@@ -116,7 +89,71 @@ export default function NotasAdmin() {
     setMensaje(data.success ? 'Correo enviado correctamente' : 'Error al enviar correo')
   }
 
-  // Sidebar lateral vertical y ocultable
+  // FILTRO AVANZADO DE NOTAS
+  const notasFiltradas = notas.filter(n => {
+    // Filtrar por fecha
+    const fecha = n.fecha_recepcion ? n.fecha_recepcion.slice(0, 10) : ''
+    let pasaFecha = true
+    if (filtroFechaInicio && fecha < filtroFechaInicio) pasaFecha = false
+    if (filtroFechaFin && fecha > filtroFechaFin) pasaFecha = false
+
+    // Tipo de nota
+    let pasaTipo = true
+    if (filtroTipoNota && filtroTipoNota !== '') {
+      pasaTipo = n.tipo_nota === filtroTipoNota
+    }
+
+    // Nombre empresa o agricultor
+    let pasaNombre = true
+    if (filtroNombre.trim() !== '') {
+      const buscar = filtroNombre.toLowerCase()
+      pasaNombre =
+        (n.empresa_nombre && n.empresa_nombre.toLowerCase().includes(buscar)) ||
+        (n.agricultor_nombre && n.agricultor_nombre.toLowerCase().includes(buscar)) ||
+        (n.agricultor_apellido && n.agricultor_apellido.toLowerCase().includes(buscar))
+    }
+
+    // Número de nota
+    let pasaNumero = true
+    if (filtroNumeroNota.trim() !== '') {
+      pasaNumero = n.numero_nota?.toString().includes(filtroNumeroNota)
+    }
+
+    return pasaFecha && pasaTipo && pasaNombre && pasaNumero
+  })
+
+  // Colores y estilos
+  const bgDay = "bg-[#f6f4f2]"
+  const cardDay = "bg-[#f8f7f5] border border-orange-200"
+  const textDay = "text-[#1a1a1a]"
+  const accentDay = "text-orange-600"
+  const bgNight = "bg-[#161616]"
+  const cardNight = "bg-[#232323] border border-[#353535]"
+  const textNight = "text-white"
+  const accentNight = "text-orange-400"
+  const softShadow = "shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]"
+
+  const cardBg = darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-slate-200'
+  const thBg = darkMode ? 'bg-slate-800 text-orange-200 border-slate-700' : 'bg-orange-50 text-orange-700 border-orange-200'
+  const rowEven = darkMode ? 'bg-slate-900' : 'bg-orange-50'
+  const rowOdd = darkMode ? 'bg-gray-800' : 'bg-white'
+  const textMain = darkMode ? 'text-orange-200' : 'text-orange-700'
+  const textSecondary = darkMode ? 'text-gray-400' : 'text-gray-500'
+
+  const btnBase = "rounded-xl px-4 py-1 font-semibold shadow-sm border transition-colors"
+  const btnRecep = darkMode ? "bg-yellow-900 border-yellow-800 text-yellow-100 hover:bg-yellow-800" : "bg-yellow-100 border-yellow-300 text-yellow-700 hover:bg-yellow-200"
+  const btnCalid = darkMode ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800" : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
+  const btnPrint = darkMode ? "bg-orange-900 border-orange-800 text-orange-100 hover:bg-orange-800" : "bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200"
+  const btnSend = darkMode ? "bg-green-900 border-green-800 text-green-100 hover:bg-green-800" : "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
+
+  function limpiarFiltros() {
+    setFiltroFechaInicio('')
+    setFiltroFechaFin('')
+    setFiltroTipoNota('')
+    setFiltroNombre('')
+    setFiltroNumeroNota('')
+  }
+
   function Sidebar() {
     return (
       <aside className={`
@@ -167,7 +204,6 @@ export default function NotasAdmin() {
             </div>
           </button>
         </div>
-        {/* Botón cerrar sidebar */}
         <button className="absolute top-5 right-4 text-3xl text-orange-500" onClick={() => setSidebarOpen(false)}>
           <FiX />
         </button>
@@ -177,7 +213,6 @@ export default function NotasAdmin() {
 
   return (
     <div className={`${darkMode ? bgNight : bgDay} min-h-screen flex transition-colors duration-300`}>
-      {/* Botón menú SIEMPRE visible */}
       {!sidebarOpen && (
         <button
           className="fixed z-50 top-5 left-3 bg-orange-500 text-white rounded-full p-2 shadow-xl"
@@ -186,27 +221,78 @@ export default function NotasAdmin() {
           <FiMenu className="text-2xl" />
         </button>
       )}
-      {/* Sidebar */}
       <Sidebar />
-      {/* Contenido principal */}
       <main className={`flex-1 p-4 md:p-8 transition-all duration-300 ${sidebarOpen ? 'md:ml-[260px]' : ''}`}>
         <div className="w-full max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-5 gap-3">
             <h2 className={`text-3xl font-extrabold ${textMain} mb-2`}>Gestión de Notas</h2>
-            <div className="flex gap-2 items-center">
-              <FiSearch className={`text-xl ${textMain}`} />
-              <input
-                type="text"
-                className={`border rounded-xl px-4 py-2 focus:ring-2 outline-none font-medium
-                  ${darkMode
-                    ? 'border-slate-600 bg-slate-900 text-orange-100 focus:ring-orange-400'
-                    : 'border-orange-200 bg-white text-orange-700 focus:ring-orange-200'
-                  }`}
-                placeholder="Buscar por nota, agricultor o empresa..."
-                value={busqueda}
-                onChange={e => setBusqueda(e.target.value)} />
+          </div>
+          {/* FILTROS AVANZADOS */}
+          <div className={`rounded-2xl p-4 mb-8 border ${darkMode ? 'bg-[#1e1914] border-orange-900' : 'bg-orange-50 border-orange-200'} ${softShadow}`}>
+            <div className="flex flex-wrap gap-4 items-end">
+              <div>
+                <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Desde:</label>
+                <input
+                  type="date"
+                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
+                  value={filtroFechaInicio}
+                  onChange={e => setFiltroFechaInicio(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Hasta:</label>
+                <input
+                  type="date"
+                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
+                  value={filtroFechaFin}
+                  onChange={e => setFiltroFechaFin(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Tipo:</label>
+                <select
+                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
+                  value={filtroTipoNota}
+                  onChange={e => setFiltroTipoNota(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="empresa">Empresa</option>
+                  <option value="maquila">Maquila</option>
+                </select>
+              </div>
+              <div>
+                <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Empresa o Agricultor:</label>
+                <input
+                  type="text"
+                  placeholder="Nombre..."
+                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
+                  value={filtroNombre}
+                  onChange={e => setFiltroNombre(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm mb-1 font-semibold ${textMain}`}># Nota:</label>
+                <input
+                  type="text"
+                  placeholder="No. nota..."
+                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
+                  value={filtroNumeroNota}
+                  onChange={e => setFiltroNumeroNota(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2 items-center">
+                <button
+                  className={`rounded-xl px-4 py-1 flex items-center gap-2 font-semibold border ${darkMode ? 'bg-orange-900 border-orange-800 text-orange-100 hover:bg-orange-800' : 'bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200'}`}
+                  onClick={limpiarFiltros}
+                  title="Limpiar filtros"
+                >
+                  <FiXCircle className="text-lg" />
+                  Limpiar
+                </button>
+              </div>
             </div>
           </div>
+
           <div className={`rounded-3xl border-2 shadow-2xl overflow-x-auto p-6 transition-colors ${cardBg}`}>
             {cargando ? (
               <div className="flex justify-center items-center py-16">
