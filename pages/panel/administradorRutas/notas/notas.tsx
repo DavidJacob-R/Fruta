@@ -19,10 +19,10 @@ export default function NotasAdmin() {
   const [filtroNumeroNota, setFiltroNumeroNota] = useState('')
 
   const modulos = [
-    { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/empaques', icon: '📦' },
-    { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/agregar-empres', icon: '🏢' },
-    { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/agregar-frutas', icon: '🍓' },
-    { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/agregar-agricultores', icon: '👨‍🌾' },
+    { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/Materiales/empaques', icon: '📦' },
+    { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/AgregarEmpresa/agregar-empres', icon: '🏢' },
+    { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/AgregarFrutas/agregar-frutas', icon: '🍓' },
+    { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/AgregarAgricultor/agregar-agricultores', icon: '👨‍🌾' },
     { nombre: 'Notas', ruta: '/panel/administradorRutas/notas/notas', icon: '📝' },
   ]
 
