@@ -10,19 +10,12 @@ interface Pallet {
 
 export default function SalidasPallets() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(true);
   const [pallets, setPallets] = useState<Pallet[]>([]);
   const [selectedPallets, setSelectedPallets] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [empresa, setEmpresa] = useState('HEALTHY HARVEST');
   const [cliente, setCliente] = useState('N/I');
-  const [eliminarOptions, setEliminarOptions] = useState({
-    ediTar: false,
-    continuar: false,
-    fotoEdiTar: false,
-    fotoContinuar: false
-  });
 
   // Cargar datos de pallets
   useEffect(() => {
@@ -39,12 +32,6 @@ export default function SalidasPallets() {
     setPallets(mockPallets);
   }, []);
 
-  // Controlar modo oscuro/claro
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-  }, [darkMode]);
-
   // Filtrar pallets
   const filteredPallets = pallets.filter(pallet =>
     pallet.numero.includes(searchTerm) ||
@@ -52,25 +39,17 @@ export default function SalidasPallets() {
     pallet.maquila.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-// Manejar selección de pallets
-const togglePalletSelection = (palletId: string) => {
-  setSelectedPallets(prev =>
-    prev.includes(palletId)
-      ? prev.filter(id => id !== palletId)
-      : [...prev, palletId]
-  );
-};
+  // Manejar selección de pallets
+  const togglePalletSelection = (palletId: string) => {
+    setSelectedPallets(prev =>
+      prev.includes(palletId)
+        ? prev.filter(id => id !== palletId)
+        : [...prev, palletId]
+    );
+  };
 
   // Obtener los detalles de los pallets seleccionados
   const selectedPalletsDetails = pallets.filter(p => selectedPallets.includes(p.id));
-
-  // Manejar opciones de eliminación
-  const handleToggleOption = (option: keyof typeof eliminarOptions) => {
-    setEliminarOptions(prev => ({
-      ...prev,
-      [option]: !prev[option]
-    }));
-  };
 
   // Finalizar proceso
   const handleFinalizar = () => {
@@ -81,10 +60,14 @@ const togglePalletSelection = (palletId: string) => {
   // Renderizar pantalla de selección
   const renderSelectionScreen = () => (
     <>
-      <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-        Selección de Pallets para Salida
-      </h1>
+      <div className="flex flex-col items-center mb-8">
+        <div className="bg-orange-100 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-3">
+          <span className="text-4xl">🚚</span>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-orange-400 mb-2 drop-shadow">
+          Selección de Pallets para Salida
+        </h1>
+      </div>
 
       {/* Buscador */}
       <div className="mb-6">
@@ -93,11 +76,7 @@ const togglePalletSelection = (palletId: string) => {
           placeholder="Buscar pallet por número, empresa o maquila..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition
-            ${darkMode
-              ? 'bg-black/70 border-orange-400 text-white placeholder-orange-300/70'
-              : 'bg-white border-orange-300 text-orange-900 placeholder-orange-400/70'
-            }`}
+          className="w-full px-4 py-3 rounded-xl bg-[#242126] border border-orange-300 text-white placeholder-orange-300/70 focus:border-orange-500 focus:ring-2 focus:ring-orange-400 outline-none transition"
         />
       </div>
 
@@ -105,34 +84,30 @@ const togglePalletSelection = (palletId: string) => {
       <div className="mb-6 max-h-96 overflow-y-auto">
         <table className="w-full">
           <thead>
-            <tr className={`border-b ${darkMode ? 'border-orange-400/50' : 'border-orange-300'}`}>
+            <tr className="border-b border-orange-300">
               <th className="px-4 py-3 text-left"></th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Empresa</th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Maquila</th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>N° Pallet</th>
+              <th className="px-4 py-3 text-left text-orange-300">Empresa</th>
+              <th className="px-4 py-3 text-left text-orange-300">Maquila</th>
+              <th className="px-4 py-3 text-left text-orange-300">N° Pallet</th>
             </tr>
           </thead>
           <tbody>
             {filteredPallets.map(pallet => (
               <tr 
                 key={pallet.id} 
-                className={`border-b ${darkMode ? 'border-orange-400/30 hover:bg-white/10' : 'border-orange-200 hover:bg-orange-50'}`}
+                className="border-b border-orange-300/30 hover:bg-[#2A2A2A] transition"
               >
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
                     checked={selectedPallets.includes(pallet.id)}
                     onChange={() => togglePalletSelection(pallet.id)}
-                    className={`w-5 h-5 rounded border-2 focus:ring-2 focus:ring-orange-400 
-                      ${darkMode
-                        ? 'bg-black/70 border-orange-400 checked:bg-orange-500'
-                        : 'border-orange-300 checked:bg-orange-500'
-                      }`}
+                    className="w-5 h-5 rounded border-2 border-orange-400 bg-[#242126] checked:bg-orange-500 focus:ring-2 focus:ring-orange-400"
                   />
                 </td>
-                <td className={`px-4 py-3 ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>{pallet.empresa}</td>
-                <td className={`px-4 py-3 ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>{pallet.maquila}</td>
-                <td className={`px-4 py-3 font-mono ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>{pallet.numero}</td>
+                <td className="px-4 py-3 text-orange-100">{pallet.empresa}</td>
+                <td className="px-4 py-3 text-orange-100">{pallet.maquila}</td>
+                <td className="px-4 py-3 font-mono text-orange-300">{pallet.numero}</td>
               </tr>
             ))}
           </tbody>
@@ -141,29 +116,21 @@ const togglePalletSelection = (palletId: string) => {
 
       {/* Resumen y botones */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-        <div className={`text-lg font-semibold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+        <div className="text-lg font-semibold text-orange-200">
           {selectedPallets.length} pallet(s) seleccionado(s)
         </div>
         <div className="flex gap-3">
           <button
             onClick={() => setSelectedPallets([])}
             disabled={selectedPallets.length === 0}
-            className={`px-6 py-3 rounded-xl font-bold transition
-              ${darkMode
-                ? 'bg-red-600/90 hover:bg-red-700 disabled:bg-red-600/30 disabled:text-orange-200/50'
-                : 'bg-red-500 hover:bg-red-600 disabled:bg-red-200 disabled:text-orange-700/50'
-              }`}
+            className="px-6 py-3 rounded-full font-bold bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow hover:shadow-lg transition disabled:from-red-500/30 disabled:to-red-600/30 disabled:text-orange-200/50"
           >
             Limpiar selección
           </button>
           <button
             onClick={() => setShowConfirmation(true)}
             disabled={selectedPallets.length === 0}
-            className={`px-6 py-3 rounded-xl font-bold transition
-              ${darkMode
-                ? 'bg-orange-600/90 hover:bg-orange-700 disabled:bg-orange-600/30 disabled:text-orange-200/50'
-                : 'bg-orange-500 hover:bg-orange-600 disabled:bg-orange-200 disabled:text-orange-700/50'
-              }`}
+            className="px-6 py-3 rounded-full font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow hover:shadow-lg transition disabled:from-orange-500/30 disabled:to-orange-600/30 disabled:text-orange-200/50"
           >
             Confirmar selección →
           </button>
@@ -175,45 +142,49 @@ const togglePalletSelection = (palletId: string) => {
   // Renderizar pantalla de confirmación
   const renderConfirmationScreen = () => (
     <>
-      <h1 className={`text-3xl font-extrabold mb-8 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-        MENÚ DE CONFIRMACIÓN DE SALIDAS
-      </h1>
+      <div className="flex flex-col items-center mb-8">
+        <div className="bg-orange-100 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-3">
+          <span className="text-4xl">📋</span>
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-orange-400 mb-2 drop-shadow">
+          Confirmación de Salidas
+        </h1>
+      </div>
 
       {/* Información de empresa y cliente */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <div className="grid grid-cols-2 gap-4">
+      <div className="mb-8 p-6 bg-[#1E1E1E] rounded-xl border border-orange-300">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className={`font-bold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>EMPRESA:</p>
+            <label className="block font-medium text-orange-300 mb-2">EMPRESA:</label>
             <input
               type="text"
               value={empresa}
               onChange={(e) => setEmpresa(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
+              className="w-full px-4 py-3 rounded-lg bg-[#242126] border border-orange-300 text-white focus:border-orange-500"
             />
           </div>
           <div>
-            <p className={`font-bold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>CLIENTE:</p>
+            <label className="block font-medium text-orange-300 mb-2">CLIENTE:</label>
             <input
               type="text"
               value={cliente}
               onChange={(e) => setCliente(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
+              className="w-full px-4 py-3 rounded-lg bg-[#242126] border border-orange-300 text-white focus:border-orange-500"
             />
           </div>
         </div>
       </div>
 
       {/* Sección de pallets */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+      <div className="mb-8 p-6 bg-[#1E1E1E] rounded-xl border border-orange-300">
+        <h2 className="text-xl font-bold text-orange-400 mb-4">
           PALLETS QUE SALDRÁN
         </h2>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {selectedPalletsDetails.map(pallet => (
             <div 
               key={pallet.id} 
-              className={`px-3 py-2 rounded-lg text-center font-mono ${darkMode ? 'bg-black/50 text-orange-300' : 'bg-white text-orange-700'}`}
+              className="px-4 py-3 rounded-lg bg-[#242126] border border-orange-300 text-center font-mono text-orange-300"
             >
               {pallet.numero}
             </div>
@@ -222,15 +193,15 @@ const togglePalletSelection = (palletId: string) => {
       </div>
 
       {/* Sección de documentos */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-          DOCUMENTOS
+      <div className="mb-8 p-6 bg-[#1E1E1E] rounded-xl border border-orange-300">
+        <h2 className="text-xl font-bold text-orange-400 mb-4">
+          DOCUMENTOS REQUERIDOS
         </h2>
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {['CARTA DE INSTRUCCIÓN', 'MANIFIESTO DE CARGA', 'PACKING LIST', 'PROFORMA'].map(doc => (
             <li 
               key={doc} 
-              className={`px-3 py-2 rounded-lg ${darkMode ? 'bg-black/50 text-orange-200' : 'bg-white text-orange-700'}`}
+              className="px-4 py-3 rounded-lg bg-[#242126] border border-orange-300 text-orange-200"
             >
               {doc}
             </li>
@@ -238,27 +209,17 @@ const togglePalletSelection = (palletId: string) => {
         </ul>
       </div>
 
-
-
       {/* Botones de acción */}
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-4">
         <button
           onClick={() => setShowConfirmation(false)}
-          className={`px-6 py-3 rounded-xl font-bold transition
-            ${darkMode
-              ? 'bg-slate-600/90 hover:bg-slate-700'
-              : 'bg-slate-500 hover:bg-slate-600 text-white'
-            }`}
+          className="px-6 py-3 rounded-full font-bold bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white shadow hover:shadow-lg transition"
         >
           ← Corregir selección
         </button>
         <button
           onClick={handleFinalizar}
-          className={`px-6 py-3 rounded-xl font-bold transition
-            ${darkMode
-              ? 'bg-orange-600/90 hover:bg-orange-700'
-              : 'bg-orange-500 hover:bg-orange-600 text-white'
-            }`}
+          className="px-6 py-3 rounded-full font-bold bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow hover:shadow-lg transition"
         >
           Confirmar salida →
         </button>
@@ -267,58 +228,27 @@ const togglePalletSelection = (palletId: string) => {
   );
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300
-      ${darkMode
-        ? 'bg-gradient-to-br from-[#181a1b] via-[#23282b] to-[#212225]'
-        : 'bg-gradient-to-br from-orange-50 via-white to-gray-100'}`}>
-
-      {/* Barra modo noche/día */}
-      <header className="w-full flex justify-between items-center pt-5 px-8">
-        <button
-          onClick={() => showConfirmation ? setShowConfirmation(false) : router.push('/panel/empleado')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {showConfirmation ? '← Volver' : '← Regresar'}
-        </button>
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {darkMode ? '🌙 Noche' : '☀️ Día'}
-        </button>
-      </header>
-
-      {/* Branding */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 select-none">
-        <div className={`w-14 h-14 ${darkMode ? 'bg-white/10 border-orange-400' : 'bg-orange-100 border-orange-300'} border-2 shadow-xl rounded-full flex items-center justify-center`}>
-          <span className={`text-3xl font-black ${darkMode ? 'text-orange-300' : 'text-orange-400'}`}>🍊</span>
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white px-2 py-8 flex flex-col items-center">
+      <div className="w-full max-w-4xl">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <button
+            onClick={() => showConfirmation ? setShowConfirmation(false) : router.push('/panel/empleado')}
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-medium bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow hover:shadow-lg transition"
+          >
+            {showConfirmation ? '← Volver' : '← Regresar'}
+          </button>
         </div>
-        <span className={`font-bold tracking-widest uppercase text-xl drop-shadow 
-          ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>El Molinito</span>
-      </div>
 
-      {/* Contenido principal */}
-      <main className="flex-1 flex flex-col items-center py-14 px-4">
-        <div className={`w-full max-w-4xl mx-auto rounded-3xl shadow-2xl p-8 flex flex-col relative z-0 transition
-          ${darkMode
-            ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-300'
-            : 'bg-white border-2 border-orange-200'
-          }`}>
+        {/* Contenido principal */}
+        <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md hover:shadow-lg transition">
           {showConfirmation ? renderConfirmationScreen() : renderSelectionScreen()}
         </div>
-      </main>
 
-      <footer className={`w-full text-center py-4 text-sm mt-auto
-        ${darkMode
-          ? "bg-[#181a1b] text-orange-200"
-          : "bg-orange-50 text-orange-900"
-        }`}>
-        © {new Date().getFullYear()} El Molinito – Sistema de logística y control
-      </footer>
+        <div className="text-center text-gray-400 mt-8">
+          © {new Date().getFullYear()} El Molinito
+        </div>
+      </div>
     </div>
   );
 }

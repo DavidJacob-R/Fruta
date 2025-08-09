@@ -5,48 +5,35 @@ interface Props {
   mensaje: string
 }
 
-export default function HeaderControlCalidad({
-  email = "",
-  onReload = () => {},
-  onBack = () => {},
-  mensaje = ""
-}: Props) {
+export default function HeaderControlCalidad({ email, onReload, onBack, mensaje }: Props) {
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col items-center mb-10">
-        <div className="bg-[#27ae60]/20 shadow-lg rounded-full w-24 h-24 flex items-center justify-center mb-4">
-          <span className="text-5xl">🛡️</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#27ae60] mb-2 drop-shadow text-center">Control de Calidad</h1>
-        <p className="text-gray-200 text-lg sm:text-xl text-center">
-          Bienvenido, <span className="font-semibold">{email}</span>
-        </p>
+    <div className="flex flex-col items-center mb-10">
+      <div className="bg-orange-100 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-3">
+        <span className="text-4xl">🛡️</span>
       </div>
+      <h1 className="text-2xl md:text-3xl font-bold text-orange-400 mb-2 drop-shadow">Control de Calidad</h1>
+      <p className="text-gray-300">Bienvenido, <span className="font-semibold">{email}</span></p>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+      <div className="flex gap-4 mt-6">
         <button
           onClick={onReload}
-          className="bg-[#2ecc71] hover:bg-[#27ae60] text-white font-bold px-10 py-5 rounded-3xl shadow-xl text-lg sm:text-xl"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-full font-medium shadow hover:shadow-lg transition"
         >
           🔄 Recargar
         </button>
         <button
           onClick={onBack}
-          className="bg-gradient-to-r from-[#4fa3ff] via-[#3566b2] to-[#23272a] hover:from-[#3566b2] hover:to-[#2c2f33] text-white font-bold px-10 py-5 rounded-3xl shadow-xl text-lg sm:text-xl"
+          className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-3 rounded-full font-medium shadow hover:shadow-lg transition"
         >
-          Volver al Panel principal
+          Volver al Panel
         </button>
       </div>
 
       {mensaje && (
-        <div
-          className={`mb-8 text-center px-6 py-5 rounded-3xl font-bold text-lg sm:text-xl text-white ${
-            mensaje.includes("correctamente") ? "bg-[#27ae60]" : "bg-[#e74c3c]"
-          }`}
-        >
+        <div className={`mt-4 p-3 rounded-lg ${mensaje.includes("✅") ? "bg-green-600" : "bg-red-600"} text-white`}>
           {mensaje}
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -58,8 +58,8 @@ export default function PreEnfriadoMain() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-blue-400">Pre-Enfriado - Gestion de Pallets</h1>
           <button
-            onClick={() => router.push('/panel/preenfriado')}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+            onClick={() => router.push('/panel/Rutas/preenfriado')}
+            className="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200"
           >
             Volver
           </button>

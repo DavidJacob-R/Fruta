@@ -1,31 +1,30 @@
-import { Agricultor, Empresa, Material, MovimientoSalida } from '../../../api/almacenmateriales/types'
+import { Empresa, Material, MovimientoEntrada, Proveedor } from '../../../api/almacenmateriales/types'
 
-interface RegistrarSalidaProps {
+interface RegistrarEntradaProps {
   darkMode: boolean
-  data: MovimientoSalida
+  data: MovimientoEntrada
   empresas: Empresa[]
-  agricultores: Agricultor[]
+  proveedores: Proveedor[]
   materiales: Material[]
-  onChange: (data: MovimientoSalida) => void
+  onChange: (data: MovimientoEntrada) => void
   onConfirm: () => void
   onBack: () => void
 }
 
-export default function RegistrarSalida({ 
+export default function RegistrarEntrada({ 
   darkMode, 
   data, 
   empresas, 
-  agricultores, 
+  proveedores, 
   materiales, 
   onChange, 
   onConfirm, 
   onBack 
-}: RegistrarSalidaProps) {
-  // Protección para build/prerender
-  if (!data) {
+}: RegistrarEntradaProps) {
+  if (!data || typeof data.esComprado === 'undefined') {
     return (
       <div className="p-8 text-center text-red-400">
-        No se encontraron datos para la salida.<br />
+        No se encontraron datos para la entrada.<br />
         Por favor, vuelve al paso anterior.
         <div className="mt-8">
           <button
@@ -49,11 +48,43 @@ export default function RegistrarSalida({
         ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-400'
         : 'bg-white border-2 border-orange-200'
       }`}>
-      <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-        Salida de Materiales
-      </h1>
+      <div className="flex flex-col items-center mb-6">
+        <div className={`${darkMode ? 'bg-white/10 border-orange-500' : 'bg-orange-100 border-orange-300'} shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2 border-2`}>
+          <span className={`text-3xl ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>📥</span>
+        </div>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'} mb-2 drop-shadow`}>
+          Entrada de Materiales
+        </h1>
+      </div>
       <div className="w-full space-y-5">
+        <div>
+          <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+            ¿El material fue comprado?
+          </label>
+          <div className="flex gap-4">
+            <button
+              onClick={() => onChange({ ...data, esComprado: true })}
+              className={`flex-1 py-2 rounded-lg border-2 font-medium transition
+                ${data.esComprado === true 
+                  ? 'bg-green-600 text-white border-green-600' 
+                  : darkMode 
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+              Sí
+            </button>
+            <button
+              onClick={() => onChange({ ...data, esComprado: false })}
+              className={`flex-1 py-2 rounded-lg border-2 font-medium transition
+                ${data.esComprado === false 
+                  ? 'bg-red-600 text-white border-red-600' 
+                  : darkMode 
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}>
+              No
+            </button>
+          </div>
+        </div>
+
         <div>
           <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
             Empresa
@@ -72,24 +103,28 @@ export default function RegistrarSalida({
             ))}
           </select>
         </div>
-        <div>
-          <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-            Agricultor
-          </label>
-          <select
-            value={data.agricultor?.id || ''}
-            onChange={(e) => onChange({ ...data, agricultor: agricultores.find((agr) => agr.id == Number(e.target.value)) || null })}
-            className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition
-              ${darkMode
-                ? 'bg-gray-800 border-gray-600 text-white'
-                : 'bg-white border-gray-300 text-gray-800'
-              }`}>
-            <option value="">Seleccionar agricultor</option>
-            {agricultores.map((agr) => (
-              <option key={agr.id} value={agr.id}>{agr.nombre}</option>
-            ))}
-          </select>
-        </div>
+
+        {data.esComprado && (
+          <div>
+            <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+              Proveedor
+            </label>
+            <select
+              value={data.proveedor?.id || ''}
+              onChange={(e) => onChange({ ...data, proveedor: proveedores.find((prov) => prov.id == Number(e.target.value)) || null })}
+              className={`w-full p-3 rounded-lg border focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition
+                ${darkMode
+                  ? 'bg-gray-800 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-800'
+                }`}>
+              <option value="">Seleccionar proveedor</option>
+              {proveedores.map((prov) => (
+                <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
             Material
@@ -126,7 +161,7 @@ export default function RegistrarSalida({
         </div>
         <div>
           <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-            Fecha de Salida
+            Fecha de Entrada
           </label>
           <input
             type="date"
@@ -151,9 +186,9 @@ export default function RegistrarSalida({
           </button>
           <button
             onClick={onConfirm}
-            disabled={!data.empresa || !data.agricultor || !data.material || !data.cantidad}
-            className={`flex-1 px-6 py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition
-              ${(!data.empresa || !data.agricultor || !data.material || !data.cantidad) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            disabled={!data.empresa || !data.material || !data.cantidad || data.esComprado === null || (data.esComprado && !data.proveedor)}
+            className={`flex-1 px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition
+              ${(!data.empresa || !data.material || !data.cantidad || data.esComprado === null || (data.esComprado && !data.proveedor)) ? 'opacity-50 cursor-not-allowed' : ''}`}>
             Continuar
           </button>
         </div>

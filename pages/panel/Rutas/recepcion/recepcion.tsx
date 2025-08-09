@@ -4,18 +4,12 @@ import { useRouter } from 'next/router'
 export default function RecepcionSeleccion() {
   const router = useRouter()
   const [siguienteNumero, setSiguienteNumero] = useState<number | null>(null)
-  const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
     fetch('/api/recepcion/siguiente_nota')
       .then(res => res.json())
       .then(data => setSiguienteNumero(data.siguienteNumero))
   }, [])
-
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
-  }, [darkMode])
 
   const handleSeleccion = (tipo: 'empresa' | 'maquila') => {
     if (tipo === 'empresa') {
@@ -26,101 +20,62 @@ export default function RecepcionSeleccion() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300
-      ${darkMode
-        ? 'bg-gradient-to-br from-[#181a1b] via-[#23282b] to-[#212225]'
-        : 'bg-gradient-to-br from-orange-50 via-white to-gray-100'}`}>
-
-      {/* Barra modo noche/día */}
-      <header className="w-full flex justify-end items-center pt-5 pr-8">
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {darkMode
-            ? (<><span role="img" aria-label="noche">🌙</span> Noche</>)
-            : (<><span role="img" aria-label="dia">☀️</span> Día</>)
-          }
-        </button>
-      </header>
-
-      {/* Branding */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 select-none">
-        <div className={`w-14 h-14 ${darkMode ? 'bg-white/10 border-orange-400' : 'bg-orange-100 border-orange-300'} border-2 shadow-xl rounded-full flex items-center justify-center`}>
-          <span className={`text-3xl font-black ${darkMode ? 'text-orange-300' : 'text-orange-400'}`}>🍊</span>
-        </div>
-        <span className={`font-bold tracking-widest uppercase text-xl drop-shadow 
-          ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>El Molinito</span>
-      </div>
-
-      {/* Card */}
-      <main className="flex-1 flex items-center justify-center py-14 px-3">
-        <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
-          ${darkMode
-            ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-300'
-            : 'bg-white border-2 border-orange-200'
-          }`}>
-
-          <h1 className={`text-4xl font-extrabold mb-8 text-center drop-shadow-xl
-            ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white px-2 py-8 flex flex-col items-center">
+      <div className="w-full max-w-xl">
+        {/* Header */}
+        <div className="flex flex-col items-center mb-10">
+          <div className="bg-orange-100 shadow-lg rounded-full w-20 h-20 flex items-center justify-center mb-3">
+            <span className="text-4xl">🍊</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-orange-400 mb-2 drop-shadow">
             Recepción de Fruta
           </h1>
-
-          {/* Número de nota */}
-          <div className="flex items-center gap-2 mb-10">
-            <span className={`font-bold text-lg ${darkMode ? 'text-orange-100' : 'text-orange-700'}`}>Nota N°:</span>
-            <span className={`text-2xl font-mono rounded-xl px-4 py-2 border shadow
-              ${darkMode
-                ? 'bg-black/70 border-orange-400 text-white'
-                : 'bg-orange-50 border-orange-200 text-orange-900'
-              }`}>
+          <div className="flex items-center gap-3">
+            <span className="font-semibold">Próxima nota:</span>
+            <span className="text-xl font-mono rounded-xl px-6 py-2 bg-[#242126] border border-orange-300">
               {siguienteNumero ?? '...'}
             </span>
           </div>
+        </div>
 
-          {/* Opciones */}
-          <div className="w-full flex flex-col gap-8">
-            <div className="flex flex-col sm:flex-row gap-7 justify-center">
+        {/* Opciones */}
+        <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md hover:shadow-lg transition mb-8">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
               <button
                 onClick={() => handleSeleccion('empresa')}
-                className="flex-1 min-w-[170px] shadow-xl hover:scale-105 transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide border-2 focus:ring-2 outline-none
-                  bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-none">
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-5 rounded-xl font-bold shadow hover:shadow-lg transition text-lg"
+              >
                 Nota para empresa
               </button>
               <button
                 onClick={() => handleSeleccion('maquila')}
-                className="flex-1 min-w-[170px] shadow-xl hover:scale-105 transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide border-2 focus:ring-2 outline-none
-                  bg-gradient-to-r from-slate-500 to-slate-700 hover:from-slate-600 hover:to-slate-800 text-white border-none">
+                className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-5 rounded-xl font-bold shadow hover:shadow-lg transition text-lg"
+              >
                 Nota de maquila
               </button>
             </div>
 
             <button
               onClick={() => router.push('/panel/Rutas/recepcion/nota-recepcion')}
-              className="w-full shadow hover:scale-105 transition-transform px-6 py-4 text-lg font-bold rounded-2xl border-2 focus:ring-2 outline-none
-                bg-white border-orange-200 text-orange-800 hover:bg-orange-50">
+              className="w-full bg-[#242126] border border-orange-300 hover:border-orange-500 text-white px-6 py-4 rounded-xl font-medium shadow hover:shadow-lg transition"
+            >
               Ver notas del día
             </button>
 
             <button
-              className="w-full shadow px-6 py-4 text-lg font-bold rounded-2xl border-2 transition-transform hover:scale-105 focus:ring-2 outline-none
-                border-orange-200 text-orange-700 bg-white hover:bg-orange-100"
-              onClick={() => router.push('/panel/empleado')}>
+              onClick={() => router.push('/panel/empleado')}
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-4 rounded-xl font-medium shadow hover:shadow-lg transition"
+            >
               Regresar al menú principal
             </button>
           </div>
         </div>
-      </main>
 
-      <footer className={`w-full text-center py-4 text-sm mt-auto
-        ${darkMode
-          ? "bg-[#181a1b] text-orange-200"
-          : "bg-orange-50 text-orange-900"
-        }`}>
-        © {new Date().getFullYear()} El Molinito – Sistema de logística y control
-      </footer>
+        <div className="text-center text-gray-400">
+          © {new Date().getFullYear()} El Molinito
+        </div>
+      </div>
     </div>
   )
 }

@@ -27,14 +27,14 @@ export default function PreenfriadoPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a1922] via-[#172a3a] to-[#0a1922] text-white p-6 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white p-6 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl">
         {/* Header con icono */}
         <div className="flex flex-col items-center mb-7">
           <div className="bg-teal-100 shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2">
             <span className="text-3xl">❄️</span>
           </div>
-          <h1 className="text-3xl font-bold text-teal-400 mb-2 drop-shadow">Módulo de Preenfriado</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-orange-500 mb-2 drop-shadow">Módulo de Preenfriado</h1>
           <p className="text-gray-300 text-base">Bienvenido, <span className="font-semibold">{email}</span></p>
         </div>
 
@@ -43,9 +43,9 @@ export default function PreenfriadoPanel() {
             <div
               key={idx}
               onClick={() => handleSubmoduloClick(modulo.ruta)}
-              className="cursor-pointer bg-[#1c2b3a] border border-teal-300 hover:border-teal-500 hover:shadow-teal-200/40 transition rounded-2xl p-6 shadow-md hover:shadow-lg group"
+              className="cursor-pointer bg-[#1c1917] border border-orange-300 hover:border-orange-500 hover:shadow-orange-200/60 transition rounded-2xl p-8 shadow-md hover:shadow-lg group active:scale-95"
             >
-              <h2 className="text-lg font-semibold text-teal-400 mb-2 group-hover:text-teal-300 transition">{modulo.nombre}</h2>
+              <h2 className="text-xl font-semibold text-orange-400 mb-4 group-hover:text-orange-500 transition">{modulo.nombre}</h2>
               <p className="text-sm text-gray-400 group-hover:text-gray-200 transition">Accede al módulo de <span className="lowercase">{modulo.nombre}</span>.</p>
             </div>
           ))}

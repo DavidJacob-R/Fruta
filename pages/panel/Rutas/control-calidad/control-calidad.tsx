@@ -8,7 +8,6 @@ import { Pedido, Motivo } from "../../../api/control_calidad/types";
 
 export default function ControlCalidad() {
   const router = useRouter();
-
   const [step, setStep] = useState<number>(1);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [motivos, setMotivos] = useState<Motivo[]>([]);
@@ -114,8 +113,8 @@ export default function ControlCalidad() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1d1f] text-white flex flex-col items-center px-4 py-8 sm:px-6 md:px-10">
-      <div className="w-full max-w-6xl space-y-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#181712] via-[#24180c] to-[#242126] text-white px-2 py-8 flex flex-col items-center">
+      <div className="w-full max-w-4xl">
         <HeaderControlCalidad
           email={email}
           onReload={cargarDatos}
@@ -124,13 +123,13 @@ export default function ControlCalidad() {
         />
 
         {step === 1 && (
-          <div className="rounded-3xl bg-[#23272a] border border-[#2ecc71] shadow-xl p-6 sm:p-8">
+          <div className="bg-[#1c1917] border border-orange-300 rounded-2xl p-6 shadow-md hover:shadow-lg transition mb-8">
             <ListaPedidos pedidos={pedidos} onSelect={handleSelectPedido} />
           </div>
         )}
 
         {step === 2 && selectedPedido && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             <PedidoDetalle pedido={selectedPedido} />
             <FormularioCalidad
               form={form}
@@ -143,7 +142,7 @@ export default function ControlCalidad() {
           </div>
         )}
 
-        <div className="mt-10 text-lg text-gray-400 text-center">
+        <div className="text-center text-gray-400 mt-8">
           © {new Date().getFullYear()} El Molinito
         </div>
       </div>

@@ -325,3 +325,16 @@ export const contador_notas = pgTable('contador_notas', {
   contador: integer('contador').default(0),
   actualizado_en: timestamp('actualizado_en', { mode: 'date' }).defaultNow(),
 })
+
+//Tabla de agricultores por empresa
+
+export const agricultores_empresa = pgTable('agricultores_empresa', {
+  id: serial('id').primaryKey(),
+  empresa_id: integer('empresa_id').notNull().references(() => empresa.id, { onDelete: 'cascade' }),
+  clave: varchar('clave', { length: 16 }).notNull().unique(),
+  nombre: varchar('nombre', { length: 80 }).notNull(),
+  hectareas: decimal('hectareas', { precision: 10, scale: 2 }),
+  sectores: varchar('sectores', { length: 80 }),
+  rfc: varchar('rfc', { length: 16 }),
+  ubicacion: text('ubicacion'),
+});
