@@ -4,6 +4,7 @@ interface ExistenciasMaterialesProps {
   darkMode: boolean
   onEntrada: () => void
   onSalida: () => void
+  onIntercambio: () => void
   existencias: Material[]
   searchTerm: string
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -13,7 +14,8 @@ interface ExistenciasMaterialesProps {
 export default function ExistenciasMateriales({ 
   darkMode, 
   onEntrada, 
-  onSalida, 
+  onSalida,
+  onIntercambio,
   existencias = [],
   searchTerm, 
   onSearchChange, 
@@ -30,21 +32,27 @@ export default function ExistenciasMateriales({
         Almacén de Materiales
       </h1>
       <div className="w-full flex flex-col gap-8">
-        <div className="flex flex-col sm:flex-row gap-7 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={onEntrada}
-            className={`flex-1 min-w-[170px] shadow-xl hover:scale-105 transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide border-2 focus:ring-2 outline-none
-              ${"bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-4 shadow font-bold border-none transition"}`} >
+            className={`flex-1 shadow-xl hover:scale-105 transition-transform rounded-xl px-6 py-4 text-lg font-bold border-none transition
+              ${"bg-blue-600 hover:bg-blue-700 text-white"}`}>
             Registrar Entrada
           </button>
           <button
             onClick={onSalida}
-            className={`flex-1 min-w-[170px] shadow-xl hover:scale-105 transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide border-2 focus:ring-2 outline-none
-              ${"bg-green-600 hover:bg-green-700 text-white rounded-xl px-8 py-4 shadow font-bold border-none transition"}`} >
+            className={`flex-1 shadow-xl hover:scale-105 transition-transform rounded-xl px-6 py-4 text-lg font-bold border-none transition
+              ${"bg-green-600 hover:bg-green-700 text-white"}`}>
             Registrar Salida
           </button>
+          <button
+            onClick={onIntercambio}
+            className={`flex-1 shadow-xl hover:scale-105 transition-transform rounded-xl px-6 py-4 text-lg font-bold border-none transition
+              ${"bg-purple-600 hover:bg-purple-700 text-white"}`}>
+            Intercambio
+          </button>
         </div>
-        
+
         <div className="relative">
           <input
             type="text"
@@ -61,7 +69,7 @@ export default function ExistenciasMateriales({
             🔍
           </span>
         </div>
-        
+
         <div className={`mt-6 w-full rounded-xl p-4 ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
           <h3 className={`font-bold text-lg mb-3 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
             Existencias Actuales
@@ -69,7 +77,7 @@ export default function ExistenciasMateriales({
           <div className="space-y-2">
             {(existencias?.length ?? 0) > 0 ? (
               existencias.map((item) => (
-                <div key={item.id} className="flex justify-between items-center">
+                <div key={item.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-orange-500/10">
                   <span className={darkMode ? 'text-white' : 'text-gray-800'}>{item.nombre}</span>
                   <span className={`font-mono ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>
                     {item.cantidad} unidades
@@ -83,10 +91,13 @@ export default function ExistenciasMateriales({
             )}
           </div>
         </div>
-        
+
         <button
-          className={`w-full shadow px-6 py-4 text-lg font-bold rounded-2xl border transition-transform hover:scale-105 focus:ring-2 outline-none
-            ${"border-2 border-orange-300 text-orange-800 bg-white hover:bg-orange-100 rounded-xl px-8 py-4 font-bold shadow transitio" }`}
+          className={`w-full px-6 py-4 rounded-xl border-2 font-bold transition
+            ${darkMode
+              ? 'border-orange-400 text-orange-300 hover:bg-orange-900/30'
+              : 'border-orange-300 text-orange-700 hover:bg-orange-100'
+            }`}
           onClick={onBack}>
           Regresar al menú principal
         </button>

@@ -4,6 +4,16 @@ import { useRouter } from 'next/router'
 type Empresa = { id: number, empresa: string }
 type Fruta = { id: number, nombre: string }
 type Empaque = { id: number, tamanio: string }
+type Agricultor = {
+  id: number
+  clave: string
+  nombre: string
+  hectareas?: string
+  sectores?: string
+  rfc?: string
+  ubicacion?: string
+  empresa_id: number
+}
 
 type RegistroFruta = {
   tipo_fruta_id: string
@@ -21,12 +31,21 @@ type RegistroFruta = {
 export default function RecepcionEmpresa() {
   const router = useRouter()
   const [siguienteNumero, setSiguienteNumero] = useState<number | null>(null)
+
   const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [tiposFruta, setTiposFruta] = useState<Fruta[]>([])
   const [empaques, setEmpaques] = useState<Empaque[]>([])
+
+  // NUEVO: agricultores por empresa
+  const [agricultores, setAgricultores] = useState<Agricultor[]>([])
+
+  // Pasos: 1=empresa, 2=agricultor, 3=fruta, 4=cajas, 5=empaque, 6=detalles, 7=resumen
   const [paso, setPaso] = useState(1)
+
   const [mensaje, setMensaje] = useState('')
   const [empresaID, setEmpresaID] = useState('')
+  const [agricultorID, setAgricultorID] = useState<string>('') // puede quedar vacío si se omite
+
   const [form, setForm] = useState<RegistroFruta>({
     tipo_fruta_id: '',
     cantidad_cajas: '',
@@ -67,15 +86,31 @@ export default function RecepcionEmpresa() {
   }, [])
 
   const siguiente = () => setPaso(p => p + 1)
-  const anterior = () => setPaso(p => p - 1)
+  const anterior = () => setPaso(p => Math.max(1, p - 1))
 
   const actualizarForm = (campo: keyof RegistroFruta, valor: string) => {
     setForm(f => ({ ...f, [campo]: valor }))
   }
 
-  const handleEmpresa = (id: string) => {
+  // Paso 1: seleccionar empresa → cargar agricultores de esa empresa y avanzar a paso 2
+  const handleEmpresa = async (id: string) => {
     setEmpresaID(id)
+    setAgricultorID('') // reset selección
+    // cargar agricultores de la empresa
+    const res = await fetch(`/api/agricultores_empresa/listar?empresa_id=${id}`)
+    const data = await res.json()
+    setAgricultores(Array.isArray(data.agricultores) ? data.agricultores : [])
     setPaso(2)
+  }
+
+  // Paso 2: seleccionar agricultor (o continuar sin agricultor)
+  const handleAgricultor = (id: string) => {
+    setAgricultorID(id)
+    setPaso(3)
+  }
+  const omitirAgricultor = () => {
+    setAgricultorID('') // se enviará null al backend
+    setPaso(3)
   }
 
   const agregarOtraFruta = () => {
@@ -92,7 +127,7 @@ export default function RecepcionEmpresa() {
       variedad: '',
       notas: ''
     })
-    setPaso(2)
+    setPaso(3) // regresar a seleccionar fruta
   }
 
   const handleSubmit = async () => {
@@ -102,7 +137,7 @@ export default function RecepcionEmpresa() {
     const fecha_recepcion = localISOString.slice(0, 16)
 
     const todos = [...registros, form].map(r => ({
-      agricultor_id: null,
+      agricultor_id: agricultorID ? Number(agricultorID) : null, // <- ahora enviamos el agricultor seleccionado
       empresa_id: empresaID,
       tipo_fruta_id: r.tipo_fruta_id,
       cantidad_cajas: r.cantidad_cajas,
@@ -120,6 +155,7 @@ export default function RecepcionEmpresa() {
       notas: r.notas
     }))
 
+    // Validación rápida
     for (const [i, r] of todos.entries()) {
       if (
         !r.tipo_fruta_id || !r.cantidad_cajas || !r.peso_caja_oz || !r.fecha_recepcion ||
@@ -161,6 +197,7 @@ export default function RecepcionEmpresa() {
       })
       setRegistros([])
       setEmpresaID('')
+      setAgricultorID('')
       setPaso(1)
       fetch('/api/recepcion/siguiente_nota')
         .then(res => res.json())
@@ -174,6 +211,8 @@ export default function RecepcionEmpresa() {
   const nombreEmpresa = empresas.find(e => String(e.id) === empresaID)?.empresa || ''
   const nombreFruta = tiposFruta.find(f => String(f.id) === form.tipo_fruta_id)?.nombre || ''
   const nombreEmpaque = empaques.find(e => String(e.id) === form.empaque_id)?.tamanio || ''
+  const nombreAgricultor =
+    agricultores.find(a => String(a.id) === agricultorID)?.nombre || (agricultorID ? `ID ${agricultorID}` : '—')
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? "bg-[#181818]" : "bg-gray-50"}`}>
@@ -220,6 +259,7 @@ export default function RecepcionEmpresa() {
           </div>
 
           <div className="py-10 px-6 md:px-12 space-y-6">
+            {/* Paso 1: Empresa */}
             {paso === 1 && (
               <section>
                 <h3 className={`mb-5 text-xl font-bold ${darkMode ? "text-gray-100" : "text-gray-700"}`}>
@@ -253,7 +293,52 @@ export default function RecepcionEmpresa() {
               </section>
             )}
 
+            {/* Paso 2: Agricultor de esa empresa */}
             {paso === 2 && (
+              <section>
+                <h3 className={`mb-3 text-xl font-bold ${darkMode ? "text-gray-100" : "text-gray-700"}`}>
+                  Selecciona el agricultor de <span className="text-orange-500">{nombreEmpresa}</span>
+                </h3>
+                <p className={`mb-5 ${darkMode ? "text-orange-200/80" : "text-gray-500"}`}>
+                  Puedes continuar sin agricultor si la empresa aún no tiene asociados.
+                </p>
+                <div className="flex flex-wrap gap-6 justify-center mb-6">
+                  {agricultores.length === 0 ? (
+                    <div className={`${darkMode ? "text-orange-200" : "text-gray-600"}`}>
+                      Esta empresa no tiene agricultores registrados.
+                    </div>
+                  ) : (
+                    agricultores.map(agr => (
+                      <button
+                        key={agr.id}
+                        onClick={() => handleAgricultor(String(agr.id))}
+                        className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition
+                          ${darkMode
+                            ? "bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950"
+                            : "bg-white border-orange-200 text-gray-900 hover:bg-orange-50"}`}
+                        style={{ minWidth: 220, minHeight: 56 }}
+                      >
+                        {agr.nombre} <span className="text-xs opacity-70 ml-2">({agr.clave})</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="flex justify-between items-center">
+                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
+                  <button
+                    onClick={omitirAgricultor}
+                    className={`font-bold py-3 px-6 rounded-xl shadow transition border text-sm
+                      ${darkMode
+                        ? "bg-gray-800 hover:bg-gray-700 text-gray-100 border-gray-700"
+                        : "bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-200"}`}>
+                    Continuar sin agricultor
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {/* Paso 3: Fruta */}
+            {paso === 3 && (
               <section>
                 <h3 className={`mb-5 text-xl font-bold ${darkMode ? "text-gray-100" : "text-gray-700"}`}>
                   Selecciona el tipo de fruta
@@ -280,7 +365,8 @@ export default function RecepcionEmpresa() {
               </section>
             )}
 
-            {paso === 3 && (
+            {/* Paso 4: Cantidad de cajas */}
+            {paso === 4 && (
               <section>
                 <h3 className={`mb-5 text-xl font-bold ${darkMode ? "text-gray-100" : "text-gray-700"}`}>
                   Cantidad de cajas
@@ -311,7 +397,8 @@ export default function RecepcionEmpresa() {
               </section>
             )}
 
-            {paso === 4 && (
+            {/* Paso 5: Empaque */}
+            {paso === 5 && (
               <section>
                 <h3 className={`mb-5 text-xl font-bold ${darkMode ? "text-gray-100" : "text-gray-700"}`}>
                   Selecciona el tipo de empaque
@@ -321,9 +408,9 @@ export default function RecepcionEmpresa() {
                     <button
                       key={emp.id}
                       onClick={() => {
-                        actualizarForm('empaque_id', String(emp.id));
-                        actualizarForm('peso_caja_oz', emp.tamanio);
-                        siguiente();
+                        actualizarForm('empaque_id', String(emp.id))
+                        actualizarForm('peso_caja_oz', emp.tamanio)
+                        siguiente()
                       }}
                       className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition
                         ${darkMode
@@ -342,7 +429,8 @@ export default function RecepcionEmpresa() {
               </section>
             )}
 
-            {paso === 5 && (
+            {/* Paso 6: Detalles */}
+            {paso === 6 && (
               <section className="space-y-4">
                 <input placeholder="Sector" value={form.sector} onChange={e => actualizarForm('sector', e.target.value)} className="w-full p-3 rounded-xl" />
                 <input placeholder="Marca" value={form.marca} onChange={e => actualizarForm('marca', e.target.value)} className="w-full p-3 rounded-xl" />
@@ -367,9 +455,12 @@ export default function RecepcionEmpresa() {
               </section>
             )}
 
-            {paso === 6 && (
+            {/* Paso 7: Resumen */}
+            {paso === 7 && (
               <section className="space-y-4">
                 <h3 className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>Resumen</h3>
+                <p><b>Empresa:</b> {nombreEmpresa}</p>
+                <p><b>Agricultor:</b> {agricultorID ? nombreAgricultor : '—'}</p>
                 <p><b>Fruta:</b> {nombreFruta}</p>
                 <p><b>Cajas:</b> {form.cantidad_cajas}</p>
                 <p><b>Peso por caja (oz):</b> {form.peso_caja_oz}</p>

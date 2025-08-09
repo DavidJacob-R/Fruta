@@ -15,6 +15,7 @@ export default function RegistrarIntercambio({
   darkMode, 
   data, 
   empresas, 
+  proveedores, 
   materiales, 
   onChange, 
   onConfirm, 
