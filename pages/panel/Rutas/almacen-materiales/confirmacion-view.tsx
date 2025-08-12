@@ -15,10 +15,14 @@ export default function ConfirmacionView({ darkMode, data, onGenerarTicket, onBa
           ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-400'
           : 'bg-white border-2 border-orange-200'
         }`}>
-        <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-          ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-          Información incompleta
-        </h1>
+        <div className="flex flex-col items-center mb-6">
+          <div className={`${darkMode ? 'bg-white/10 border-orange-500' : 'bg-orange-100 border-orange-300'} shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2 border-2`}>
+            <span className={`text-3xl ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>⚠️</span>
+          </div>
+          <h1 className={`text-3xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'} mb-2 drop-shadow`}>
+            Información incompleta
+          </h1>
+        </div>
         <p className={darkMode ? 'text-orange-100' : 'text-gray-700'}>
           No se encontró la información del movimiento.<br />
           Por favor regresa e inténtalo de nuevo.
@@ -36,17 +40,31 @@ export default function ConfirmacionView({ darkMode, data, onGenerarTicket, onBa
     )
   }
 
+  const getIcon = () => {
+    switch(data.tipo) {
+      case 'entrada': return '📥';
+      case 'salida': return '📤';
+      case 'intercambio': return '🔄';
+      default: return '📝';
+    }
+  };
+
   return (
     <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
       ${darkMode
         ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-400'
         : 'bg-white border-2 border-orange-200'
       }`}>
-      <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-        Confirmación de {data.tipo === 'entrada' ? 'Entrada' : 
-                        data.tipo === 'salida' ? 'Salida' : 'Intercambio'}
-      </h1>
+      <div className="flex flex-col items-center mb-6">
+        <div className={`${darkMode ? 'bg-white/10 border-orange-500' : 'bg-orange-100 border-orange-300'} shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2 border-2`}>
+          <span className={`text-3xl ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>{getIcon()}</span>
+        </div>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'} mb-2 drop-shadow`}>
+          Confirmación de {data.tipo === 'entrada' ? 'Entrada' : 
+                          data.tipo === 'salida' ? 'Salida' : 'Intercambio'}
+        </h1>
+      </div>
+
       <div className={`w-full rounded-xl p-6 mb-6 ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
         <h2 className={`font-bold text-lg mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
           {data.tipo === 'entrada' ? 'MENÚ DE CONFIRMACIÓN ENTRADAS DEL ALMACÉN' : 
