@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/router'
 
 export default function PreEnfriado() {
   const router = useRouter();
@@ -22,8 +23,10 @@ export default function PreEnfriado() {
     );
   };
 
+
   const transferToStorage = () => {
     // Lógica para transferir pallets seleccionados al almacén
+
     console.log('Pallets transferidos:', selectedPallets);
     // Aquí iría la llamada a la API o actualización de estado
     alert(`Pallets ${selectedPallets.join(', ')} transferidos al almacén`);
@@ -36,8 +39,8 @@ export default function PreEnfriado() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-blue-400">Pre-Enfriado</h1>
           <button
-            onClick={() => router.push('/panel/preenfriado')}
-            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg"
+            onClick={() => router.push('/panel/Rutas/preenfriado')}
+            className="bg-gradient-to-r from-gray-600 via-gray-700 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white px-7 py-3 rounded-full font-bold shadow-xl border-none transition duration-200"
           >
             Volver
           </button>
@@ -61,7 +64,7 @@ export default function PreEnfriado() {
         {view === 'general' ? (
           <div className="bg-[#1c1917] rounded-xl p-6 shadow-lg border border-blue-300">
             <h2 className="text-xl font-bold text-blue-400 mb-6">Pallets Pre-Enfriados</h2>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
               {palletsData.map(pallet => (
                 <div 
@@ -102,7 +105,7 @@ export default function PreEnfriado() {
         ) : (
           <div className="bg-[#1c1917] rounded-xl p-6 shadow-lg border border-blue-300">
             <h2 className="text-xl font-bold text-blue-400 mb-6">Detalle de Pallets</h2>
-            
+
             <div className="overflow-x-auto mb-6">
               <table className="w-full border-collapse">
                 <thead>

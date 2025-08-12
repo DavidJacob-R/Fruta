@@ -38,6 +38,7 @@ export default function AdminPanel() {
     { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/AgregarFrutas/agregar-frutas', icon: '🍓' },
     { nombre: 'Agregar agricultores', ruta: '/panel/administradorRutas/AgregarAgricultor/agregar-agricultores', icon: '👨‍🌾' },
     { nombre: 'Notas', ruta: '/panel/administradorRutas/notas/notas', icon: '📝' },
+    { nombre: 'Temporadas', ruta: '/panel/administradorRutas/Temporadas/temporadas', icon: '🌱' },
   ]
 
   const handleModuloClick = (ruta: Url) => router.push(ruta)
