@@ -6,9 +6,9 @@ import {
   agricultores,
   tipos_fruta,
   notas,
-  empaques
+  empaques as empaquesTable
 } from '@/lib/schema'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
@@ -16,13 +16,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const supabasePublicUrl = 'https://ixpqujitjunnijdyrxyy.supabase.co/storage/v1/object/public/elmolinito/recepciones/'
-
     const recepciones = await db
       .select({
         id: recepcion_fruta.id,
         numero_nota: recepcion_fruta.numero_nota,
-        tipo_nota: recepcion_fruta.tipo_nota,
         fecha_recepcion: recepcion_fruta.fecha_recepcion,
         empresa_nombre: empresa.empresa,
         empresa_email: empresa.email,
@@ -51,28 +48,27 @@ export default async function handler(
       .leftJoin(usuarios, eq(usuarios.id, recepcion_fruta.usuario_recepcion_id))
       .leftJoin(tipos_fruta, eq(tipos_fruta.id, recepcion_fruta.tipo_fruta_id))
 
-    let empaquesMap: Record<string, string> = {}
-    try {
-      const empaquesList = await db.select().from(empaques)
-      empaquesMap = Object.fromEntries(empaquesList.map((e: any) => [String(e.id), e.tamanio]))
-    } catch {}
+    const empaquesList = await db.select().from(empaquesTable)
+    const empaquesMap: Record<string, string> =
+      Object.fromEntries(empaquesList.map((e: any) => [String(e.id), e.tamanio]))
 
-    // Aquí obtenemos todas las notas de la base
-    const notasAll = await db.select().from(notas)
+    const ids = recepciones.map(r => r.id).filter(Boolean) as number[]
+    const notasAll = ids.length
+      ? await db.select().from(notas).where(inArray(notas.relacion_id, ids))
+      : []
 
     const agrupado: Record<number, any> = {}
 
     for (const r of recepciones) {
       if (r.numero_nota === null) continue
-      const key = r.numero_nota
+      const key = r.numero_nota as number
 
       if (!agrupado[key]) {
-        // Buscar la nota de recepcion y de calidad REAL para esa recepcion
         const notaRecepcion = notasAll.find(n => n.relacion_id === r.id && n.modulo === 'recepcion')
-        const notaCalidad = notasAll.find(n => n.relacion_id === r.id && n.modulo === 'calidad')
+        const notaCalidad  = notasAll.find(n => n.relacion_id === r.id && n.modulo === 'calidad')
+
         agrupado[key] = {
           numero_nota: r.numero_nota,
-          tipo_nota: r.tipo_nota,
           fecha_recepcion: r.fecha_recepcion,
           empresa_nombre: r.empresa_nombre,
           empresa_email: r.empresa_email,
@@ -85,12 +81,11 @@ export default async function handler(
           usuario_apellido: r.usuario_apellido,
           usuario_email: r.usuario_email,
           frutas: [],
-          // Solo aparecen los botones si SÍ existe la nota real:
           nota_recepcion_id: notaRecepcion ? notaRecepcion.id : null,
           nota_recepcion_titulo: notaRecepcion ? notaRecepcion.titulo : null,
           nota_calidad_id: notaCalidad ? notaCalidad.id : null,
           nota_calidad_titulo: notaCalidad ? notaCalidad.titulo : null,
-          pdf_url: null,
+          pdf_url: null
         }
       }
 
@@ -104,15 +99,11 @@ export default async function handler(
         destino: r.destino,
         tipo_produccion: r.tipo_produccion,
         variedad: r.variedad,
-        notas: r.notas,
+        notas: r.notas
       })
     }
 
-    const ordenadas = Object.values(agrupado).sort((a, b) => b.numero_nota - a.numero_nota)
-
-    res.status(200).json({ notas: ordenadas })
-
-
+    const ordenadas = Object.values(agrupado).sort((a: any, b: any) => b.numero_nota - a.numero_nota)
     res.status(200).json({ notas: ordenadas })
   } catch (error) {
     console.error('Error en /api/notas/listar:', error)

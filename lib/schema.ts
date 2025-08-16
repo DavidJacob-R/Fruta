@@ -1,5 +1,5 @@
 import {
-  pgTable, serial, integer, varchar, text, decimal, timestamp, boolean, date, pgEnum
+  pgTable, serial, integer, varchar, text, decimal, timestamp, boolean, date, pgEnum, uniqueIndex 
 } from 'drizzle-orm/pg-core'
 
 // ENUMS (deben ir primero)
@@ -98,28 +98,30 @@ export const empaques = pgTable('empaques', {
 // Tabla de recepción de fruta
 export const tipoProduccionEnum = pgEnum('tipo_produccion', ['convencional', 'organica'])
 
-export const recepcion_fruta = pgTable("recepcion_fruta", {
-  id: serial("id").primaryKey(),
-  agricultor_id: integer("agricultor_id").references(() => agricultores.id),
-  empresa_id: integer("empresa_id").references(() => empresa.id),
-  tipo_fruta_id: integer("tipo_fruta_id").notNull().references(() => tipos_fruta.id),
-  cantidad_cajas: integer("cantidad_cajas").notNull(),
-  peso_caja_oz: decimal("peso_caja_oz", { precision: 10, scale: 2 }).notNull(),
-  fecha_recepcion: timestamp("fecha_recepcion", { mode: "date" }).notNull(),
-  usuario_recepcion_id: integer("usuario_recepcion_id").notNull().references(() => usuarios.id),
-  notas: text("notas"),
-  creado_en: timestamp("creado_en", { mode: "date" }).defaultNow(),
-  numero_nota: integer("numero_nota"),
-  tipo_nota: varchar("tipo_nota", { length: 20 }),
-  empaque_id: integer("empaque_id").references(() => empaques.id),
+export const recepcion_fruta = pgTable('recepcion_fruta', {
+  id: serial('id').primaryKey(),
+  agricultor_id: integer('agricultor_id').references(() => agricultores.id),
+  empresa_id: integer('empresa_id').notNull().references(() => empresa.id),
+  tipo_fruta_id: integer('tipo_fruta_id').notNull().references(() => tipos_fruta.id),
+  cantidad_cajas: integer('cantidad_cajas').notNull(),
+  peso_caja_oz: decimal('peso_caja_oz', { precision: 10, scale: 2 }).notNull(),
+  fecha_recepcion: timestamp('fecha_recepcion', { mode: 'date' }).notNull(),
+  usuario_recepcion_id: integer('usuario_recepcion_id').notNull().references(() => usuarios.id),
+  notas: text('notas'),
+  creado_en: timestamp('creado_en', { mode: 'date' }).defaultNow(),
+  numero_nota: integer('numero_nota'),
+  empaque_id: integer('empaque_id').references(() => empaques.id),
   temporada_id: integer('temporada_id').references(() => temporadas.id),
-  sector: text("sector"),
-  marca: text("marca"),
-  destino: text("destino"),
-  variedad: text("variedad"),
-  tipo_produccion: tipoProduccionEnum("tipo_produccion")
-})
-
+  sector: text('sector'),
+  marca: text('marca'),
+  destino: text('destino'),
+  variedad: text('variedad'),
+  tipo_produccion: tipoProduccionEnum('tipo_produccion'),
+  idempotency_key: varchar('idempotency_key', { length: 64 })
+}, (t) => ({
+  recepIdemKeyIdx: uniqueIndex('recepcion_fruta_idempotency_key_idx').on(t.idempotency_key),
+  recepNumNotaIdx: uniqueIndex('recepcion_fruta_numero_nota_key').on(t.numero_nota)
+}))
 
 // Motivos de rechazo
 export const motivos_rechazo = pgTable('motivos_rechazo', {

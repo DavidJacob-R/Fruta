@@ -14,7 +14,6 @@ export default function NotasAdmin() {
 
   const [filtroFechaInicio, setFiltroFechaInicio] = useState('')
   const [filtroFechaFin, setFiltroFechaFin] = useState('')
-  const [filtroTipoNota, setFiltroTipoNota] = useState('')
   const [filtroNombre, setFiltroNombre] = useState('')
   const [filtroNumeroNota, setFiltroNumeroNota] = useState('')
 
@@ -47,9 +46,7 @@ export default function NotasAdmin() {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      if (url.includes('/panel/administradorRutas/notas')) {
-        recargarNotas()
-      }
+      if (url.includes('/panel/administradorRutas/notas')) recargarNotas()
     }
     router.events.on('routeChangeComplete', handleRouteChange)
     return () => { router.events.off('routeChangeComplete', handleRouteChange) }
@@ -57,25 +54,16 @@ export default function NotasAdmin() {
 
   const handleImprimir = async (nota: any) => {
     const idNota = nota.id || nota.nota_id || nota.numero_nota
-    if (!idNota) {
-      alert('Nota sin id valido')
-      return
-    }
+    if (!idNota) { alert('Nota sin id valido'); return }
     const res = await fetch(`/api/notas/pdf-storage/${idNota}`)
     const data = await res.json()
     const pdfUrl = data.url
-    if (!pdfUrl) {
-      alert('PDF no encontrado')
-      return
-    }
+    if (!pdfUrl) { alert('PDF no encontrado'); return }
     window.open(pdfUrl, '_blank')
   }
 
   const handleReenviar = async (notaId: number) => {
-    if (!emailReenvio) {
-      setMensaje('Introduce un email de destino')
-      return
-    }
+    if (!emailReenvio) { setMensaje('Introduce un email de destino'); return }
     setMensaje('Enviando...')
     const res = await fetch('/api/notas/reenviar', {
       method: 'POST',
@@ -92,11 +80,6 @@ export default function NotasAdmin() {
     if (filtroFechaInicio && fecha < filtroFechaInicio) pasaFecha = false
     if (filtroFechaFin && fecha > filtroFechaFin) pasaFecha = false
 
-    let pasaTipo = true
-    if (filtroTipoNota && filtroTipoNota !== '') {
-      pasaTipo = n.tipo_nota === filtroTipoNota
-    }
-
     let pasaNombre = true
     if (filtroNombre.trim() !== '') {
       const buscar = filtroNombre.toLowerCase()
@@ -111,7 +94,7 @@ export default function NotasAdmin() {
       pasaNumero = n.numero_nota?.toString().includes(filtroNumeroNota)
     }
 
-    return pasaFecha && pasaTipo && pasaNombre && pasaNumero
+    return pasaFecha && pasaNombre && pasaNumero
   })
 
   const bgDay = "bg-[#f6f4f2]"
@@ -140,7 +123,6 @@ export default function NotasAdmin() {
   function limpiarFiltros() {
     setFiltroFechaInicio('')
     setFiltroFechaFin('')
-    setFiltroTipoNota('')
     setFiltroNombre('')
     setFiltroNumeroNota('')
   }
@@ -166,9 +148,7 @@ export default function NotasAdmin() {
               onClick={() => handleModuloClick(modulo.ruta)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition
                 ${darkMode ? 'hover:bg-[#1e1914]' : 'hover:bg-orange-100'} ${darkMode ? accentNight : accentDay}
-                ${router.asPath === modulo.ruta ? 'bg-orange-500/30' : ''}`
-              }
-            >
+                ${router.asPath === modulo.ruta ? 'bg-orange-500/30' : ''}`}>
               <span className="text-xl">{modulo.icon}</span>
               <span>{modulo.nombre}</span>
             </button>
@@ -188,10 +168,8 @@ export default function NotasAdmin() {
           >
             <span className={`text-xs font-semibold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>{darkMode ? 'Noche' : 'Día'}</span>
             <div className="relative w-10 h-5">
-              <span className={`absolute left-0 top-0 w-10 h-5 rounded-full ${darkMode ? 'bg-orange-500/60' : 'bg-orange-200'}`}></span>
-              <span
-                className={`absolute z-10 top-0.5 left-1 ${darkMode ? 'translate-x-5' : ''} transition-transform w-4 h-4 ${darkMode ? 'bg-[#161616] border-orange-500' : 'bg-white border-orange-400'} border rounded-full shadow`}
-              ></span>
+              <span className={`absolute left-0 top-0 w-10 h-5 rounded-full ${darkMode ? 'bg-orange-500/60' : 'bg-orange-200'}`} />
+              <span className={`absolute z-10 top-0.5 left-1 ${darkMode ? 'translate-x-5' : ''} transition-transform w-4 h-4 ${darkMode ? 'bg-[#161616] border-orange-500' : 'bg-white border-orange-400'} border rounded-full shadow`} />
             </div>
           </button>
         </div>
@@ -227,7 +205,8 @@ export default function NotasAdmin() {
               <span className="hidden sm:inline">Menú principal</span>
             </button>
           </div>
-          {/* FILTROS AVANZADOS */}
+
+          {/* FILTROS AVANZADOS (sin tipo) */}
           <div className={`rounded-2xl p-4 mb-8 border ${darkMode ? 'bg-[#1e1914] border-orange-900' : 'bg-orange-50 border-orange-200'} ${softShadow}`}>
             <div className="flex flex-wrap gap-4 items-end">
               <div>
@@ -247,18 +226,6 @@ export default function NotasAdmin() {
                   value={filtroFechaFin}
                   onChange={e => setFiltroFechaFin(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Tipo:</label>
-                <select
-                  className={`rounded-xl border px-3 py-1 text-sm ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700 bg-white'}`}
-                  value={filtroTipoNota}
-                  onChange={e => setFiltroTipoNota(e.target.value)}
-                >
-                  <option value="">Todos</option>
-                  <option value="empresa">Empresa</option>
-                  <option value="maquila">Maquila</option>
-                </select>
               </div>
               <div>
                 <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Empresa o Agricultor:</label>
@@ -303,7 +270,6 @@ export default function NotasAdmin() {
                 <thead>
                   <tr className={`${thBg} border-b-2`}>
                     <th className="p-4 font-bold"># Nota</th>
-                    <th className="p-4 font-bold">Tipo</th>
                     <th className="p-4 font-bold">Empresa/Agricultor</th>
                     <th className="p-4 font-bold">Fruta</th>
                     <th className="p-4 font-bold">Fecha</th>
@@ -315,80 +281,69 @@ export default function NotasAdmin() {
                 </thead>
                 <tbody>
                   {notasFiltradas.length > 0 ? notasFiltradas.map((n, i) => (
-                    <tr
-                      key={i}
-                      className={`${i % 2 === 0 ? rowEven : rowOdd} border-b transition`}>
+                    <tr key={i} className={`${i % 2 === 0 ? rowEven : rowOdd} border-b transition`}>
                       <td className={`p-4 font-bold ${textMain}`}>{n.numero_nota}</td>
-                      <td className="p-4">
-                        <span className={`rounded-full px-4 py-1 font-semibold text-xs 
-                          ${n.tipo_nota === 'empresa'
-                            ? (darkMode ? 'bg-orange-900 text-orange-200' : 'bg-orange-100 text-orange-700')
-                            : (darkMode ? 'bg-green-900 text-green-100' : 'bg-green-100 text-green-700')}`}>
-                          {n.tipo_nota === 'empresa' ? 'Empresa' : 'Maquila'}
-                        </span>
-                      </td>
+
                       <td className={`p-4 ${textMain}`}>
-                        {n.tipo_nota === 'empresa'
-                          ? (<>
-                            <div className="font-bold">{n.empresa_nombre}</div>
-                            <div className={`text-xs ${textSecondary}`}>{n.empresa_email} <br />{n.empresa_telefono}</div>
-                          </>)
-                          : (<>
-                            <div className="font-bold">{n.agricultor_nombre} {n.agricultor_apellido}</div>
-                            <div className={`text-xs ${textSecondary}`}>{n.agricultor_email} <br />{n.agricultor_telefono}</div>
-                          </>)
-                        }
+                        <div className="font-bold">{n.empresa_nombre || '-'}</div>
+                        {(n.empresa_email || n.empresa_telefono) && (
+                          <div className={`text-xs ${textSecondary}`}>{n.empresa_email} <br />{n.empresa_telefono}</div>
+                        )}
+                        {(n.agricultor_nombre || n.agricultor_apellido) && (
+                          <div className="mt-2">
+                            <div className="font-semibold">
+                              {n.agricultor_nombre} {n.agricultor_apellido}
+                            </div>
+                            {(n.agricultor_email || n.agricultor_telefono) && (
+                              <div className={`text-xs ${textSecondary}`}>{n.agricultor_email} <br />{n.agricultor_telefono}</div>
+                            )}
+                          </div>
+                        )}
                       </td>
+
                       <td className={`p-4 ${textMain}`}>
                         {n.frutas && n.frutas.length > 0
-                          ? n.frutas.map((f: any, idx: number) => (
-                            <div key={idx}>{f.fruta_nombre}</div>
-                          ))
+                          ? n.frutas.map((f: any, idx: number) => <div key={idx}>{f.fruta_nombre}</div>)
                           : '-'}
                       </td>
+
                       <td className={`p-4 ${textMain}`}>{n.fecha_recepcion?.slice(0, 16).replace('T', ' ')}</td>
-                          <td className={`p-4 ${textMain}`}>
-                            {n.usuario_nombre && n.usuario_apellido
-                              ? `${n.usuario_nombre} ${n.usuario_apellido}`
-                              : '-'}
-                            <div className={`text-xs ${textSecondary}`}>
-                              {n.usuario_email}
-                            </div>
-                          </td>
+
+                      <td className={`p-4 ${textMain}`}>
+                        {n.usuario_nombre && n.usuario_apellido ? `${n.usuario_nombre} ${n.usuario_apellido}` : '-'}
+                        <div className={`text-xs ${textSecondary}`}>{n.usuario_email}</div>
+                      </td>
+
                       <td className={`p-4 ${textMain}`}>
                         {n.nota_recepcion_id ? (
                           <button
                             onClick={async () => {
-                              await router.push(
-                                `/panel/administradorRutas/notas/editar-recepcion/${n.nota_recepcion_id}?tipo=${n.tipo_nota}`
-                              );
-                              await recargarNotas();
+                              await router.push(`/panel/administradorRutas/notas/editar-recepcion/${n.nota_recepcion_id}`)
+                              await recargarNotas()
                             }}
                             className={`${btnBase} ${btnRecep} w-full`}
                             title="Editar Nota de Recepción"
                           >
                             Nota recepción
                           </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        ) : <span className="text-gray-400">-</span>}
                       </td>
+
                       <td className={`p-4 ${textMain}`}>
                         {n.nota_calidad_id ? (
                           <button
                             onClick={async () => {
-                              await router.push(`/panel/administradorRutas/notas/editar-calidad/${n.nota_calidad_id}`);
-                              await recargarNotas();
+                              await router.push(`/panel/administradorRutas/notas/editar-calidad/${n.nota_calidad_id}`)
+                              await recargarNotas()
                             }}
                             className={`${btnBase} ${btnCalid} w-full`}
                             title="Editar Nota de Calidad"
                           >
                             Nota calidad
                           </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        ) : <span className="text-gray-400">-</span>}
                       </td>
+
                       <td className="p-4 flex flex-col gap-2">
                         <button
                           onClick={() => setModalNota(n)}
@@ -410,7 +365,7 @@ export default function NotasAdmin() {
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={9} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
+                      <td colSpan={8} className={`text-center py-20 text-xl font-semibold ${textMain}`}>
                         No hay notas registradas.
                       </td>
                     </tr>
@@ -420,51 +375,55 @@ export default function NotasAdmin() {
             )}
           </div>
         </div>
+
         {modalNota && (
           <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
             <div className={`max-w-lg w-full rounded-2xl shadow-2xl border-2 p-8 ${darkMode ? 'bg-gray-900 border-orange-700' : 'bg-white border-orange-300'}`}>
               <h3 className={`text-2xl font-bold mb-4 ${textMain}`}>Reenviar Nota #{modalNota.numero_nota}</h3>
               <p className={`mb-4 ${textMain}`}>Elige el email destino:</p>
+
               <div className="flex flex-col gap-2 mb-4">
-                {modalNota.tipo_nota === 'empresa' && modalNota.empresa_email && (
+                {modalNota.empresa_email && (
                   <button
                     className={`w-full rounded-lg px-4 py-2 border font-medium text-left transition
                       ${emailReenvio === modalNota.empresa_email
                         ? (darkMode ? 'bg-orange-900 text-orange-100 border-orange-600' : 'bg-orange-100 text-orange-700 border-orange-400')
-                        : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')
-                      }`}
+                        : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')}`}
                     onClick={() => setEmailReenvio(modalNota.empresa_email)}>
                     📧 Usar email registrado empresa: <b>{modalNota.empresa_email}</b>
                   </button>
                 )}
-                {modalNota.tipo_nota === 'maquila' && modalNota.agricultor_email && (
+
+                {modalNota.agricultor_email && (
                   <button
                     className={`w-full rounded-lg px-4 py-2 border font-medium text-left transition
                       ${emailReenvio === modalNota.agricultor_email
                         ? (darkMode ? 'bg-orange-900 text-orange-100 border-orange-600' : 'bg-orange-100 text-orange-700 border-orange-400')
-                        : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')
-                      }`}
+                        : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')}`}
                     onClick={() => setEmailReenvio(modalNota.agricultor_email)}>
                     📧 Usar email registrado agricultor: <b>{modalNota.agricultor_email}</b>
                   </button>
                 )}
+
                 <button
                   className={`w-full rounded-lg px-4 py-2 border font-medium text-left transition
                     ${emailReenvio && emailReenvio !== modalNota.empresa_email && emailReenvio !== modalNota.agricultor_email
                       ? (darkMode ? 'bg-green-900 text-green-100 border-green-600' : 'bg-green-100 border-green-800')
-                      : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')
-                    }`}
+                      : (darkMode ? 'bg-gray-800 text-orange-100 border-gray-700' : 'bg-white text-orange-700 border-orange-200')}`}
                   onClick={() => setEmailReenvio('')}>
                   ✏️ Usar email personalizado
                 </button>
               </div>
+
               <input
                 type="email"
                 placeholder="correo@ejemplo.com"
                 className={`w-full border rounded-lg px-4 py-2 mb-3 ${darkMode ? 'bg-slate-900 border-slate-700 text-orange-100' : 'border-orange-200 text-orange-700'}`}
                 value={emailReenvio}
                 onChange={e => setEmailReenvio(e.target.value)}
-                autoFocus />
+                autoFocus
+              />
+
               <div className="flex justify-between mt-4">
                 <button
                   className={`rounded-xl px-6 py-2 font-bold transition ${darkMode ? 'bg-gray-800 text-orange-100 hover:bg-gray-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
@@ -477,6 +436,7 @@ export default function NotasAdmin() {
                   Reenviar PDF
                 </button>
               </div>
+
               {mensaje && <div className={`mt-3 text-center text-sm font-bold ${textMain}`}>{mensaje}</div>}
             </div>
           </div>
