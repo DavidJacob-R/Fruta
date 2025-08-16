@@ -1,21 +1,22 @@
 import { Empresa, Material } from '../../../api/almacenmateriales/types'
 
-type RegistrarIntercambioProps = {
+interface RegistrarIntercambioProps {
   darkMode: boolean
   data: any
-  empresas: { id: number; nombre: string }[]
-  proveedores: { id: number; nombre: string }[]
-  materiales: { id: number; nombre: string; cantidad: number }[]
+  empresas: Empresa[]
+  materiales: Material[]
+
   onChange: (data: any) => void
   onConfirm: () => void
   onBack: () => void
 }
+// ... (imports y interface permanecen iguales)
 
 export default function RegistrarIntercambio({ 
   darkMode, 
   data, 
   empresas, 
-  proveedores, 
+
   materiales, 
   onChange, 
   onConfirm, 
@@ -27,17 +28,21 @@ export default function RegistrarIntercambio({
         ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-400'
         : 'bg-white border-2 border-orange-200'
       }`}>
-      <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-        Intercambio de Materiales
-      </h1>
-      
+      <div className="flex flex-col items-center mb-6">
+        <div className={`${darkMode ? 'bg-white/10 border-orange-500' : 'bg-orange-100 border-orange-300'} shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2 border-2`}>
+          <span className={`text-3xl ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>🔄</span>
+        </div>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'} mb-2 drop-shadow`}>
+          Intercambio de Materiales
+        </h1>
+      </div>
+
       <div className="w-full space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Sección Origen */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-gray-100'}`}>
             <h3 className={`font-bold mb-3 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Origen</h3>
-            
+
             <div className="mb-3">
               <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
                 Empresa Origen
@@ -95,7 +100,7 @@ export default function RegistrarIntercambio({
           {/* Sección Destino */}
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-gray-100'}`}>
             <h3 className={`font-bold mb-3 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Destino</h3>
-            
+
             <div className="mb-3">
               <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
                 Empresa Destino
@@ -165,7 +170,7 @@ export default function RegistrarIntercambio({
                 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
             />
           </div>
-          
+
           <div>
             <label className={`block mb-1 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
               Notas del Intercambio
