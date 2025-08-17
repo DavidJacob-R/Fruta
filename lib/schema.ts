@@ -296,13 +296,13 @@ export const pago_recepciones = pgTable('pago_recepciones', {
 })
 
 // Temporadas
-export const temporadas = pgTable('temporadas', {
-  id: serial('id').primaryKey(),
-  titulo: varchar('titulo', { length: 80 }).notNull(),
-  fecha_inicio: date('fecha_inicio').notNull(),
-  fecha_fin: date('fecha_fin').notNull(),
-  activa: boolean('activa').notNull().default(false),
-  creado_en: timestamp('creado_en', { withTimezone: true }).notNull().defaultNow(),
+export const temporadas = pgTable("temporadas", {
+  id: serial("id").primaryKey(),
+  nombre: varchar("nombre", { length: 255 }),
+  fecha_inicio: date("fecha_inicio"),
+  fecha_fin: date("fecha_fin"),
+  notas: text("notas"),
+  activa: boolean("activa").default(false)
 });
 
 export const recepcion_fruta_temporada_id = integer('temporada_id');
