@@ -17,7 +17,7 @@ export default function AlmacenMateriales() {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
-    const usuario = localStorage.getItem('usuario')
+    const usuario = typeof window !== 'undefined' ? localStorage.getItem('usuario') : null
     if (usuario) {
       const user = JSON.parse(usuario)
       setEmail(user.email)
@@ -64,7 +64,7 @@ export default function AlmacenMateriales() {
       material: null,
       cantidad: '',
       fecha: new Date().toISOString().split('T')[0],
-      esComprado: null 
+      esComprado: null
     })
     setView('entradas')
   }
@@ -103,7 +103,7 @@ export default function AlmacenMateriales() {
   const handleGenerarTicket = () => {
     alert(`Movimiento registrado correctamente: ${JSON.stringify(movimientoData)}`)
     setView('main')
-    
+
     setExistencias(prev => {
       return prev.map(mat => {
         if (movimientoData.tipo === 'entrada' && mat.id === movimientoData.material?.id) {
@@ -141,7 +141,6 @@ export default function AlmacenMateriales() {
       {view === 'main' && (
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-4xl">
-            {/* Header con icono */}
             <div className="flex flex-col items-center mb-7">
               <div className={`${darkMode ? 'bg-white/10 border-orange-500' : 'bg-orange-100 border-orange-300'} shadow-lg rounded-full w-16 h-16 flex items-center justify-center mb-2 border-2`}>
                 <span className={`text-3xl ${darkMode ? 'text-orange-400' : 'text-orange-500'}`}>📦</span>
@@ -288,7 +287,15 @@ export default function AlmacenMateriales() {
           darkMode={darkMode}
           data={movimientoData}
           onGenerarTicket={handleGenerarTicket}
-          onBack={() => setView(movimientoData.tipo === 'entrada' ? 'entradas' : movimientoData.tipo === 'salida' ? 'salidas' : 'intercambios')}
+          onBack={() =>
+            setView(
+              movimientoData.tipo === 'entrada'
+                ? 'entradas'
+                : movimientoData.tipo === 'salida'
+                ? 'salidas'
+                : 'intercambios'
+            )
+          }
         />
       )}
 
@@ -297,4 +304,9 @@ export default function AlmacenMateriales() {
       </footer>
     </div>
   )
+}
+
+// Evita SSG/ISR; fuerza SSR en esta ruta
+export async function getServerSideProps() {
+  return { props: {} }
 }
