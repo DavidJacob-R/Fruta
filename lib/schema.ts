@@ -1,7 +1,6 @@
 import {
   pgTable, serial, integer, varchar, text, decimal, timestamp, boolean, date, pgEnum, uniqueIndex 
 } from 'drizzle-orm/pg-core'
-
 // ENUMS (deben ir primero)
 export const tipoVentaEnum = pgEnum('tipo_venta', ['nacional', 'exportacion']);
 export const estadoEnum = pgEnum('estado', ['en_proceso', 'preenfriado', 'conservacion', 'cargado', 'cancelado']);
@@ -100,7 +99,7 @@ export const tipoProduccionEnum = pgEnum('tipo_produccion', ['convencional', 'or
 
 export const recepcion_fruta = pgTable('recepcion_fruta', {
   id: serial('id').primaryKey(),
-  agricultor_id: integer('agricultor_id').references(() => agricultores.id),
+  agricultor_id: integer('agricultor_id').references(() => agricultores_empresa.id, { onDelete: 'set null', onUpdate: 'cascade' }),
   empresa_id: integer('empresa_id').notNull().references(() => empresa.id),
   tipo_fruta_id: integer('tipo_fruta_id').notNull().references(() => tipos_fruta.id),
   cantidad_cajas: integer('cantidad_cajas').notNull(),
@@ -346,3 +345,4 @@ export const agricultores_empresa = pgTable('agricultores_empresa', {
   rfc: varchar('rfc', { length: 16 }),
   ubicacion: text('ubicacion'),
 });
+

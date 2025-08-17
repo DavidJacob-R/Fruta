@@ -3,7 +3,6 @@ import {
   recepcion_fruta,
   usuarios,
   empresa,
-  agricultores,
   tipos_fruta,
   notas,
   empaques as empaquesTable
@@ -24,10 +23,6 @@ export default async function handler(
         empresa_nombre: empresa.empresa,
         empresa_email: empresa.email,
         empresa_telefono: empresa.telefono,
-        agricultor_nombre: agricultores.nombre,
-        agricultor_apellido: agricultores.apellido,
-        agricultor_email: agricultores.email,
-        agricultor_telefono: agricultores.telefono,
         fruta_nombre: tipos_fruta.nombre,
         usuario_nombre: usuarios.nombre,
         usuario_apellido: usuarios.apellido,
@@ -44,7 +39,6 @@ export default async function handler(
       })
       .from(recepcion_fruta)
       .leftJoin(empresa, eq(empresa.id, recepcion_fruta.empresa_id))
-      .leftJoin(agricultores, eq(agricultores.id, recepcion_fruta.agricultor_id))
       .leftJoin(usuarios, eq(usuarios.id, recepcion_fruta.usuario_recepcion_id))
       .leftJoin(tipos_fruta, eq(tipos_fruta.id, recepcion_fruta.tipo_fruta_id))
 
@@ -73,10 +67,6 @@ export default async function handler(
           empresa_nombre: r.empresa_nombre,
           empresa_email: r.empresa_email,
           empresa_telefono: r.empresa_telefono,
-          agricultor_nombre: r.agricultor_nombre,
-          agricultor_apellido: r.agricultor_apellido,
-          agricultor_email: r.agricultor_email,
-          agricultor_telefono: r.agricultor_telefono,
           usuario_nombre: r.usuario_nombre,
           usuario_apellido: r.usuario_apellido,
           usuario_email: r.usuario_email,
