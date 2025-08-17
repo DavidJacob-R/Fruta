@@ -1,40 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
-import { agricultores, empresa, tipos_fruta } from '@/lib/schema'
-import { and, isNotNull, ne, eq } from 'drizzle-orm'
+import { empresa, tipos_fruta } from '@/lib/schema' // ajusta los imports a tu schema real
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-
-    const agricultoresList = await db
-      .select({ id: agricultores.id, nombre: agricultores.nombre, apellido: agricultores.apellido })
-      .from(agricultores)
-      .where(
-        and(
-          isNotNull(agricultores.nombre),
-          ne(agricultores.nombre, ''),
-          eq(agricultores.activo, true)
-        )
-      )
-
-    const empresasList = await db
-      .select({ id: empresa.id, empresa: empresa.empresa })
+    // Empresas con la clave exacta que espera el front: "empresa"
+    const empresasRows = await db
+      .select({
+        id: empresa.id,
+        empresa: empresa.empresa, // <-- alias como "empresa"
+      })
       .from(empresa)
-      .where(
-        and(
-          isNotNull(empresa.empresa),
-          ne(empresa.empresa, ''),
-          eq(empresa.activo, true)
-        )
-      )
 
-    const frutas = await db
-      .select()
+    // Tipos de fruta
+    const frutasRows = await db
+      .select({
+        id: tipos_fruta.id,
+        nombre: tipos_fruta.nombre,
+      })
       .from(tipos_fruta)
-      .where(eq(tipos_fruta.activo, true))
 
-    res.status(200).json({ agricultores: agricultoresList, empresas: empresasList, frutas })
-  } catch (error) {
-    res.status(500).json({ agricultores: [], empresas: [], frutas: [], error: 'Error en datos de recepción' })
+    res.status(200).json({
+      success: true,
+      empresas: empresasRows,
+      frutas: frutasRows,
+    })
+  } catch (e) {
+    res.status(500).json({ success: false, error: 'Error al obtener datos' })
   }
 }

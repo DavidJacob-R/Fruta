@@ -34,6 +34,8 @@ export default function RecepcionEmpresa() {
   const [submitting, setSubmitting] = useState(false)
   const clickGuardRef = useRef(false)
 
+  const [cargandoEmpresas, setCargandoEmpresas] = useState(false)
+
   const [form, setForm] = useState<RegistroFruta>({
     tipo_fruta_id: '',
     cantidad_cajas: '',
@@ -53,12 +55,62 @@ export default function RecepcionEmpresa() {
   }, [darkMode])
 
   useEffect(() => {
-    fetch('/api/recepcion/siguiente_nota').then(res => res.json()).then(data => setSiguienteNumero(data.siguienteNumero))
-    fetch('/api/recepcion/datos').then(res => res.json()).then(data => {
-      setEmpresas(Array.isArray(data.empresas) ? data.empresas : [])
-      setTiposFruta(Array.isArray(data.frutas) ? data.frutas : [])
-    })
-    fetch('/api/empaques/listar').then(res => res.json()).then(data => setEmpaques(Array.isArray(data.empaques) ? data.empaques : []))
+    const load = async () => {
+      try {
+        const r1 = await fetch('/api/recepcion/siguiente_nota')
+        const d1 = await r1.json()
+        setSiguienteNumero(d1?.siguienteNumero ?? null)
+      } catch {
+        setSiguienteNumero(null)
+      }
+
+      setCargandoEmpresas(true)
+      try {
+        const r2 = await fetch('/api/recepcion/datos')
+        const d2 = await r2.json()
+
+        // Empresas: mapeo tolerante (empresa || nombre || razon_social || name)
+        const emps = Array.isArray(d2?.empresas) ? d2.empresas : []
+        const empsNorm: Empresa[] = emps
+          .map((e: any) => ({
+            id: Number(e.id),
+            empresa: String(e.empresa ?? e.nombre ?? e.razon_social ?? e.name ?? '').trim(),
+          }))
+          .filter((e: { id: any; empresa: any }) => e.id && e.empresa)
+        setEmpresas(empsNorm)
+
+        // Frutas
+        const frs = Array.isArray(d2?.frutas) ? d2.frutas : []
+        const frsNorm: Fruta[] = frs
+          .map((f: any) => ({
+            id: Number(f.id),
+            nombre: String(f.nombre ?? f.name ?? '').trim(),
+          }))
+          .filter((f: { id: any; nombre: any }) => f.id && f.nombre)
+        setTiposFruta(frsNorm)
+      } catch {
+        setEmpresas([])
+        setTiposFruta([])
+      } finally {
+        setCargandoEmpresas(false)
+      }
+
+      try {
+        const r3 = await fetch('/api/empaques/listar')
+        const d3 = await r3.json()
+        const empa = Array.isArray(d3?.empaques) ? d3.empaques : []
+        const empaNorm: Empaque[] = empa
+          .map((e: any) => ({
+            id: Number(e.id),
+            tamanio: String(e.tamanio ?? e.nombre ?? '').trim(),
+          }))
+          .filter((e: { id: any; tamanio: any }) => e.id && e.tamanio)
+        setEmpaques(empaNorm)
+      } catch {
+        setEmpaques([])
+      }
+    }
+    load()
   }, [])
 
   const siguiente = () => setPaso(p => p + 1)
@@ -68,11 +120,25 @@ export default function RecepcionEmpresa() {
   const handleEmpresa = async (id: string) => {
     setEmpresaID(id)
     setAgricultorID('')
-    const res = await fetch(`/api/agricultores_empresa/listar?empresa_id=${id}`)
-    const data = await res.json()
-    setAgricultores(Array.isArray(data.agricultores) ? data.agricultores : [])
+    try {
+      const res = await fetch(`/api/agricultores_empresa/listar?empresa_id=${id}`)
+      const data = await res.json()
+      const arr = Array.isArray(data.agricultores) ? data.agricultores : []
+      const norm: Agricultor[] = arr
+        .map((a: any) => ({
+          id: Number(a.id),
+          clave: String(a.clave ?? '').trim(),
+          nombre: String(a.nombre ?? a.name ?? '').trim(),
+          empresa_id: Number(a.empresa_id ?? id)
+        }))
+        .filter((a: { id: any; nombre: any }) => a.id && a.nombre)
+      setAgricultores(norm)
+    } catch {
+      setAgricultores([])
+    }
     setPaso(2)
   }
+
   const handleAgricultor = (id: string) => { setAgricultorID(id); setPaso(3) }
   const omitirAgricultor = () => { setAgricultorID(''); setPaso(3) }
 
@@ -122,7 +188,6 @@ export default function RecepcionEmpresa() {
 
       const result = await res.json()
       if (result && result.success) {
-        // PDF opcional
         try {
           await fetch('/api/pdf/crea-pdf', {
             method: 'POST',
@@ -154,7 +219,6 @@ export default function RecepcionEmpresa() {
       }
     } finally {
       setSubmitting(false)
-      // pequeño delay para evitar doble click en el mismo “tick”
       setTimeout(() => { clickGuardRef.current = false }, 400)
     }
   }
@@ -196,17 +260,27 @@ export default function RecepcionEmpresa() {
             {paso === 1 && (
               <section>
                 <h3 className={`mb-5 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>Selecciona la empresa</h3>
-                <div className="flex flex-wrap gap-6 justify-center mb-6">
-                  {empresas.map(emp => (
-                    <button
-                      key={emp.id}
-                      onClick={() => handleEmpresa(String(emp.id))}
-                      className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
-                      style={{ minWidth: 200, minHeight: 56 }}>
-                      {emp.empresa}
-                    </button>
-                  ))}
-                </div>
+
+                {cargandoEmpresas ? (
+                  <div className={`${darkMode ? 'text-orange-200' : 'text-gray-600'} text-center mb-6`}>Cargando empresas…</div>
+                ) : empresas.length === 0 ? (
+                  <div className={`${darkMode ? 'text-orange-200' : 'text-gray-600'} text-center mb-6`}>
+                    No hay empresas disponibles. Verifica el endpoint <code>/api/recepcion/datos</code> o crea empresas en el panel.
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-6 justify-center mb-6">
+                    {empresas.map(emp => (
+                      <button
+                        key={emp.id}
+                        onClick={() => handleEmpresa(String(emp.id))}
+                        className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
+                        style={{ minWidth: 200, minHeight: 56 }}>
+                        {emp.empresa}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex justify-center">
                   <button
                     onClick={() => router.push('/panel/Rutas/recepcion/recepcion')}
