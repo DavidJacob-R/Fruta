@@ -25,12 +25,17 @@ export default function LoginPage() {
         return
       }
 
-      localStorage.setItem('usuario', JSON.stringify(result.usuario))
+      const u = result.usuario
+      localStorage.setItem('usuario', JSON.stringify(u))
 
-      const rol = result.usuario?.rol_id
-      if (rol === 1) router.push('/panel/administrador')
-      else if (rol === 2) router.push('/panel/empleado')
-      else setError('Rol no válido')
+      const esAdmin =
+        String(u?.rol || '').toLowerCase() === 'administrador' ||
+        u?.rol_id === 1 ||
+        u?.es_admin === true
+
+      // Admin -> panel admin. Empleado -> SIEMPRE menú principal
+      const destino = esAdmin ? '/panel/administrador' : '/panel/empleado'
+      router.push(destino)
     } catch (err) {
       console.error('Error en login:', err)
       setError('Error al conectar con el servidor')
