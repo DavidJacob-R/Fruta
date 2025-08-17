@@ -17,6 +17,10 @@ export default function NotasAdmin() {
   const [filtroNombre, setFiltroNombre] = useState("")
   const [filtroNumeroNota, setFiltroNumeroNota] = useState("")
 
+  // === NUEVO: temporadas y filtro por temporada ===
+  const [temporadas, setTemporadas] = useState<any[]>([])
+  const [filtroTemporadaId, setFiltroTemporadaId] = useState<string>("")
+
   const recargarNotas = async () => {
     setCargando(true)
     const res = await fetch("/api/notas/listar")
@@ -25,13 +29,34 @@ export default function NotasAdmin() {
     setCargando(false)
   }
 
+  const cargarTemporadas = async () => {
+    try {
+      const r = await fetch("/api/temporadas/listar")
+      const d = await r.json()
+      const rows = Array.isArray(d?.temporadas) ? d.temporadas : []
+      // ordena: activa primero, luego por fecha_inicio desc
+      rows.sort((a: any, b: any) => {
+        if (a.activa && !b.activa) return -1
+        if (!a.activa && b.activa) return 1
+        return String(b.fecha_inicio).localeCompare(String(a.fecha_inicio))
+      })
+      setTemporadas(rows)
+    } catch {
+      setTemporadas([])
+    }
+  }
+
   useEffect(() => {
     recargarNotas()
+    cargarTemporadas()
   }, [])
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      if (url.includes("/panel/administradorRutas/notas")) recargarNotas()
+      if (url.includes("/panel/administradorRutas/notas")) {
+        recargarNotas()
+        cargarTemporadas()
+      }
     }
     router.events.on("routeChangeComplete", handleRouteChange)
     return () => {
@@ -70,12 +95,18 @@ export default function NotasAdmin() {
     setMensaje(data.success ? "Correo enviado correctamente" : "Error al enviar correo")
   }
 
+  // Helpers de fechas
+  const s10 = (v: any) => (v ? String(v).slice(0, 10) : "")
+  const between = (d: string, from: string, to: string) => !!d && !!from && !!to && d >= from && d <= to
+
   const notasFiltradas = notas.filter((n) => {
-    const fecha = n.fecha_recepcion ? n.fecha_recepcion.slice(0, 10) : ""
+    // === Filtro por fecha (desde/hasta) que ya tenías ===
+    const fecha = n.fecha_recepcion ? s10(n.fecha_recepcion) : ""
     let pasaFecha = true
     if (filtroFechaInicio && fecha < filtroFechaInicio) pasaFecha = false
     if (filtroFechaFin && fecha > filtroFechaFin) pasaFecha = false
 
+    // === Filtro por nombre (empresa/agricultor) que ya tenías ===
     let pasaNombre = true
     if (filtroNombre.trim() !== "") {
       const buscar = filtroNombre.toLowerCase()
@@ -85,12 +116,38 @@ export default function NotasAdmin() {
         (n.agricultor_apellido && n.agricultor_apellido.toLowerCase().includes(buscar))
     }
 
+    // === Filtro por numero de nota que ya tenías ===
     let pasaNumero = true
     if (filtroNumeroNota.trim() !== "") {
       pasaNumero = n.numero_nota?.toString().includes(filtroNumeroNota)
     }
 
-    return pasaFecha && pasaNombre && pasaNumero
+    // === NUEVO: Filtro por temporada ===
+    let pasaTemporada = true
+    if (filtroTemporadaId) {
+      const selId = parseInt(filtroTemporadaId, 10)
+      const tSel = temporadas.find((t: any) => Number(t.id) === selId)
+
+      // si la API ya trae temporada_id en cada nota, lo usamos directo
+      if (n.temporada_id != null) {
+        pasaTemporada = Number(n.temporada_id) === selId
+      } else if (tSel) {
+        // fallback por fecha en caso de no venir temporada_id en la nota
+        const fechaRef =
+          s10(n.fecha_recepcion) ||
+          s10(n.fecha_control) ||
+          s10(n.creado_en) ||
+          s10(n.fecha) ||
+          ""
+        const fi = s10(tSel.fecha_inicio)
+        const ff = s10(tSel.fecha_fin)
+        pasaTemporada = between(fechaRef, fi, ff)
+      } else {
+        pasaTemporada = true
+      }
+    }
+
+    return pasaFecha && pasaNombre && pasaNumero && pasaTemporada
   })
 
   const cardBg = darkMode ? "bg-gray-900 border-gray-700" : "bg-white border-slate-200"
@@ -111,6 +168,7 @@ export default function NotasAdmin() {
     setFiltroFechaFin("")
     setFiltroNombre("")
     setFiltroNumeroNota("")
+    setFiltroTemporadaId("") // NUEVO: limpiar temporada
   }
 
   return (
@@ -169,6 +227,24 @@ export default function NotasAdmin() {
               onChange={(e) => setFiltroNumeroNota(e.target.value)}
             />
           </div>
+
+          {/* === NUEVO: Selector de Temporada === */}
+          <div>
+            <label className={`block text-sm mb-1 font-semibold ${textMain}`}>Temporada:</label>
+            <select
+              className={`rounded-xl border px-3 py-1 text-sm min-w-[220px] ${darkMode ? "bg-slate-900 border-slate-700 text-orange-100" : "border-orange-200 text-orange-700 bg-white"}`}
+              value={filtroTemporadaId}
+              onChange={(e) => setFiltroTemporadaId(e.target.value)}
+            >
+              <option value="">Todas</option>
+              {temporadas.map((t: any) => (
+                <option key={t.id} value={t.id}>
+                  {t.titulo || t.nombre} — {s10(t.fecha_inicio)} a {s10(t.fecha_fin)} {t.activa ? " (activa)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex gap-2 items-center">
             <button
               className={`rounded-xl px-4 py-1 flex items-center gap-2 font-semibold border ${
