@@ -12,26 +12,43 @@ import { eq } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query
-  if (!id) return res.status(400).json({ success: false, message: 'Falta id' })
+  const notaId = Number(id)
+
+  if (!notaId || Number.isNaN(notaId)) {
+    return res.status(400).json({ success: false, message: 'Falta id' })
+  }
 
   try {
-    const notaResult = await db
+    // 1) Obtener la nota
+    const notaRows = await db
       .select()
       .from(notas)
-      .where(eq(notas.id, Number(id)))
+      .where(eq(notas.id, notaId))
 
-    if (!notaResult || notaResult.length === 0) {
+    if (!notaRows.length) {
       return res.status(404).json({ success: false, message: 'Nota no encontrada' })
     }
-    const nota = notaResult[0]
+    const nota = notaRows[0]
 
-    let recepcion = null
+    // 2) Obtener la recepción ligada (por relacion_id)
+    let recepcion: {
+      id: number
+      fecha_recepcion: Date
+      empresa_id: number | null
+      agricultor_id: number | null
+      tipo_fruta_id: number
+      cantidad_cajas: number
+      peso_caja_oz: string
+      empaque_id: number | null
+      usuario_recepcion_id: number
+      idempotency_key: string | null
+    } | null = null
+
     if (nota.relacion_id) {
       const recepciones = await db
         .select({
           id: recepcion_fruta.id,
-          numero_nota: recepcion_fruta.numero_nota,
-          tipo_nota: recepcion_fruta.tipo_nota,
+          // OJO: numero_nota y tipo_nota no existen en el schema, no los selecciones
           fecha_recepcion: recepcion_fruta.fecha_recepcion,
           empresa_id: recepcion_fruta.empresa_id,
           agricultor_id: recepcion_fruta.agricultor_id,
@@ -40,15 +57,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           peso_caja_oz: recepcion_fruta.peso_caja_oz,
           empaque_id: recepcion_fruta.empaque_id,
           usuario_recepcion_id: recepcion_fruta.usuario_recepcion_id,
+          idempotency_key: recepcion_fruta.idempotency_key
         })
         .from(recepcion_fruta)
-        .where(eq(recepcion_fruta.id, nota.relacion_id))
-      if (recepciones && recepciones.length > 0) {
-        recepcion = recepciones[0]
-      }
+        .where(eq(recepcion_fruta.id, Number(nota.relacion_id)))
+
+      if (recepciones.length) recepcion = recepciones[0]
     }
 
-    let empresaData = null, agricultorData = null, frutaData = null, usuarioData = null
+    // 3) Datos relacionados (empresa, agricultor, fruta, usuario)
+    let empresaData: { id: number; empresa: string | null; email: string | null; telefono: string | null } | null = null
+    let agricultorData: { id: number; nombre: string | null; apellido: string | null; email: string | null; telefono: string | null } | null = null
+    let frutaData: { id: number; nombre: string | null } | null = null
+    let usuarioData: { id: number; nombre: string | null; apellido: string | null; email: string | null } | null = null
 
     if (recepcion?.empresa_id) {
       const empresas = await db
@@ -98,10 +119,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (usuariosArr.length) usuarioData = usuariosArr[0]
     }
 
+    // 4) Respuesta: mantenemos tipo_nota / numero_nota para la UI, pero calculados
     res.status(200).json({
       success: true,
       nota: {
         ...nota,
+        tipo_nota: 'recepcion',      // antes venía de recepcion_fruta.tipo_nota (no existe); lo fijamos
+        numero_nota: nota.id,        // antes venía de recepcion_fruta.numero_nota (no existe); usamos id de la nota
         recepcion,
         empresa: empresaData,
         agricultor: agricultorData,
