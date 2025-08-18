@@ -1,7 +1,8 @@
+// pages/api/recepcion/crear.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
 import { recepcion_fruta, notas, usuarios } from '@/lib/schema'
-import { sql, eq, and } from 'drizzle-orm'
+import { sql, and, eq } from 'drizzle-orm'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -9,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return
   }
 
-  // Extrae body
   const {
     empresa_id,
     agricultor_id,
@@ -35,22 +35,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Si ya existe por idempotencia, devolvemos el mismo resultado
+    // Si ya existe por idempotencia => devolver mismo resultado
     const existente = await db
-      .select({ id: recepcion_fruta.id })
+      .select({
+        id: recepcion_fruta.id,
+        numero_nota: recepcion_fruta.numero_nota as any
+      })
       .from(recepcion_fruta)
       .where(sql`idempotency_key = ${idem}`)
       .limit(1)
 
     if (existente.length) {
-      const notaRec = await db
-        .select({ id: notas.id })
-        .from(notas)
-        .where(and(eq(notas.modulo, 'recepcion'), eq(notas.relacion_id, existente[0].id)))
-        .limit(1)
-      const numero_nota = notaRec.length ? notaRec[0].id : existente[0].id
-      res.status(200).json({ success: true, numero_nota, recepcionId: existente[0].id, deduplicated: true })
-      return
+      return res.status(200).json({
+        success: true,
+        numero_nota: Number(existente[0].numero_nota),
+        recepcionId: existente[0].id,
+        deduplicated: true
+      })
     }
 
     // Normalización y validación
@@ -76,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return
     }
 
-    // Verifica si el usuario existe (evita FK al crear notas)
+    // Verifica existencia de usuario para evitar FK en notas
     const usr = await db
       .select({ id: usuarios.id })
       .from(usuarios)
@@ -84,78 +85,62 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .limit(1)
     const userExists = usr.length > 0
 
-    // Transacción: crear recepcion y notas
-    let salidaNumeroNota = 0
+    // Generar numero_nota
+    let numeroNotaFinal = 0
+    try {
+      const nextRes: any = await db.execute(sql`SELECT nextval('numero_nota_seq') AS next`)
+      const rawNext = nextRes?.rows?.[0]?.next ?? nextRes?.[0]?.next ?? nextRes?.[0]?.nextval
+      numeroNotaFinal = Number(rawNext)
+      if (!Number.isFinite(numeroNotaFinal)) throw new Error('nextval invalido')
+    } catch {
+      // Fallback si la secuencia no existe: MAX(numero_nota)+1 (no perfecto, pero desbloquea)
+      const maxRes: any = await db.execute(sql`SELECT COALESCE(MAX(numero_nota), 0) + 1 AS next FROM recepcion_fruta`)
+      const rawNext = maxRes?.rows?.[0]?.next ?? maxRes?.[0]?.next
+      numeroNotaFinal = Number(rawNext) || 1
+    }
+
     let salidaRecepcionId = 0
 
     await db.transaction(async (tx) => {
-      // Intento de inserción de recepción
-      let recId: number
-
-      try {
-        const created = await tx
-          .insert(recepcion_fruta)
-          .values({
-            empresa_id: empresaIdNum,
-            agricultor_id: agricultorIdNum,
-            tipo_fruta_id: tipoFrutaIdNum,
-            cantidad_cajas: cantidadCajasNum,
-            peso_caja_oz: pesoCajaStr,
-            fecha_recepcion: fechaObj,
-            usuario_recepcion_id: usuarioIdNum,
-            empaque_id: empaqueIdNum,
-            sector: sector || '',
-            marca: marca || '',
-            destino: destino || '',
-            tipo_produccion: tipo_produccion || '',
-            variedad: variedad || '',
-            notas: typeof notasRecepcion === 'string'
-              ? notasRecepcion.trim()
-              : (notasRecepcion ? JSON.stringify(notasRecepcion) : ''),
-            idempotency_key: idem
-          })
-          .returning({ id: recepcion_fruta.id })
-
-        recId = created[0].id
-      } catch (e: any) {
-        // Si es unique violation por idempotencia, recupera
-        if (e?.code === '23505') {
-          const row = await tx
-            .select({ id: recepcion_fruta.id })
-            .from(recepcion_fruta)
-            .where(sql`idempotency_key = ${idem}`)
-            .limit(1)
-          if (row.length) {
-            const notaRec = await tx
-              .select({ id: notas.id })
-              .from(notas)
-              .where(and(eq(notas.modulo, 'recepcion'), eq(notas.relacion_id, row[0].id)))
-              .limit(1)
-            const numero_nota = notaRec.length ? notaRec[0].id : row[0].id
-            salidaNumeroNota = numero_nota
-            salidaRecepcionId = row[0].id
-            return
-          }
-        }
-        throw e
-      }
-
-      // Si ya resolvimos por idempotencia arriba, salimos (no crear notas otra vez)
-      if (salidaRecepcionId && salidaNumeroNota) return
-
-      // Inserta Nota de Recepción
-      const createdNotaRec = await tx
-        .insert(notas)
+      // Insert en recepcion_fruta incluyendo numero_nota
+      const created = await tx
+        .insert(recepcion_fruta)
         .values({
-          titulo: 'Nota de recepcion',
-          contenido: '',
-          modulo: 'recepcion',
-          relacion_id: recId,
-          ...(userExists ? { usuario_creacion_id: usuarioIdNum } : {})
+          empresa_id: empresaIdNum,
+          agricultor_id: agricultorIdNum,
+          tipo_fruta_id: tipoFrutaIdNum,
+          cantidad_cajas: cantidadCajasNum,
+          peso_caja_oz: pesoCajaStr,
+          fecha_recepcion: fechaObj,
+          usuario_recepcion_id: usuarioIdNum,
+          empaque_id: empaqueIdNum,
+          sector: sector || '',
+          marca: marca || '',
+          destino: destino || '',
+          tipo_produccion: tipo_produccion || '',
+          variedad: variedad || '',
+          notas: typeof notasRecepcion === 'string'
+            ? notasRecepcion.trim()
+            : (notasRecepcion ? JSON.stringify(notasRecepcion) : ''),
+          idempotency_key: idem,
+          // 👇 clave: guardar el numero_nota
+          numero_nota: numeroNotaFinal as any
         })
-        .returning({ id: notas.id })
+        .returning({ id: recepcion_fruta.id })
 
-      // Inserta Nota de Calidad
+      const recId = created[0].id
+      salidaRecepcionId = recId
+
+      // Nota de recepción
+      await tx.insert(notas).values({
+        titulo: 'Nota de recepcion',
+        contenido: '',
+        modulo: 'recepcion',
+        relacion_id: recId,
+        ...(userExists ? { usuario_creacion_id: usuarioIdNum } : {})
+      })
+
+      // Nota de calidad
       await tx.insert(notas).values({
         titulo: 'Nota de calidad',
         contenido: '',
@@ -163,18 +148,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         relacion_id: recId,
         ...(userExists ? { usuario_creacion_id: usuarioIdNum } : {})
       })
-
-      salidaNumeroNota = createdNotaRec[0].id
-      salidaRecepcionId = recId
     })
 
-    if (!salidaRecepcionId || !salidaNumeroNota) {
-      // Esto solo ocurriría si hubo un error no atrapado dentro de la transacción
-      res.status(500).json({ success: false, message: 'No fue posible completar la transaccion' })
-      return
-    }
-
-    res.status(200).json({ success: true, numero_nota: salidaNumeroNota, recepcionId: salidaRecepcionId })
+    return res.status(200).json({
+      success: true,
+      numero_nota: numeroNotaFinal,
+      recepcionId: salidaRecepcionId
+    })
   } catch (err: any) {
     console.error('API /api/recepcion/crear error:', err)
     res.status(500).json({
