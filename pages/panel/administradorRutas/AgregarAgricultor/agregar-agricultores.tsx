@@ -22,6 +22,7 @@ export default function AgricultoresAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const modulos = [
+    { nombre: 'Almacen de Materiales', ruta: '/panel/administradorRutas/AlmacenMateriales', icon: '🏗️' },
     { nombre: 'Empaques y Clamshell', ruta: '/panel/administradorRutas/Materiales/empaques', icon: '📦' },
     { nombre: 'Agregar empresas', ruta: '/panel/administradorRutas/AgregarEmpresa/agregar-empres', icon: '🏢' },
     { nombre: 'Agregar frutas', ruta: '/panel/administradorRutas/AgregarFrutas/agregar-frutas', icon: '🍓' },
