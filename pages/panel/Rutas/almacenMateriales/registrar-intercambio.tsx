@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Empresa, Material } from '../../../api/almacenmateriales/types'
+import { Empresa, Material } from '../../../api/almacen/materiales'
 
 type IntercambioData = {
   tipo: 'intercambio'

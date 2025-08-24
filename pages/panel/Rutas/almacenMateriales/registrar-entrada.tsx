@@ -1,4 +1,4 @@
-import { Empresa, Material, MovimientoEntrada, Proveedor } from '../../../api/almacenmateriales/types'
+import { Empresa, Material, MovimientoEntrada, Proveedor } from '../../../api/almacen/materiales'
 
 interface RegistrarEntradaProps {
   darkMode: boolean

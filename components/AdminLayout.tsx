@@ -7,7 +7,7 @@ type Modulo = { nombre: string; ruta: string; icon: string }
 
 const defaultModulos: Modulo[] = [
   { nombre: "Agregar Clamshell", ruta: "/panel/administradorRutas/Materiales/empaques", icon: "📦" },
-  { nombre: "Materiales", ruta: "/panel/administradorRutas/Materiales/control-materiales", icon: "📦" },
+  { nombre: "Materiales", ruta: "/panel/administradorRutas/AlmacenMateriales/AlmacenMateriales", icon: "🏗️" },
   { nombre: "Agregar empresas", ruta: "/panel/administradorRutas/AgregarEmpresa/agregar-empres", icon: "🏢" },
   { nombre: "Agregar frutas", ruta: "/panel/administradorRutas/AgregarFrutas/agregar-frutas", icon: "🍓" },
   { nombre: "Notas", ruta: "/panel/administradorRutas/notas/notas", icon: "📝" },

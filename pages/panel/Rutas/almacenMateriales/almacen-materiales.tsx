@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { Material, MovimientoData } from '../../../api/almacenmateriales/types'
+import { Material, MovimientoData } from '../../../api/almacen/materiales'
 import ExistenciasPanel from './existencias-panel'
 import RegistrarEntrada from './registrar-entrada'
 import RegistrarSalida from './registrar-salida'
