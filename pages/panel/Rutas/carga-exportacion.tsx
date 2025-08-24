@@ -24,6 +24,14 @@ export default function SalidasPallets() {
     fotoContinuar: false
   });
 
+  // checklist de documentos
+  const [documentosChecklist, setDocumentosChecklist] = useState({
+    cartaInstruccion: false,
+    manifiestoCarga: false,
+    packingList: false,
+    proforma: false
+  });
+
   // Cargar datos de pallets
   useEffect(() => {
     const mockPallets: Pallet[] = [
@@ -52,14 +60,14 @@ export default function SalidasPallets() {
     pallet.maquila.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-// Manejar selección de pallets
-const togglePalletSelection = (palletId: string) => {
-  setSelectedPallets(prev =>
-    prev.includes(palletId)
-      ? prev.filter(id => id !== palletId)
-      : [...prev, palletId]
-  );
-};
+  // Manejar selección de pallets
+  const togglePalletSelection = (palletId: string) => {
+    setSelectedPallets(prev =>
+      prev.includes(palletId)
+        ? prev.filter(id => id !== palletId)
+        : [...prev, palletId]
+    );
+  };
 
   // Obtener los detalles de los pallets seleccionados
   const selectedPalletsDetails = pallets.filter(p => selectedPallets.includes(p.id));
@@ -69,6 +77,14 @@ const togglePalletSelection = (palletId: string) => {
     setEliminarOptions(prev => ({
       ...prev,
       [option]: !prev[option]
+    }));
+  };
+
+  // Manejar cambios en el checklist de documentos
+  const handleToggleDocumento = (documento: keyof typeof documentosChecklist) => {
+    setDocumentosChecklist(prev => ({
+      ...prev,
+      [documento]: !prev[documento]
     }));
   };
 
@@ -188,8 +204,8 @@ const togglePalletSelection = (palletId: string) => {
             <input
               type="text"
               value={empresa}
-              onChange={(e) => setEmpresa(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
+              readOnly
+              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'} cursor-default opacity-80`}
             />
           </div>
           <div>
@@ -197,8 +213,8 @@ const togglePalletSelection = (palletId: string) => {
             <input
               type="text"
               value={cliente}
-              onChange={(e) => setCliente(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
+              readOnly
+              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'} cursor-default opacity-80`}
             />
           </div>
         </div>
@@ -221,24 +237,39 @@ const togglePalletSelection = (palletId: string) => {
         </div>
       </div>
 
-      {/* Sección de documentos */}
+      {/* Sección de documentos - AHORA ES UN CHECKLIST */}
       <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
         <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-          DOCUMENTOS
+          DOCUMENTOS (CHECKLIST)
         </h2>
         <ul className="space-y-2">
-          {['CARTA DE INSTRUCCIÓN', 'MANIFIESTO DE CARGA', 'PACKING LIST', 'PROFORMA'].map(doc => (
+          {[
+            { key: 'cartaInstruccion', label: 'CARTA DE INSTRUCCIÓN' },
+            { key: 'manifiestoCarga', label: 'MANIFIESTO DE CARGA' },
+            { key: 'packingList', label: 'PACKING LIST' },
+            { key: 'proforma', label: 'PROFORMA' }
+          ].map(doc => (
             <li 
-              key={doc} 
-              className={`px-3 py-2 rounded-lg ${darkMode ? 'bg-black/50 text-orange-200' : 'bg-white text-orange-700'}`}
+              key={doc.key} 
+              className={`px-3 py-2 rounded-lg flex items-center ${darkMode ? 'bg-black/50' : 'bg-white'}`}
             >
-              {doc}
+              <input
+                type="checkbox"
+                checked={documentosChecklist[doc.key as keyof typeof documentosChecklist]}
+                onChange={() => handleToggleDocumento(doc.key as keyof typeof documentosChecklist)}
+                className={`w-5 h-5 rounded border-2 focus:ring-2 focus:ring-orange-400 mr-3
+                  ${darkMode
+                    ? 'bg-black/70 border-orange-400 checked:bg-orange-500'
+                    : 'border-orange-300 checked:bg-orange-500'
+                  }`}
+              />
+              <span className={`${darkMode ? 'text-orange-200' : 'text-orange-700'} ${documentosChecklist[doc.key as keyof typeof documentosChecklist] ? 'line-through opacity-70' : ''}`}>
+                {doc.label}
+              </span>
             </li>
           ))}
         </ul>
       </div>
-
-
 
       {/* Botones de acción */}
       <div className="flex justify-center gap-4">

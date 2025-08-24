@@ -15,6 +15,31 @@ interface Props {
 }
 
 export default function FormularioCalidad({ form, setForm, motivos, pedido, onVolver, onSubmit }: Props) {
+  // Función para manejar la selección/deselección de motivos
+  const toggleMotivo = (id: string) => {
+    // Converti el string actual a array
+    const currentIds = form.motivo_rechazo_id ? form.motivo_rechazo_id.split(',').filter(Boolean) : [];
+    
+    if (currentIds.includes(id)) {
+      // Si ya está seleccionado lo quitamos
+      const newIds = currentIds.filter(motivoId => motivoId !== id);
+      setForm({
+        ...form,
+        motivo_rechazo_id: newIds.join(',') // Converti el array a string separado por comas
+      })
+    } else {
+      // Si no está seleccionado lo agregamos
+      const newIds = [...currentIds, id];
+      setForm({
+        ...form,
+        motivo_rechazo_id: newIds.join(',') // Converti el array a string separado por comas
+      })
+    }
+  }
+
+  // Converti el string de IDs a array
+  const selectedIds = form.motivo_rechazo_id ? form.motivo_rechazo_id.split(',').filter(Boolean) : [];
+
   return (
     <form onSubmit={onSubmit} className="bg-[#2c2f33] border border-[#27ae60] rounded-3xl p-8 sm:p-10 shadow-md max-w-5xl mx-auto">
       <h2 className="text-2xl sm:text-3xl font-semibold text-[#27ae60] mb-8 text-center">Confirmar Control de Calidad</h2>
@@ -36,19 +61,24 @@ export default function FormularioCalidad({ form, setForm, motivos, pedido, onVo
         </div>
 
         {form.rechazos > 0 && (
-          <div>
-            <label className="block font-bold mb-3 text-[#e74c3c] text-lg">Motivo de rechazo</label>
-            <select
-              value={form.motivo_rechazo_id}
-              onChange={(e) => setForm({ ...form, motivo_rechazo_id: e.target.value })}
-              className="w-full p-4 rounded-2xl bg-[#fff4f4] border border-[#e74c3c] text-gray-900 text-lg focus:ring-[#e74c3c]/40"
-              required
-            >
-              <option value="">Seleccione un motivo</option>
+          <div className="sm:col-span-2">
+            <label className="block font-bold mb-3 text-[#e74c3c] text-lg">Motivos de rechazo</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {motivos.map(motivo => (
-                <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>
+                <button
+                  key={motivo.id}
+                  type="button"
+                  onClick={() => toggleMotivo(motivo.id.toString())}
+                  className={`p-3 rounded-2xl border text-center transition-all ${
+                    selectedIds.includes(motivo.id.toString())
+                      ? 'bg-[#27ae60] text-white border-[#27ae60]'
+                      : 'bg-[#fff4f4] text-gray-900 border-[#e74c3c]'
+                  }`}
+                >
+                  {motivo.nombre}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
         )}
 
@@ -56,23 +86,6 @@ export default function FormularioCalidad({ form, setForm, motivos, pedido, onVo
           <label className="block font-bold mb-3 text-[#27ae60] text-lg">Cajas finales</label>
           <div className="flex items-center gap-3">
             <p className="text-gray-300 text-lg">{form.cajas_finales}</p>
-            <button
-              type="button"
-              onClick={() => {
-                const newValue = prompt("Editar cantidad final:", form.cajas_finales.toString())
-                if (newValue && !isNaN(parseInt(newValue))) {
-                  const nuevasCajas = parseInt(newValue)
-                  setForm({
-                    ...form,
-                    cajas_finales: nuevasCajas,
-                    rechazos: pedido.cantidad_cajas - nuevasCajas
-                  })
-                }
-              }}
-              className="text-[#27ae60] hover:text-[#3566b2] text-base font-medium flex items-center active:scale-95"
-            >
-              ✏️ EDITAR
-            </button>
           </div>
         </div>
 

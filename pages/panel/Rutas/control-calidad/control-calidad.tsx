@@ -16,7 +16,7 @@ export default function ControlCalidad() {
   const [mensaje, setMensaje] = useState<string>("");
   const [form, setForm] = useState({
     rechazos: 0,
-    motivo_rechazo_id: "",
+    motivo_rechazo_id: "", // Mantiene el nombre original pero ahora almacenará IDs separados por comas
     comentarios: "",
     cajas_finales: 0,
   });
@@ -74,8 +74,12 @@ export default function ControlCalidad() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPedido) return;
-    if (form.rechazos > 0 && !form.motivo_rechazo_id) {
-      setMensaje("Debe seleccionar un motivo para los rechazos");
+    
+    // Converti el string de IDs a array
+    const motivoIds = form.motivo_rechazo_id ? form.motivo_rechazo_id.split(',').filter(Boolean) : [];
+    
+    if (form.rechazos > 0 && motivoIds.length === 0) {
+      setMensaje("Debe seleccionar al menos un motivo para los rechazos");
       return;
     }
     if (form.rechazos > selectedPedido.cantidad_cajas) {
@@ -90,7 +94,11 @@ export default function ControlCalidad() {
         cajas_aprobadas: form.cajas_finales,
         cajas_rechazadas: form.rechazos,
         notas: form.comentarios,
-        motivos: form.rechazos > 0 ? [{ motivo_id: Number(form.motivo_rechazo_id), cantidad_cajas: form.rechazos }] : [],
+        // E
+        motivos: motivoIds.map(id => ({ 
+          motivo_id: Number(id), 
+          cantidad_cajas: form.rechazos // Puedes dividir las cajas entre motivos si es necesario
+        })),
       };
       const res = await fetch("/api/control_calidad/guardar", {
         method: "POST",
@@ -98,15 +106,14 @@ export default function ControlCalidad() {
         body: JSON.stringify(body),
       });
       const result = await res.json();
-if (result.success) {
-  setMensaje("✅ Control de calidad registrado correctamente");
-  setTimeout(() => {
-    setStep(1);
-    setSelectedPedido(null);
-    cargarDatos();
-  }, 1500);
-}
- else {
+      if (result.success) {
+        setMensaje("✅ Control de calidad registrado correctamente");
+        setTimeout(() => {
+          setStep(1);
+          setSelectedPedido(null);
+          cargarDatos();
+        }, 1500);
+      } else {
         setMensaje("Error al guardar: " + (result.message || ""));
       }
     } catch {

@@ -328,7 +328,6 @@ export default function RecepcionMaquila() {
                 <div className="flex justify-between">
                   <button onClick={anterior} className="text-green-400 text-lg font-semibold underline">Volver</button>
                   <div className="flex gap-4">
-                    <button onClick={handleAgregarFruta} className="bg-yellow-400 text-black font-bold px-6 py-3 rounded-xl">Agregar otra fruta</button>
                     <button onClick={handleFinalizar} className="bg-green-600 text-white font-bold px-6 py-3 rounded-xl">Finalizar nota</button>
                   </div>
                 </div>
