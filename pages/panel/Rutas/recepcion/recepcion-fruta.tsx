@@ -26,11 +26,10 @@ export default function RecepcionEmpresa() {
   const [tiposFruta, setTiposFruta] = useState<Fruta[]>([])
   const [empaques, setEmpaques] = useState<Empaque[]>([])
   const [agricultores, setAgricultores] = useState<Agricultor[]>([])
-  const [paso, setPaso] = useState(1)
+  const [paso, setPaso] = useState<1|2|3|4|5|6|7>(1)
   const [mensaje, setMensaje] = useState('')
   const [empresaID, setEmpresaID] = useState('')
   const [agricultorID, setAgricultorID] = useState<string>('')
-  const [darkMode, setDarkMode] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const clickGuardRef = useRef(false)
 
@@ -49,11 +48,7 @@ export default function RecepcionEmpresa() {
     notas: ''
   })
 
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
-  }, [darkMode])
-
+  // Carga inicial
   useEffect(() => {
     const load = async () => {
       try {
@@ -69,7 +64,7 @@ export default function RecepcionEmpresa() {
         const r2 = await fetch('/api/recepcion/datos')
         const d2 = await r2.json()
 
-        // Empresas: mapeo tolerante (empresa || nombre || razon_social || name)
+        // Empresas (robusto a alias)
         const emps = Array.isArray(d2?.empresas) ? d2.empresas : []
         const empsNorm: Empresa[] = emps
           .map((e: any) => ({
@@ -113,8 +108,8 @@ export default function RecepcionEmpresa() {
     load()
   }, [])
 
-  const siguiente = () => setPaso(p => p + 1)
-  const anterior = () => setPaso(p => Math.max(1, p - 1))
+  const siguiente = () => setPaso(p => Math.min(7, p + 1) as 1|2|3|4|5|6|7)
+  const anterior = () => setPaso(p => Math.max(1, p - 1) as 1|2|3|4|5|6|7)
   const actualizarForm = (campo: keyof RegistroFruta, valor: string) => setForm(f => ({ ...f, [campo]: valor }))
 
   const handleEmpresa = async (id: string) => {
@@ -142,7 +137,7 @@ export default function RecepcionEmpresa() {
   const handleAgricultor = (id: string) => { setAgricultorID(id); setPaso(3) }
   const omitirAgricultor = () => { setAgricultorID(''); setPaso(3) }
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     if (clickGuardRef.current || submitting) return
     clickGuardRef.current = true
     setSubmitting(true)
@@ -196,7 +191,7 @@ export default function RecepcionEmpresa() {
           })
         } catch {}
 
-        setMensaje('Recepcion registrada correctamente.')
+        setMensaje('Recepción registrada correctamente.')
         setForm({
           tipo_fruta_id: '',
           cantidad_cajas: '',
@@ -227,230 +222,328 @@ export default function RecepcionEmpresa() {
   const nombreFruta = tiposFruta.find(f => String(f.id) === form.tipo_fruta_id)?.nombre || ''
   const nombreEmpaque = empaques.find(e => String(e.id) === form.empaque_id)?.tamanio || ''
   const nombreAgricultor = agricultores.find(a => String(a.id) === agricultorID)?.nombre || ''
-  const tituloEmpresa = nombreEmpresa ? `Registro de recepcion - ${nombreEmpresa}` : 'Registro de recepcion - Empresa'
+  const tituloEmpresa = nombreEmpresa ? `Registro de recepción – ${nombreEmpresa}` : 'Registro de recepción – Empresa'
+
+  const totalPasos = 7
+  const progreso = Math.round((paso / totalPasos) * 100)
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#181818]' : 'bg-gray-50'}`}>
-      <div className="w-full flex justify-end p-6 md:p-8">
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          className={`flex items-center gap-3 px-6 py-3 rounded-xl shadow border text-lg font-semibold
-            ${darkMode ? 'bg-gray-900 border-gray-800 text-orange-400 hover:bg-gray-800' : 'bg-white border-gray-200 text-orange-600 hover:bg-gray-100'}`}>
-          {darkMode ? 'Modo noche' : 'Modo dia'}
-        </button>
-      </div>
-
-      <main className="flex-1 flex flex-col items-center justify-center px-2 pb-12">
-        <div className={`w-full max-w-lg md:max-w-2xl rounded-3xl shadow-2xl border mt-8 mb-8 ${darkMode ? 'bg-[#23272f] border-orange-700' : 'bg-white border-gray-200'}`}>
-          <div className="w-full flex flex-col items-center py-8 border-b" style={{ borderColor: darkMode ? '#ffac4b44' : '#f6ad55' }}>
-            <div className="flex items-center gap-4 mb-3">
-              <span className={`text-4xl ${darkMode ? 'drop-shadow' : ''}`}>🍊</span>
-              <span className={`font-bold text-3xl tracking-wide ${darkMode ? 'text-orange-400' : 'text-orange-700'}`}>El Molinito</span>
-            </div>
-            <h2 className={`text-2xl font-bold mb-2 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>{tituloEmpresa}</h2>
+    <div className="min-h-screen flex flex-col bg-[#181818] text-white">
+      {/* Top bar (compacto y pegajoso en móvil) */}
+      <header className="sticky top-0 z-30 bg-[#181818]/95 backdrop-blur border-b border-orange-900/40">
+        <div className="max-w-3xl md:max-w-5xl mx-auto px-3 sm:px-6 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => router.push('/panel/Rutas/recepcion/recepcion')}
+              className="px-3 py-2 rounded-xl border border-orange-900/50 bg-[#1f1f1f] text-orange-200 hover:bg-[#232323] active:scale-[0.98]"
+            >
+              ← Menú
+            </button>
             <div className="flex items-center gap-3">
-              <span className={`font-bold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>No. de nota:</span>
-              <span className={`text-xl font-mono rounded-xl px-6 py-2 border ${darkMode ? 'bg-[#1b1b1b] border-orange-700 text-orange-400' : 'bg-gray-100 border-orange-200 text-orange-700'}`}>
-                {siguienteNumero ?? '...'}
+              <div className="w-9 h-9 rounded-xl bg-[#1f1f1f] border border-orange-900/50 flex items-center justify-center shadow">
+                <span className="text-2xl">🍊</span>
+              </div>
+              <div className="hidden sm:block">
+                <div className="text-sm font-semibold leading-tight">El Molinito</div>
+                <div className="text-xs text-orange-200/80 -mt-0.5">Recepción</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-orange-200/70">Nota</span>
+              <span className="text-sm sm:text-base font-mono rounded-lg px-3 py-1 border bg-[#141414] border-orange-900/50 text-orange-300">
+                {siguienteNumero ?? '…'}
               </span>
             </div>
           </div>
 
-          <div className="py-10 px-6 md:px-12 space-y-6">
-            {paso === 1 && (
-              <section>
-                <h3 className={`mb-5 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>Selecciona la empresa</h3>
+          {/* Barra de progreso del flujo */}
+          <div className="mt-3 h-1.5 w-full bg-[#272727] rounded-full overflow-hidden">
+            <div className="h-1.5 bg-orange-500 transition-all" style={{ width: `${progreso}%` }} />
+          </div>
+        </div>
+      </header>
 
-                {cargandoEmpresas ? (
-                  <div className={`${darkMode ? 'text-orange-200' : 'text-gray-600'} text-center mb-6`}>Cargando empresas…</div>
-                ) : empresas.length === 0 ? (
-                  <div className={`${darkMode ? 'text-orange-200' : 'text-gray-600'} text-center mb-6`}>
-                    No hay empresas disponibles. Verifica el endpoint <code>/api/recepcion/datos</code> o crea empresas en el panel.
+      <main className="flex-1 flex flex-col items-center pb-28 sm:pb-10">
+        <div className="w-full max-w-3xl md:max-w-5xl px-3 sm:px-6">
+          {/* Encabezado grande de la tarjeta */}
+          <div className="rounded-2xl sm:rounded-3xl border border-orange-900/50 bg-[#23272f] shadow-2xl mt-4 sm:mt-6 overflow-hidden">
+            <div className="px-4 sm:px-8 py-6 border-b border-orange-900/30">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="text-3xl sm:text-4xl">📦</span>
+                <div className="min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold text-orange-300 truncate">{tituloEmpresa}</h2>
+                  <p className="text-xs sm:text-sm text-orange-200/70 mt-0.5">Flujo paso {paso} de {totalPasos}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-4 sm:px-8 py-6 space-y-6">
+              {paso === 1 && (
+                <section>
+                  <h3 className="mb-3 text-lg sm:text-xl font-bold text-white">Selecciona la empresa</h3>
+                  {cargandoEmpresas ? (
+                    <div className="text-orange-200 text-center py-8">Cargando empresas…</div>
+                  ) : empresas.length === 0 ? (
+                    <div className="text-orange-200 text-center py-8">
+                      No hay empresas disponibles. Verifica el endpoint <code className="text-orange-300">/api/recepcion/datos</code>.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {empresas.map(emp => (
+                        <button
+                          key={emp.id}
+                          onClick={() => handleEmpresa(String(emp.id))}
+                          className="w-full rounded-xl px-4 py-4 sm:px-6 sm:py-5 text-left font-semibold border border-orange-900/40 bg-[#202329] text-orange-200 hover:bg-orange-950/30 active:scale-[0.99]"
+                        >
+                          {emp.empresa}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      onClick={() => router.push('/panel/empleado')}
+                      className="py-3 px-6 rounded-xl font-bold text-base border border-orange-900/40 bg-[#1d1d1d] text-orange-100 hover:bg-[#242424] active:scale-[0.99]"
+                    >
+                      Ir al panel
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex flex-wrap gap-6 justify-center mb-6">
-                    {empresas.map(emp => (
+                </section>
+              )}
+
+              {paso === 2 && (
+                <section>
+                  <h3 className="mb-1 text-lg sm:text-xl font-bold text-white">
+                    Agricultor de <span className="text-orange-400">{nombreEmpresa}</span>
+                  </h3>
+                  <p className="text-sm text-orange-200/80 mb-4">Puedes continuar sin agricultor.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {agricultores.length === 0 ? (
+                      <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] text-orange-200 p-4">
+                        Esta empresa no tiene agricultores registrados.
+                      </div>
+                    ) : (
+                      agricultores.map(agr => (
+                        <button
+                          key={agr.id}
+                          onClick={() => handleAgricultor(String(agr.id))}
+                          className="w-full rounded-xl px-4 py-4 sm:px-6 sm:py-5 text-left font-semibold border border-orange-900/40 bg-[#202329] text-orange-200 hover:bg-orange-950/30 active:scale-[0.99]"
+                        >
+                          {agr.nombre} <span className="text-xs opacity-70">({agr.clave})</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
+                    <button
+                      onClick={omitirAgricultor}
+                      className="px-4 py-2 rounded-xl border border-orange-900/40 bg-[#1f1f1f] text-orange-100 hover:bg-[#242424]"
+                    >
+                      Continuar sin agricultor
+                    </button>
+                  </div>
+                </section>
+              )}
+
+              {paso === 3 && (
+                <section>
+                  <h3 className="mb-3 text-lg sm:text-xl font-bold text-white">Selecciona el tipo de fruta</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {tiposFruta.map(fruta => (
                       <button
-                        key={emp.id}
-                        onClick={() => handleEmpresa(String(emp.id))}
-                        className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
-                        style={{ minWidth: 200, minHeight: 56 }}>
-                        {emp.empresa}
+                        key={fruta.id}
+                        onClick={() => { actualizarForm('tipo_fruta_id', String(fruta.id)); siguiente() }}
+                        className="w-full rounded-xl px-3 py-4 sm:px-5 sm:py-5 text-center font-semibold border border-orange-900/40 bg-[#202329] text-orange-200 hover:bg-orange-950/30 active:scale-[0.99]"
+                      >
+                        {fruta.nombre}
                       </button>
                     ))}
                   </div>
-                )}
+                  <div className="mt-5 flex justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
+                    <div />
+                  </div>
+                </section>
+              )}
 
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => router.push('/panel/Rutas/recepcion/recepcion')}
-                    className={`py-3 px-6 rounded-xl font-bold text-lg transition border ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100 hover:bg-gray-700' : 'bg-gray-200 border-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-                    Menu principal
-                  </button>
-                </div>
-              </section>
-            )}
+              {paso === 4 && (
+                <section>
+                  <h3 className="mb-3 text-lg sm:text-xl font-bold text-white">Cantidad de cajas</h3>
+                  <input
+                    autoFocus
+                    inputMode="numeric"
+                    type="number"
+                    value={form.cantidad_cajas}
+                    onChange={e => actualizarForm('cantidad_cajas', e.target.value)}
+                    className="w-full p-4 sm:p-5 rounded-xl text-center text-2xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 focus:ring-2 focus:ring-orange-500 outline-none"
+                    placeholder="Ej. 240"
+                    required
+                    min={1}
+                  />
+                  <div className="mt-5 flex justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
+                    <button
+                      onClick={siguiente}
+                      disabled={!form.cantidad_cajas}
+                      className={`px-5 py-3 rounded-xl font-semibold ${!form.cantidad_cajas ? 'bg-[#2a2a2a] text-orange-300/50 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700 text-white'}`}
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </section>
+              )}
 
-            {paso === 2 && (
-              <section>
-                <h3 className={`mb-3 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>
-                  Selecciona el agricultor de <span className="text-orange-500">{nombreEmpresa}</span>
-                </h3>
-                <p className={`${darkMode ? 'text-orange-200/80' : 'text-gray-500'} mb-5`}>Puedes continuar sin agricultor si la empresa aun no tiene asociados.</p>
-                <div className="flex flex-wrap gap-6 justify-center mb-6">
-                  {agricultores.length === 0 ? (
-                    <div className={`${darkMode ? 'text-orange-200' : 'text-gray-600'}`}>Esta empresa no tiene agricultores registrados.</div>
-                  ) : (
-                    agricultores.map(agr => (
+              {paso === 5 && (
+                <section>
+                  <h3 className="mb-3 text-lg sm:text-xl font-bold text-white">Tipo de empaque</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {empaques.map(emp => (
                       <button
-                        key={agr.id}
-                        onClick={() => handleAgricultor(String(agr.id))}
-                        className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
-                        style={{ minWidth: 220, minHeight: 56 }}>
-                        {agr.nombre} <span className="text-xs opacity-70 ml-2">({agr.clave})</span>
+                        key={emp.id}
+                        onClick={() => { actualizarForm('empaque_id', String(emp.id)); actualizarForm('peso_caja_oz', emp.tamanio); siguiente() }}
+                        className="w-full rounded-xl px-3 py-4 sm:px-5 sm:py-5 text-center font-semibold border border-orange-900/40 bg-[#202329] text-orange-200 hover:bg-orange-950/30 active:scale-[0.99]"
+                      >
+                        {emp.tamanio}
                       </button>
-                    ))
-                  )}
-                </div>
-                <div className="flex justify-between items-center">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <button
-                    onClick={omitirAgricultor}
-                    className={`font-bold py-3 px-6 rounded-xl shadow transition border text-sm ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-100 border-gray-700' : 'bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-200'}`}>
-                    Continuar sin agricultor
-                  </button>
-                </div>
-              </section>
-            )}
+                    ))}
+                  </div>
+                  <div className="mt-5 flex justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
+                    <div />
+                  </div>
+                </section>
+              )}
 
-            {paso === 3 && (
-              <section>
-                <h3 className={`mb-5 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>Selecciona el tipo de fruta</h3>
-                <div className="flex flex-wrap gap-6 justify-center mb-6">
-                  {tiposFruta.map(fruta => (
+              {paso === 6 && (
+                <section className="space-y-3">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-1">Datos adicionales</h3>
+                  <input placeholder="Sector" value={form.sector} onChange={e => actualizarForm('sector', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none" />
+                  <input placeholder="Marca" value={form.marca} onChange={e => actualizarForm('marca', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none" />
+                  <input placeholder="Destino" value={form.destino} onChange={e => actualizarForm('destino', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none" />
+                  <input placeholder="Variedad" value={form.variedad} onChange={e => actualizarForm('variedad', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none" />
+                  <select value={form.tipo_produccion} onChange={e => actualizarForm('tipo_produccion', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none">
+                    <option value="convencional">Convencional</option>
+                    <option value="organica">Orgánica</option>
+                  </select>
+                  <textarea placeholder="Notas (opcional)" value={form.notas} onChange={e => actualizarForm('notas', e.target.value)} className="w-full p-3 rounded-xl border border-orange-900/40 bg-[#1c1f25] text-orange-100 outline-none" />
+                  <div className="mt-3 flex justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
+                    <button onClick={siguiente} className="px-5 py-3 rounded-xl font-semibold bg-orange-600 hover:bg-orange-700 text-white">Siguiente</button>
+                  </div>
+                </section>
+              )}
+
+              {paso === 7 && (
+                <section className="space-y-3">
+                  <h3 className="text-lg sm:text-xl font-bold text-white">Resumen</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Empresa</div>
+                      <div className="text-orange-100">{nombreEmpresa}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Agricultor</div>
+                      <div className="text-orange-100">{agricultorID ? nombreAgricultor : '—'}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Fruta</div>
+                      <div className="text-orange-100">{nombreFruta}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Cajas</div>
+                      <div className="text-orange-100">{form.cantidad_cajas}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Peso por caja (oz)</div>
+                      <div className="text-orange-100">{form.peso_caja_oz}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Empaque</div>
+                      <div className="text-orange-100">{nombreEmpaque}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3 sm:col-span-2">
+                      <div className="text-orange-200/70 text-xs">Sector / Marca / Destino</div>
+                      <div className="text-orange-100">{[form.sector, form.marca, form.destino].filter(Boolean).join(' • ') || '—'}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Variedad</div>
+                      <div className="text-orange-100">{form.variedad || '—'}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3">
+                      <div className="text-orange-200/70 text-xs">Producción</div>
+                      <div className="text-orange-100 capitalize">{form.tipo_produccion}</div>
+                    </div>
+                    <div className="rounded-xl border border-orange-900/40 bg-[#1f1f1f] p-3 sm:col-span-2">
+                      <div className="text-orange-200/70 text-xs">Notas</div>
+                      <div className="text-orange-100">{form.notas || '—'}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 flex justify-between">
+                    <button onClick={anterior} className="text-orange-300 font-semibold underline">Volver</button>
                     <button
-                      key={fruta.id}
-                      onClick={() => { actualizarForm('tipo_fruta_id', String(fruta.id)); siguiente() }}
-                      className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
-                      style={{ minWidth: 200, minHeight: 56 }}>
-                      {fruta.nombre}
+                      onClick={handleSubmit}
+                      disabled={submitting}
+                      aria-busy={submitting}
+                      className={`px-6 py-3 rounded-xl font-semibold border ${submitting
+                        ? 'bg-[#2a2a2a] border-[#2a2a2a] text-orange-300/60 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
+                    >
+                      {submitting ? 'Guardando…' : 'Finalizar nota'}
                     </button>
-                  ))}
-                </div>
-                <div className="flex justify-between">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <div />
-                </div>
-              </section>
-            )}
+                  </div>
+                </section>
+              )}
 
-            {paso === 4 && (
-              <section>
-                <h3 className={`mb-5 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>Cantidad de cajas</h3>
-                <input
-                  autoFocus
-                  type="number"
-                  value={form.cantidad_cajas}
-                  onChange={e => actualizarForm('cantidad_cajas', e.target.value)}
-                  className={`w-full p-5 rounded-xl text-center text-2xl mb-6 transition ${darkMode ? 'bg-[#23272f] border border-orange-700 text-orange-100 focus:ring-2 focus:ring-orange-500' : 'bg-gray-50 border border-orange-200 text-gray-900 focus:ring-2 focus:ring-orange-400'}`}
-                  required
-                  min={1}
-                />
-                <div className="flex justify-between">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <button
-                    onClick={siguiente}
-                    className={`font-bold py-3 px-8 rounded-xl shadow transition border text-lg ${darkMode ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-700' : 'bg-orange-500 hover:bg-orange-600 text-white border-orange-200'}`}>
-                    Siguiente
-                  </button>
+              {mensaje && (
+                <div className="text-center pt-2">
+                  <p className={`font-semibold ${mensaje.includes('correctamente') ? 'text-green-500' : 'text-red-500'}`}>{mensaje}</p>
                 </div>
-              </section>
-            )}
-
-            {paso === 5 && (
-              <section>
-                <h3 className={`mb-5 text-xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-700'}`}>Selecciona el tipo de empaque</h3>
-                <div className="flex flex-wrap gap-6 justify-center mb-6">
-                  {empaques.map(emp => (
-                    <button
-                      key={emp.id}
-                      onClick={() => { actualizarForm('empaque_id', String(emp.id)); actualizarForm('peso_caja_oz', emp.tamanio); siguiente() }}
-                      className={`rounded-xl px-8 py-5 font-semibold border shadow-sm transition ${darkMode ? 'bg-[#222] border-orange-700 text-orange-300 hover:bg-orange-950' : 'bg-white border-orange-200 text-gray-900 hover:bg-orange-50'}`}
-                      style={{ minWidth: 170, minHeight: 56 }}>
-                      {emp.tamanio}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex justify-between">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <div />
-                </div>
-              </section>
-            )}
-
-            {paso === 6 && (
-              <section className="space-y-4">
-                <input placeholder="Sector" value={form.sector} onChange={e => actualizarForm('sector', e.target.value)} className="w-full p-3 rounded-xl" />
-                <input placeholder="Marca" value={form.marca} onChange={e => actualizarForm('marca', e.target.value)} className="w-full p-3 rounded-xl" />
-                <input placeholder="Destino" value={form.destino} onChange={e => actualizarForm('destino', e.target.value)} className="w-full p-3 rounded-xl" />
-                <input placeholder="Variedad" value={form.variedad} onChange={e => actualizarForm('variedad', e.target.value)} className="w-full p-3 rounded-xl" />
-                <select value={form.tipo_produccion} onChange={e => actualizarForm('tipo_produccion', e.target.value)} className="w-full p-3 rounded-xl">
-                  <option value="convencional">Convencional</option>
-                  <option value="organica">Organica</option>
-                </select>
-                <textarea placeholder="Notas (opcional)" value={form.notas} onChange={e => actualizarForm('notas', e.target.value)} className="w-full p-3 rounded-xl" />
-                <div className="flex justify-between">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <button
-                    onClick={siguiente}
-                    className={`font-bold py-3 px-8 rounded-xl shadow transition border text-lg ${darkMode ? 'bg-orange-600 hover:bg-orange-700 text-white border-orange-700' : 'bg-orange-500 hover:bg-orange-600 text-white border-orange-200'}`}>
-                    Siguiente
-                  </button>
-                </div>
-              </section>
-            )}
-
-            {paso === 7 && (
-              <section className="space-y-4">
-                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Resumen</h3>
-                <p><b>Empresa:</b> {nombreEmpresa}</p>
-                <p><b>Agricultor:</b> {agricultorID ? nombreAgricultor : '—'}</p>
-                <p><b>Fruta:</b> {nombreFruta}</p>
-                <p><b>Cajas:</b> {form.cantidad_cajas}</p>
-                <p><b>Peso por caja (oz):</b> {form.peso_caja_oz}</p>
-                <p><b>Empaque:</b> {nombreEmpaque}</p>
-                <p><b>Sector:</b> {form.sector}</p>
-                <p><b>Marca:</b> {form.marca}</p>
-                <p><b>Destino:</b> {form.destino}</p>
-                <p><b>Variedad:</b> {form.variedad}</p>
-                <p><b>Produccion:</b> {form.tipo_produccion}</p>
-                <p><b>Notas:</b> {form.notas || '—'}</p>
-                <div className="flex justify-between">
-                  <button onClick={anterior} className="text-orange-400 text-lg font-semibold underline">Volver</button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    aria-busy={submitting}
-                    className={`font-bold px-6 py-3 rounded-xl transition border
-                      ${submitting
-                        ? 'opacity-60 pointer-events-none ' + (darkMode ? 'bg-gray-700 border-gray-700 text-gray-200' : 'bg-gray-300 border-gray-300 text-gray-600')
-                        : (darkMode ? 'bg-green-600 hover:bg-green-700 text-white border-green-700' : 'bg-green-600 hover:bg-green-700 text-white border-green-600')}`}>
-                    {submitting ? 'Guardando…' : 'Finalizar nota'}
-                  </button>
-                </div>
-              </section>
-            )}
-
-            {mensaje && (
-              <div className="text-center mt-6">
-                <p className={`font-semibold ${mensaje.includes('correctamente') ? 'text-green-500' : 'text-red-500'}`}>{mensaje}</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Espaciador para que no tape el contenido la action bar móvil */}
+        <div className="h-24 sm:h-0" />
       </main>
 
-      <footer className={`w-full text-center py-6 border-t text-lg mt-auto ${darkMode ? 'bg-[#151515] border-orange-950 text-orange-200' : 'bg-gray-100 border-gray-200 text-gray-500'}`}>
+      {/* Action bar fijo para móvil (mejora usabilidad con una mano) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#141414]/95 backdrop-blur border-t border-orange-900/40 pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-3xl mx-auto px-3 py-3 flex items-center justify-between gap-3">
+          <button
+            onClick={anterior}
+            disabled={paso === 1}
+            className={`px-4 py-3 rounded-xl font-semibold border ${paso === 1 ? 'text-orange-300/50 border-orange-900/30 bg-[#1c1c1c]' : 'text-orange-100 border-orange-900/50 bg-[#1f1f1f] active:scale-[0.98]'}`}
+          >
+            ← Volver
+          </button>
+
+          <div className="text-xs text-orange-300/80">{paso}/{totalPasos}</div>
+
+          {paso < 7 ? (
+            <button
+              onClick={siguiente}
+              className="px-5 py-3 rounded-xl font-semibold bg-orange-600 hover:bg-orange-700 text-white active:scale-[0.98]"
+            >
+              Siguiente →
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className={`px-5 py-3 rounded-xl font-semibold ${submitting ? 'bg-[#2a2a2a] text-orange-300/60 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'} active:scale-[0.98]`}
+            >
+              {submitting ? 'Guardando…' : 'Finalizar'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <footer className="w-full text-center py-6 border-t border-orange-950 text-orange-200 bg-[#151515]">
         © {new Date().getFullYear()} El Molinito
       </footer>
     </div>
