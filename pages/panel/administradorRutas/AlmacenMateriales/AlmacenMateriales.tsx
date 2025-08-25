@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import { useUi } from 'components/ui-context'
-import VistaInicio from './VistaInicio'
-import VistaExistencias from './VistaExistencias'
-import FormularioMovimiento from './FormularioMovimiento'
-import CatalogoMateriales from './CatalogoMateriales'
+import VistaInicio from '../../../../components/AlmacenMateriales/VistaInicio'
+import VistaExistencias from '../../../../components/AlmacenMateriales/VistaExistencias'
+import FormularioMovimiento from '../../../../components/AlmacenMateriales/FormularioMovimiento'
+import CatalogoMateriales from '../../../../components/AlmacenMateriales/CatalogoMateriales'
 
 interface ModuloAlmacen {
   nombre: string
