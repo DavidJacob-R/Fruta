@@ -1,113 +1,275 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import { useUi } from '@/components/ui-context'
+import { FiHome, FiArrowLeft, FiSave, FiAlertCircle } from 'react-icons/fi'
+
+type NotaCalidad = {
+  id: number
+  titulo?: string
+  contenido?: string
+  numero_nota?: string | number
+  empresa_nombre?: string | null
+  agricultor_nombre?: string | null
+  agricultor_apellido?: string | null
+  fecha_recepcion?: string | null
+  // agrega aquí otros campos si tu API los retorna
+}
 
 export default function EditarNotaCalidad() {
   const router = useRouter()
   const { id } = router.query
+  const { darkMode } = useUi()
 
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<NotaCalidad | null>(null)
 
   useEffect(() => {
-    if (!id) return
+    const noteId = Array.isArray(id) ? id[0] : id
+    if (!noteId) return
+
+    let cancel = false
     setCargando(true)
-    fetch(`/api/notas/calidad/${id}`)
+    setError('')
+    fetch(`/api/notas/calidad/${noteId}`)
       .then(res => res.json())
       .then(json => {
-        setData(json.nota)
-        setCargando(false)
+        if (cancel) return
+        setData(json.nota || null)
       })
       .catch(() => {
-        setError('Error al cargar nota de calidad')
-        setCargando(false)
+        if (cancel) return
+        setError('Error al cargar la nota de calidad')
       })
+      .finally(() => !cancel && setCargando(false))
+
+    return () => { cancel = true }
   }, [id])
 
-  if (cargando) return <div className="p-8 text-center text-2xl">Cargando...</div>
-  if (error) return <div className="p-8 text-center text-red-500">{error}</div>
-  if (!data) return <div className="p-8 text-center">No encontrada</div>
+  const bgDay = 'bg-[#f6f4f2]'
+  const cardDay = 'bg-[#f8f7f5] border border-orange-200'
+  const textDay = 'text-[#1a1a1a]'
+  const bgNight = 'bg-[#161616]'
+  const cardNight = 'bg-[#232323] border border-[#353535]'
+  const textNight = 'text-white'
+  const softShadow = 'shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]'
 
-  return <FormularioEditarCalidad data={data} />
+  const headerTitle = useMemo(() => {
+    const num = data?.numero_nota ? ` #${data.numero_nota}` : ''
+    return `Editar Nota de Calidad${num}`
+  }, [data?.numero_nota])
+
+  if (cargando) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <div className="h-7 w-60 rounded bg-white/30 animate-pulse" />
+            <div className="mt-2 h-4 w-96 rounded bg-white/20 animate-pulse" />
+          </div>
+        </section>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+            <div className="h-6 w-40 rounded animate-pulse bg-current/10" />
+            <div className="mt-4 h-10 w-full rounded animate-pulse bg-current/10" />
+            <div className="mt-3 h-48 w-full rounded animate-pulse bg-current/10" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto flex items-center gap-2">
+            <FiAlertCircle className="text-2xl" />
+            <h1 className="text-2xl font-bold">Error</h1>
+          </div>
+        </section>
+        <div className="max-w-3xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+            <p className="text-red-500">{error}</p>
+            <button
+              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              className={`mt-4 px-4 py-2 rounded-lg border ${
+                darkMode ? 'bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]' : 'bg-white border-orange-200 text-[#1a1a1a] hover:bg-orange-50'
+              }`}
+            >
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold">Nota no encontrada</h1>
+          </div>
+        </section>
+        <div className="max-w-3xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+            <button
+              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              className={`px-4 py-2 rounded-lg border ${
+                darkMode ? 'bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]' : 'bg-white border-orange-200 text-[#1a1a1a] hover:bg-orange-50'
+              }`}
+            >
+              Volver al listado
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return <FormularioEditarCalidad data={data} darkMode={darkMode} headerTitle={headerTitle} />
 }
 
-function FormularioEditarCalidad({ data }: { data: any }) {
+function FormularioEditarCalidad({
+  data,
+  darkMode,
+  headerTitle
+}: {
+  data: NotaCalidad
+  darkMode: boolean
+  headerTitle: string
+}) {
   const router = useRouter()
   const [mensaje, setMensaje] = useState('')
+  const [guardando, setGuardando] = useState(false)
   const [form, setForm] = useState({
     titulo: data.titulo || '',
-    contenido: data.contenido || '',
+    contenido: data.contenido || ''
   })
-  const [darkMode, setDarkMode] = useState(true)
 
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
-  }, [darkMode])
-
-  const handleSubmit = async () => {
-    setMensaje('Guardando...')
-    const res = await fetch(`/api/notas/calidad/${data.id}/editar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    const result = await res.json()
-    if (result.success) {
-      setMensaje('Nota de calidad actualizada correctamente')
-      setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
-    } else {
-      setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
+  async function handleSubmit() {
+    try {
+      setGuardando(true)
+      setMensaje('Guardando...')
+      const res = await fetch(`/api/notas/calidad/${data.id}/editar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      const result = await res.json()
+      if (result?.success) {
+        setMensaje('Nota de calidad actualizada correctamente')
+        setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
+      } else {
+        setMensaje('Error al actualizar: ' + (result?.message || 'Error desconocido'))
+      }
+    } catch {
+      setMensaje('Error al actualizar: conexión fallida')
+    } finally {
+      setGuardando(false)
     }
   }
 
+  const s10 = (v?: string | null) => (v ? String(v).slice(0, 10) : '')
+
+  const bgDay = 'bg-[#f6f4f2]'
+  const cardDay = 'bg-[#f8f7f5] border border-orange-200'
+  const textDay = 'text-[#1a1a1a]'
+  const bgNight = 'bg-[#161616]'
+  const cardNight = 'bg-[#232323] border border-[#353535]'
+  const textNight = 'text-white'
+  const softShadow = 'shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]'
+
   return (
-    <div className={`min-h-screen flex flex-col items-center ${darkMode ? "bg-[#181818]" : "bg-gray-50"}`}>
-      <div className="w-full max-w-2xl rounded-2xl shadow-xl border mt-8 mb-8 bg-white dark:bg-[#23272f] dark:border-orange-700 border-gray-200">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-orange-700">
-          <h2 className="text-xl font-bold text-orange-700 dark:text-orange-300">
-            Editar Nota de Control de Calidad
-          </h2>
-          <button
-            className="rounded px-3 py-1 border font-semibold bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:text-orange-100 dark:border-orange-800"
-            onClick={() => router.push('/panel/administradorRutas/notas/notas')}
-          >
-            Volver
-          </button>
-        </div>
-        <div className="p-8 space-y-5">
+    <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay} transition-colors duration-300`}>
+      {/* Encabezado degradado */}
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <label className="font-semibold">Título</label>
-            <input
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.titulo}
-              onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
-            />
+            <h1 className="text-3xl font-bold mb-1">{headerTitle}</h1>
+            <p className="text-orange-100">
+              {data.empresa_nombre ? `Empresa: ${data.empresa_nombre}` : ''}
+              {data.agricultor_nombre ? ` · Agricultor: ${data.agricultor_nombre} ${data.agricultor_apellido || ''}` : ''}
+              {data.fecha_recepcion ? ` · Fecha: ${s10(data.fecha_recepcion)}` : ''}
+            </p>
           </div>
-          <div>
-            <label className="font-semibold">Contenido</label>
-            <textarea
-              className="w-full rounded-xl border p-2 mt-1"
-              value={form.contenido}
-              onChange={e => setForm(f => ({ ...f, contenido: e.target.value }))}
-              rows={8}
-            />
-          </div>
-          <div className="flex justify-between">
+          <div className="flex items-center gap-2">
             <button
-              className="rounded-xl px-6 py-2 font-bold bg-gray-100 text-orange-800 border border-orange-300 hover:bg-gray-200"
+              className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
+              onClick={() => router.push('/panel/administrador')}
+              title="Ir al menú principal"
+            >
+              <FiHome />
+              <span className="hidden sm:inline">Menú</span>
+            </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
+              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              title="Volver al listado"
+            >
+              <FiArrowLeft />
+              <span className="hidden sm:inline">Volver</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Contenido */}
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+          <div className="grid grid-cols-1 gap-5">
+            <div>
+              <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Título</label>
+              <input
+                className={`w-full px-4 py-3 rounded-xl outline-none ${
+                  darkMode ? 'bg-[#1f1f1f] border border-[#353535] text-white' : 'bg-white border border-orange-200'
+                }`}
+                value={form.titulo}
+                onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
+                placeholder="Título de la nota"
+              />
+            </div>
+
+            <div>
+              <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Contenido</label>
+              <textarea
+                className={`w-full px-4 py-3 rounded-xl outline-none min-h-[220px] ${
+                  darkMode ? 'bg-[#1f1f1f] border border-[#353535] text-white' : 'bg-white border border-orange-200'
+                }`}
+                value={form.contenido}
+                onChange={e => setForm(f => ({ ...f, contenido: e.target.value }))}
+                placeholder="Detalle del control de calidad…"
+              />
+            </div>
+          </div>
+
+          {mensaje && (
+            <div className={`mt-4 rounded-xl px-4 py-3 ${darkMode ? 'bg-[#1f1f1f] border border-[#353535]' : 'bg-white border border-orange-200'}`}>
+              <p className={`${darkMode ? 'text-orange-300' : 'text-orange-700'} font-semibold`}>{mensaje}</p>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end">
+            <button
+              className={`px-5 py-3 rounded-xl font-semibold border ${
+                darkMode ? 'bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]' : 'bg-white border-orange-300 text-[#1a1a1a] hover:bg-orange-50'
+              }`}
               onClick={() => router.push('/panel/administradorRutas/notas/notas')}
             >
               Cancelar
             </button>
             <button
-              className="rounded-xl px-6 py-2 font-bold bg-orange-700 text-white border border-orange-800 hover:bg-orange-800"
+              className={`px-5 py-3 rounded-xl font-semibold text-white inline-flex items-center gap-2 ${
+                darkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-600 hover:bg-orange-700'
+              } ${guardando ? 'opacity-70 cursor-not-allowed' : ''}`}
               onClick={handleSubmit}
+              disabled={guardando}
             >
-              Guardar cambios
+              <FiSave /> {guardando ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>
-          {mensaje && <div className="text-center font-bold text-orange-600 dark:text-orange-300">{mensaje}</div>}
         </div>
       </div>
     </div>

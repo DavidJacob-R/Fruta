@@ -1,131 +1,136 @@
-import { Motivo, Pedido } from '../../../api/control_calidad/types'
+import { Motivo, Pedido } from '@/pages/api/control_calidad/types'
 
 interface Props {
-  form: {
-    rechazos: number
-    motivo_rechazo_id: string
-    comentarios: string
-    cajas_finales: number
-  }
-  setForm: React.Dispatch<React.SetStateAction<Props["form"]>>
-  motivos: Motivo[]
   pedido: Pedido
+  motivos: Motivo[]
+  rechazos: number
+  setRechazos: (n: number) => void
+  cajasFinales: number
+  selectedMotivos: number[]
+  toggleMotivo: (id: number) => void
+  comentarios: string
+  setComentarios: (v: string) => void
   onVolver: () => void
   onSubmit: (e: React.FormEvent) => void
 }
 
-export default function FormularioCalidad({ form, setForm, motivos, pedido, onVolver, onSubmit }: Props) {
-  // Protección para build/prerender
-  if (!pedido || typeof pedido.cantidad_cajas === 'undefined') {
-    return (
-      <div className="p-8 text-center text-red-400">
-        No se encontraron datos del pedido.<br />
-        Por favor, vuelve al paso anterior.
-        <div className="mt-8">
-          <button
-            type="button"
-            onClick={onVolver}
-            className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-8 py-4 rounded-2xl font-medium shadow border border-[#c8d6e5] text-lg active:scale-95 transition"
-          >
-            Volver
-          </button>
-        </div>
-      </div>
-    )
-  }
+export default function FormularioCalidad({
+  pedido,
+  motivos,
+  rechazos,
+  setRechazos,
+  cajasFinales,
+  selectedMotivos,
+  toggleMotivo,
+  comentarios,
+  setComentarios,
+  onVolver,
+  onSubmit
+}: Props) {
+  const maxPermitido = pedido.cantidad_cajas || 0
 
   return (
-    <form onSubmit={onSubmit} className="bg-[#2c2f33] border border-[#27ae60] rounded-3xl p-8 sm:p-10 shadow-md max-w-5xl mx-auto">
-      <h2 className="text-2xl sm:text-3xl font-semibold text-[#27ae60] mb-8 text-center">Confirmar Control de Calidad</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-        <div>
-          <label className="block font-bold mb-3 text-[#27ae60] text-lg">Cajas rechazadas</label>
+    <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 sm:p-6">
+      <h2 className="text-base sm:text-lg font-semibold text-neutral-100">Registrar control</h2>
+      <p className="text-xs text-neutral-400 mt-1">Indica cuántas cajas se rechazan y selecciona uno o varios motivos.</p>
+
+      {/* Totales y rechazos (mobile-first) */}
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
+          <label className="block text-sm text-neutral-300 mb-2">Cajas rechazadas</label>
           <input
             type="number"
-            min="0"
-            max={pedido.cantidad_cajas}
-            value={form.rechazos}
+            min={0}
+            max={maxPermitido}
+            value={rechazos}
             onChange={(e) => {
-              const rechazos = parseInt(e.target.value) || 0
-              setForm({ ...form, rechazos, cajas_finales: pedido.cantidad_cajas - rechazos })
+              const v = Math.max(0, Math.min(Number(e.target.value || 0), maxPermitido))
+              setRechazos(v)
             }}
-            className="w-full p-4 rounded-2xl bg-[#f4f7fa] border border-[#27ae60] text-gray-900 text-lg focus:ring-[#27ae60]/40"
+            className="w-full px-3 py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
+            placeholder="0"
             required
           />
+          <p className="mt-2 text-xs text-neutral-500">Máximo {maxPermitido}.</p>
         </div>
 
-        {form.rechazos > 0 && (
-          <div>
-            <label className="block font-bold mb-3 text-[#e74c3c] text-lg">Motivo de rechazo</label>
-            <select
-              value={form.motivo_rechazo_id}
-              onChange={(e) => setForm({ ...form, motivo_rechazo_id: e.target.value })}
-              className="w-full p-4 rounded-2xl bg-[#fff4f4] border border-[#e74c3c] text-gray-900 text-lg focus:ring-[#e74c3c]/40"
-              required
-            >
-              <option value="">Seleccione un motivo</option>
-              {motivos.map(motivo => (
-                <option key={motivo.id} value={motivo.id}>{motivo.nombre}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div>
-          <label className="block font-bold mb-3 text-[#27ae60] text-lg">Cajas finales</label>
-          <div className="flex items-center gap-3">
-            <p className="text-gray-300 text-lg">{form.cajas_finales}</p>
-            <button
-              type="button"
-              onClick={() => {
-                const newValue = prompt("Editar cantidad final:", form.cajas_finales.toString())
-                if (newValue && !isNaN(parseInt(newValue))) {
-                  const nuevasCajas = parseInt(newValue)
-                  setForm({
-                    ...form,
-                    cajas_finales: nuevasCajas,
-                    rechazos: pedido.cantidad_cajas - nuevasCajas
-                  })
-                }
-              }}
-              className="text-[#27ae60] hover:text-[#3566b2] text-base font-medium flex items-center active:scale-95"
-            >
-              ✏️ EDITAR
-            </button>
-          </div>
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
+          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Cajas finales</div>
+          <div className="mt-1 text-2xl text-neutral-100">{cajasFinales}</div>
+          <p className="mt-2 text-xs text-neutral-500">Se calcula automáticamente.</p>
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="block font-bold mb-3 text-[#3566b2] text-lg">Comentarios</label>
-          <textarea
-            value={form.comentarios}
-            onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
-            className="w-full p-4 rounded-2xl bg-[#f4f7fa] border border-[#c8d6e5] text-gray-900 text-lg focus:ring-[#3566b2]/30"
-            rows={3}
-          />
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
+          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Recibidas</div>
+          <div className="mt-1 text-2xl text-neutral-100">{pedido.cantidad_cajas}</div>
+          <p className="mt-2 text-xs text-neutral-500">Según la recepción.</p>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-8 gap-5">
+      {/* Motivos: multi-selección (checkbox chips) */}
+      <div className="mt-4">
+        <h3 className="text-sm font-medium text-neutral-200 mb-2">Motivos de rechazo</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {motivos.map((m) => {
+            const activo = selectedMotivos.includes(m.id)
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => toggleMotivo(m.id)}
+                className={`px-3 py-2 rounded-xl border text-sm ${
+                  activo
+                    ? "bg-white text-black border-neutral-200"
+                    : "bg-neutral-900 text-neutral-100 border-neutral-800 hover:bg-neutral-800"
+                }`}
+                aria-pressed={activo}
+              >
+                {m.nombre}
+              </button>
+            )
+          })}
+        </div>
+        <p className="mt-2 text-xs text-neutral-500">
+          Puedes seleccionar varios. Si hay rechazos, al menos un motivo debe estar seleccionado.
+        </p>
+      </div>
+
+      {/* Comentarios */}
+      <div className="mt-4">
+        <label className="block text-sm text-neutral-300 mb-2">Comentarios</label>
+        <textarea
+          value={comentarios}
+          onChange={(e) => setComentarios(e.target.value)}
+          rows={3}
+          className="w-full px-3 py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
+          placeholder="Observaciones generales…"
+        />
+      </div>
+
+      {/* Acciones (mobile-first) */}
+      <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <button
           type="button"
           onClick={onVolver}
-          className="bg-[#23272a] hover:bg-[#2c2f33] text-white px-8 py-4 rounded-2xl font-medium shadow border border-[#c8d6e5] text-lg active:scale-95 transition"
+          className="w-full sm:w-auto px-5 py-3 rounded-xl border border-neutral-700 text-neutral-100 hover:bg-neutral-800"
         >
-          Volver
+          ← Volver
         </button>
         <button
           type="submit"
-          className="bg-gradient-to-r from-[#27ae60] to-[#2ecc71] hover:from-[#2ecc71] hover:to-[#27ae60] text-white px-8 py-4 rounded-2xl font-bold shadow-lg text-lg active:scale-95 transition"
+          disabled={rechazos < 0 || rechazos > maxPermitido || (rechazos > 0 && selectedMotivos.length === 0)}
+          className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold shadow ${
+            rechazos < 0 || rechazos > maxPermitido || (rechazos > 0 && selectedMotivos.length === 0)
+              ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+              : "bg-white text-black hover:bg-neutral-200"
+          }`}
         >
           Guardar y generar ticket
         </button>
       </div>
 
-      <div className="mt-10 pt-6 border-t border-[#c8d6e5] text-center">
-        <p className="text-base text-gray-400">
-          NOTA: Solo puedes cambiar el número de rechazos/cajas finales.
-        </p>
+      <div className="mt-3 text-center text-[11px] text-neutral-500">
+        El backend recibirá los motivos seleccionados sin cantidades específicas.
       </div>
     </form>
   )

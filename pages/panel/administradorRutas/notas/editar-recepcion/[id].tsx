@@ -1,306 +1,162 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import { useUi } from '@/components/ui-context'
+import { FiHome, FiArrowLeft, FiSave } from 'react-icons/fi'
+
+type PartidaEmpresa = {
+  id: number
+  empresa_id: number | ''
+  tipo_fruta_id: number | ''
+  cantidad_oz: number | string
+  empaque_id: number | ''
+  sector: string
+  marca: string
+  destino: string
+  tipo_produccion: 'convencional' | 'organica'
+  variedad: string
+  notas: string
+  agricultor_id?: number | ''
+}
+
+type NotaRecepcion = {
+  id: number
+  numero_nota?: number | string
+  fecha_recepcion?: string | null
+  empresa_nombre?: string | null
+  frutas: any[]
+}
+
+type Opcion = { id:number; nombre?:string; empresa?:string; tamanio?:string; clave?:string }
 
 export default function EditarRecepcionNota() {
   const router = useRouter()
   const { id } = router.query
+  const { darkMode } = useUi()
+
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState('')
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<NotaRecepcion | null>(null)
 
   useEffect(() => {
-    if (!id) return
+    const rid = Array.isArray(id) ? id[0] : id
+    if (!rid) return
+    let cancel = false
     setCargando(true)
-    fetch(`/api/notas/recepcion/${id}`)
+    setError('')
+    fetch(`/api/notas/recepcion/${rid}`)
       .then(res => res.json())
-      .then(json => {
-        setData(json.nota)
-        setCargando(false)
-      })
-      .catch(() => {
-        setError('Error al cargar nota')
-        setCargando(false)
-      })
+      .then(json => { if (!cancel) setData(json.nota || null) })
+      .catch(() => { if (!cancel) setError('Error al cargar nota') })
+      .finally(() => { if (!cancel) setCargando(false) })
+    return () => { cancel = true }
   }, [id])
 
-  if (cargando) return <div className="p-8 text-center text-2xl">Cargando...</div>
-  if (error) return <div className="p-8 text-center text-red-500">{error}</div>
-  if (!data) return <div className="p-8 text-center">No encontrada</div>
+  const bgDay = 'bg-[#f6f4f2]'
+  const bgNight = 'bg-[#161616]'
+  const textDay = 'text-[#1a1a1a]'
+  const textNight = 'text-white'
 
-  if (data.tipo_nota === 'empresa') {
-    return <EditarNotaEmpresa data={data} />
-  } else {
-    return <EditarNotaMaquila data={data} />
-  }
-}
+  const headerTitle = useMemo(() => {
+    const num = data?.numero_nota ? ` — N° ${data.numero_nota}` : ''
+    return `Editar Nota de Recepción${num}`
+  }, [data?.numero_nota])
 
-function EditarNotaMaquila({ data }: { data: any }) {
-  const router = useRouter()
-  const [agricultores, setAgricultores] = useState<any[]>([])
-  const [frutas, setFrutas] = useState<any[]>([])
-  const [empaques, setEmpaques] = useState<any[]>([])
-  const [mensaje, setMensaje] = useState('')
-  const [form, setForm] = useState<any[]>(data.frutas.map((f: any) => ({
-    agricultor_id: f.agricultor_id || '',
-    tipo_fruta_id: f.tipo_fruta_id || '',
-    cantidad_cajas: f.cantidad_cajas || '',
-    peso_caja_oz: f.peso_caja_oz || '',
-    empaque_id: f.empaque_id || '',
-    sector: f.sector || '',
-    marca: f.marca || '',
-    destino: f.destino || '',
-    tipo_produccion: f.tipo_produccion || 'convencional',
-    variedad: f.variedad || '',
-    notas: f.notas || '',
-    id: f.id
-  })))
-  const [darkMode, setDarkMode] = useState(true)
-
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
-  }, [darkMode])
-
-  useEffect(() => {
-    fetch('/api/recepcion/datos')
-      .then(res => res.json())
-      .then(json => {
-        setAgricultores(Array.isArray(json.agricultores) ? json.agricultores : [])
-        setFrutas(Array.isArray(json.frutas) ? json.frutas : [])
-      })
-    fetch('/api/empaques/listar')
-      .then(res => res.json())
-      .then(json => setEmpaques(Array.isArray(json.empaques) ? json.empaques : []))
-  }, [])
-
-  const handleChange = (idx: number, field: string, value: any) => {
-    setForm((old: any[]) =>
-      old.map((f, i) => i === idx ? { ...f, [field]: value } : f)
+  if (cargando) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <div className="h-7 w-72 rounded bg-white/30 animate-pulse" />
+            <div className="mt-2 h-4 w-96 rounded bg-white/20 animate-pulse" />
+          </div>
+        </section>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#232323] border border-[#353535]' : 'bg-[#f8f7f5] border border-orange-200'} shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]`}>
+            <div className="h-10 w-full rounded bg-current/10 animate-pulse" />
+            <div className="mt-3 h-48 w-full rounded bg-current/10 animate-pulse" />
+          </div>
+        </div>
+      </div>
     )
   }
 
-  const handleSubmit = async () => {
-    setMensaje('Guardando...')
-    let success = true
-    for (let i = 0; i < form.length; i++) {
-      const f = form[i]
-      const res = await fetch(`/api/notas/recepcion/${f.id}/editar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agricultor_id: f.agricultor_id,
-          tipo_fruta_id: f.tipo_fruta_id,
-          cantidad_cajas: f.cantidad_cajas,
-          peso_caja_oz: f.peso_caja_oz,
-          empaque_id: f.empaque_id,
-          sector: f.sector,
-          marca: f.marca,
-          destino: f.destino,
-          tipo_produccion: f.tipo_produccion,
-          variedad: f.variedad,
-          notas: f.notas,
-          tipo_nota: 'maquila'
-        })
-      })
-      const result = await res.json()
-      if (!result.success) {
-        setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
-        success = false
-        break
-      }
-    }
-    if (success) {
-      await fetch('/api/pdf/crea-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numero_nota: data.numero_nota,
-          fecha: new Date().toLocaleDateString()
-        })
-      })
-      setMensaje('Notas actualizadas correctamente')
-      setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
-    }
-  }
-
-  return (
-    <div className={`min-h-screen flex flex-col items-center ${darkMode ? "bg-[#141a14]" : "bg-gray-50"}`}>
-      <div className="w-full max-w-2xl rounded-2xl shadow-xl border mt-8 mb-8 bg-white dark:bg-[#1a2220] dark:border-green-700 border-green-200">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-green-200 dark:border-green-700">
-          <h2 className="text-xl font-bold text-green-700 dark:text-green-200">
-            Editar Nota de Maquila – N° {data.numero_nota}
-          </h2>
-          <button
-            className="rounded px-3 py-1 border font-semibold bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:text-green-100 dark:border-green-800"
-            onClick={() => router.push('/panel/administradorRutas/notas/notas')}
-          >
-            Volver
-          </button>
-        </div>
-        <div className="p-8 space-y-7">
-          {form.map((f, idx) => (
-            <div key={f.id} className="mb-7 p-6 border rounded-2xl shadow bg-gray-50 dark:bg-[#162017]">
-              <div className="font-bold mb-3">Fruta #{idx + 1}</div>
-              <div className="mb-2">
-                <label className="font-semibold">Agricultor</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.agricultor_id}
-                  onChange={e => handleChange(idx, 'agricultor_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {agricultores.map(a => (
-                    <option value={a.id} key={a.id}>{a.nombre} {a.apellido}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Tipo de fruta</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.tipo_fruta_id}
-                  onChange={e => handleChange(idx, 'tipo_fruta_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {frutas.map(fru => (
-                    <option value={fru.id} key={fru.id}>{fru.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Cantidad de cajas</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="number"
-                  value={f.cantidad_cajas}
-                  onChange={e => handleChange(idx, 'cantidad_cajas', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Peso por caja (oz)</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="number"
-                  value={f.peso_caja_oz}
-                  onChange={e => handleChange(idx, 'peso_caja_oz', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Empaque</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.empaque_id}
-                  onChange={e => handleChange(idx, 'empaque_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {empaques.map(e => (
-                    <option value={e.id} key={e.id}>{e.tamanio}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Sector</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.sector}
-                  onChange={e => handleChange(idx, 'sector', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Marca</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.marca}
-                  onChange={e => handleChange(idx, 'marca', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Destino</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.destino}
-                  onChange={e => handleChange(idx, 'destino', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Tipo de producción</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.tipo_produccion}
-                  onChange={e => handleChange(idx, 'tipo_produccion', e.target.value)}
-                >
-                  <option value="convencional">Convencional</option>
-                  <option value="organica">Orgánica</option>
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Variedad</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.variedad}
-                  onChange={e => handleChange(idx, 'variedad', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Notas</label>
-                <textarea
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.notas}
-                  onChange={e => handleChange(idx, 'notas', e.target.value)}
-                />
-              </div>
-            </div>
-          ))}
-          <div className="flex justify-between">
+  if (error) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold">Error</h1>
+            <p className="text-orange-100">No se pudo cargar la nota.</p>
+          </div>
+        </section>
+        <div className="max-w-3xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#232323] border border-[#353535]' : 'bg-white border border-orange-200'} shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]`}>
+            <p className="text-red-500">{error}</p>
             <button
-              className="rounded-xl px-6 py-2 font-bold bg-gray-100 text-green-800 border border-green-300 hover:bg-gray-200"
               onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              className={`mt-4 px-4 py-2 rounded-lg border ${darkMode ? 'bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]' : 'bg-white border-orange-200 text-[#1a1a1a] hover:bg-orange-50'}`}
             >
-              Cancelar
-            </button>
-            <button
-              className="rounded-xl px-6 py-2 font-bold bg-green-700 text-white border border-green-800 hover:bg-green-800"
-              onClick={handleSubmit}
-            >
-              Guardar cambios
+              Volver
             </button>
           </div>
-          {mensaje && <div className="text-center font-bold text-green-600 dark:text-green-300">{mensaje}</div>}
         </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay}`}>
+        <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold">Nota no encontrada</h1>
+          </div>
+        </section>
+        <div className="max-w-3xl mx-auto p-6">
+          <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#232323] border border-[#353535]' : 'bg-white border border-orange-200'} shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]`}>
+            <button
+              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              className={`px-4 py-2 rounded-lg border ${darkMode ? 'bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]' : 'bg-white border-orange-200 text-[#1a1a1a] hover:bg-orange-50'}`}
+            >
+              Volver al listado
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return <FormularioEmpresa data={data} />
 }
 
-function EditarNotaEmpresa({ data }: { data: any }) {
+function FormularioEmpresa({ data }: { data: NotaRecepcion }) {
   const router = useRouter()
-  const [empresas, setEmpresas] = useState<any[]>([])
-  const [frutas, setFrutas] = useState<any[]>([])
-  const [empaques, setEmpaques] = useState<any[]>([])
-  const [mensaje, setMensaje] = useState('')
-  const [form, setForm] = useState<any[]>(data.frutas.map((f: any) => ({
-    empresa_id: f.empresa_id || '',
-    tipo_fruta_id: f.tipo_fruta_id || '',
-    cantidad_oz: f.peso_caja_oz || '',
-    empaque_id: f.empaque_id || '',
-    sector: f.sector || '',
-    marca: f.marca || '',
-    destino: f.destino || '',
-    tipo_produccion: f.tipo_produccion || 'convencional',
-    variedad: f.variedad || '',
-    notas: f.notas || '',
-    id: f.id
-  })))
-  const [darkMode, setDarkMode] = useState(true)
+  const { darkMode } = useUi()
 
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
-  }, [darkMode])
+  const [empresas, setEmpresas] = useState<Opcion[]>([])
+  const [frutas, setFrutas] = useState<Opcion[]>([])
+  const [empaques, setEmpaques] = useState<Opcion[]>([])
+  const [mensaje, setMensaje] = useState('')
+  const [guardando, setGuardando] = useState(false)
+
+  const [agricultoresByEmpresa, setAgricultoresByEmpresa] = useState<Record<number, Opcion[]>>({})
+
+  const [form, setForm] = useState<PartidaEmpresa[]>(
+    (Array.isArray(data.frutas) ? data.frutas : []).map((f: any) => ({
+      id: f.id,
+      empresa_id: f.empresa_id || '',
+      tipo_fruta_id: f.tipo_fruta_id || '',
+      cantidad_oz: f.peso_caja_oz || '',
+      empaque_id: f.empaque_id || '',
+      sector: f.sector || '',
+      marca: f.marca || '',
+      destino: f.destino || '',
+      tipo_produccion: f.tipo_produccion || 'convencional',
+      variedad: f.variedad || '',
+      notas: f.notas || '',
+      agricultor_id: f.agricultor_id || ''
+    }))
+  )
 
   useEffect(() => {
     fetch('/api/recepcion/datos')
@@ -314,195 +170,230 @@ function EditarNotaEmpresa({ data }: { data: any }) {
       .then(json => setEmpaques(Array.isArray(json.empaques) ? json.empaques : []))
   }, [])
 
-  const handleChange = (idx: number, field: string, value: any) => {
-    setForm((old: any[]) =>
-      old.map((f, i) => i === idx ? { ...f, [field]: value } : f)
-    )
+  useEffect(() => {
+    const ids = Array.from(new Set(form.map(f => Number(f.empresa_id)).filter(Boolean))) as number[]
+    ids.forEach(id => ensureAgricultores(id))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.map(f => f.empresa_id).join(',')])
+
+  async function ensureAgricultores(empresaId: number) {
+    if (!empresaId) return
+    if (agricultoresByEmpresa[empresaId]) return
+    const r = await fetch(`/api/agricultores/by-empresa?empresa_id=${empresaId}`)
+    const j = await r.json()
+    setAgricultoresByEmpresa(prev => ({ ...prev, [empresaId]: Array.isArray(j.agricultores) ? j.agricultores : [] }))
   }
 
-  const handleSubmit = async () => {
-    setMensaje('Guardando...')
-    let success = true
-    for (let i = 0; i < form.length; i++) {
-      const f = form[i]
-      const body = {
-        empresa_id: f.empresa_id,
-        tipo_fruta_id: f.tipo_fruta_id,
-        cantidad_cajas: 1,
-        peso_caja_oz: f.cantidad_oz,
-        empaque_id: f.empaque_id,
-        sector: f.sector,
-        marca: f.marca,
-        destino: f.destino,
-        tipo_produccion: f.tipo_produccion,
-        variedad: f.variedad,
-        notas: f.notas,
-        tipo_nota: 'empresa'
+  function handleChange(idx: number, field: keyof PartidaEmpresa, value: any) {
+    setForm(old => old.map((f, i) => {
+      if (i !== idx) return f
+      const changed: any = { ...f, [field]: value }
+      if (field === 'empresa_id') {
+        const eid = Number(value) || 0
+        changed.agricultor_id = '' // reset agricultor al cambiar empresa
+        if (eid) ensureAgricultores(eid)
       }
-      const res = await fetch(`/api/notas/recepcion/${f.id}/editar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      })
-      const result = await res.json()
-      if (!result.success) {
-        setMensaje('Error al actualizar: ' + (result.message || 'Error desconocido'))
-        success = false
-        break
+      return changed
+    }))
+  }
+
+  async function handleSubmit() {
+    try {
+      setGuardando(true)
+      setMensaje('Guardando...')
+      for (let i = 0; i < form.length; i++) {
+        const f = form[i]
+        const body: any = {
+          empresa_id: f.empresa_id || null,
+          tipo_fruta_id: f.tipo_fruta_id || null,
+          cantidad_cajas: 1,
+          peso_caja_oz: Number(f.cantidad_oz) || 0,
+          empaque_id: f.empaque_id || null,
+          sector: f.sector || null,
+          marca: f.marca || null,
+          destino: f.destino || null,
+          tipo_produccion: f.tipo_produccion || 'convencional',
+          variedad: f.variedad || null,
+          notas: f.notas || null,
+          tipo_nota: 'empresa'
+        }
+        if (f.agricultor_id) body.agricultor_id = f.agricultor_id
+
+        const res = await fetch(`/api/notas/recepcion/${f.id}/editar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+        const result = await res.json()
+        if (!result?.success) {
+          setMensaje('Error al actualizar: ' + (result?.message || 'Error desconocido'))
+          setGuardando(false)
+          return
+        }
       }
-    }
-    if (success) {
+
       await fetch('/api/pdf/crea-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numero_nota: data.numero_nota,
-          fecha: new Date().toLocaleDateString()
-        })
+        body: JSON.stringify({ numero_nota: data.numero_nota, fecha: new Date().toLocaleDateString() })
       })
+
       setMensaje('Notas actualizadas correctamente')
       setTimeout(() => router.push('/panel/administradorRutas/notas/notas'), 1200)
+    } catch {
+      setMensaje('Error al actualizar: conexión fallida')
+      setGuardando(false)
     }
   }
 
+  const s10 = (v?: string | null) => (v ? String(v).slice(0, 10) : '')
+  const card = darkMode ? 'bg-[#232323] border border-[#353535]' : 'bg-[#f8f7f5] border border-orange-200'
+  const input = darkMode
+    ? 'w-full px-3 py-2 rounded-xl bg-[#1f1f1f] border border-[#353535] text-white outline-none'
+    : 'w-full px-3 py-2 rounded-xl bg-white border border-orange-200 text-[#1a1a1a] outline-none'
+  const btnSec = darkMode
+    ? 'px-5 py-3 rounded-xl font-semibold border bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]'
+    : 'px-5 py-3 rounded-xl font-semibold border bg-white border-orange-300 text-[#1a1a1a] hover:bg-orange-50'
+  const btnPri = 'px-5 py-3 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700'
+
   return (
-    <div className={`min-h-screen flex flex-col items-center ${darkMode ? "bg-[#181818]" : "bg-gray-50"}`}>
-      <div className="w-full max-w-2xl rounded-2xl shadow-xl border mt-8 mb-8 bg-white dark:bg-[#23272f] dark:border-orange-700 border-gray-200">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-orange-700">
-          <h2 className="text-xl font-bold text-orange-700 dark:text-orange-300">
-            Editar Nota de Empresa – N° {data.numero_nota}
-          </h2>
-          <button
-            className="rounded px-3 py-1 border font-semibold bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:text-orange-100 dark:border-orange-800"
-            onClick={() => router.push('/panel/administradorRutas/notas/notas')}
-          >
-            Volver
-          </button>
-        </div>
-        <div className="p-8 space-y-7">
-          {form.map((f, idx) => (
-            <div key={f.id} className="mb-7 p-6 border rounded-2xl shadow bg-gray-50 dark:bg-[#23272f]">
-              <div className="font-bold mb-3">Fruta #{idx + 1}</div>
-              <div className="mb-2">
-                <label className="font-semibold">Empresa</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.empresa_id}
-                  onChange={e => handleChange(idx, 'empresa_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {empresas.map(emp => (
-                    <option value={emp.id} key={emp.id}>{emp.empresa}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Tipo de fruta</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.tipo_fruta_id}
-                  onChange={e => handleChange(idx, 'tipo_fruta_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {frutas.map(fru => (
-                    <option value={fru.id} key={fru.id}>{fru.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Cantidad (oz)</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="number"
-                  value={f.cantidad_oz}
-                  onChange={e => handleChange(idx, 'cantidad_oz', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Empaque</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.empaque_id}
-                  onChange={e => handleChange(idx, 'empaque_id', e.target.value)}
-                >
-                  <option value="">-- Selecciona --</option>
-                  {empaques.map(e => (
-                    <option value={e.id} key={e.id}>{e.tamanio}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Sector</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.sector}
-                  onChange={e => handleChange(idx, 'sector', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Marca</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.marca}
-                  onChange={e => handleChange(idx, 'marca', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Destino</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.destino}
-                  onChange={e => handleChange(idx, 'destino', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Tipo de producción</label>
-                <select
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.tipo_produccion}
-                  onChange={e => handleChange(idx, 'tipo_produccion', e.target.value)}
-                >
-                  <option value="convencional">Convencional</option>
-                  <option value="organica">Orgánica</option>
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Variedad</label>
-                <input
-                  className="w-full rounded-xl border p-2 mt-1"
-                  type="text"
-                  value={f.variedad}
-                  onChange={e => handleChange(idx, 'variedad', e.target.value)}
-                />
-              </div>
-              <div className="mb-2">
-                <label className="font-semibold">Notas</label>
-                <textarea
-                  className="w-full rounded-xl border p-2 mt-1"
-                  value={f.notas}
-                  onChange={e => handleChange(idx, 'notas', e.target.value)}
-                />
-              </div>
-            </div>
-          ))}
-          <div className="flex justify-between">
+    <div className={`${darkMode ? 'bg-[#161616] text-white' : 'bg-[#f6f4f2] text-[#1a1a1a]'} min-h-screen`}>
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">Editar Nota de Recepción — N° {data.numero_nota}</h1>
+            <p className="text-orange-100">
+              {data.empresa_nombre ? `Empresa: ${data.empresa_nombre}` : ''}
+              {data.fecha_recepcion ? ` · Fecha: ${s10(data.fecha_recepcion)}` : ''}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              className="rounded-xl px-6 py-2 font-bold bg-gray-100 text-orange-800 border border-orange-300 hover:bg-gray-200"
-              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
+              onClick={() => router.push('/panel/administrador')}
+              title="Ir al menú principal"
             >
-              Cancelar
+              <FiHome /><span className="hidden sm:inline">Menú</span>
             </button>
             <button
-              className="rounded-xl px-6 py-2 font-bold bg-orange-700 text-white border border-orange-800 hover:bg-orange-800"
-              onClick={handleSubmit}
+              className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
+              onClick={() => router.push('/panel/administradorRutas/notas/notas')}
+              title="Volver al listado"
             >
-              Guardar cambios
+              <FiArrowLeft /><span className="hidden sm:inline">Volver</span>
             </button>
           </div>
-          {mensaje && <div className="text-center font-bold text-orange-600 dark:text-orange-300">{mensaje}</div>}
+        </div>
+      </section>
+
+      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {form.length === 0 && (
+          <div className={`rounded-2xl p-6 ${card} shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]`}>Sin partidas</div>
+        )}
+
+        {form.map((f, idx) => {
+          const empresaId = Number(f.empresa_id) || 0
+          const agricultores = empresaId ? (agricultoresByEmpresa[empresaId] || []) : []
+          return (
+            <div key={f.id} className={`rounded-2xl p-6 ${card} shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]`}>
+              <div className="text-lg font-semibold mb-4">Partida #{idx + 1}</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Empresa</label>
+                  <select className={input} value={f.empresa_id} onChange={e => handleChange(idx, 'empresa_id', Number(e.target.value))}>
+                    <option value="">— Selecciona —</option>
+                    {empresas.map(emp => (
+                      <option key={emp.id} value={emp.id}>{emp.empresa || emp.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Agricultor (relacionado a la empresa)</label>
+                  <select
+                    className={input}
+                    value={f.agricultor_id || ''}
+                    onChange={e => handleChange(idx, 'agricultor_id', Number(e.target.value) || '')}
+                    disabled={!empresaId}
+                  >
+                    <option value="">{empresaId ? '— Selecciona —' : 'Selecciona una empresa primero'}</option>
+                    {agricultores.map(a => (
+                      <option key={a.id} value={a.id}>
+                        {a.clave ? `${a.clave} — ` : ''}{a.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Tipo de fruta</label>
+                  <select className={input} value={f.tipo_fruta_id} onChange={e => handleChange(idx, 'tipo_fruta_id', Number(e.target.value) || '')}>
+                    <option value="">— Selecciona —</option>
+                    {frutas.map(fru => <option key={fru.id} value={fru.id}>{fru.nombre}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Cantidad (oz)</label>
+                  <input className={input} type="number" value={f.cantidad_oz} onChange={e => handleChange(idx, 'cantidad_oz', e.target.value)} />
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Empaque</label>
+                  <select className={input} value={f.empaque_id} onChange={e => handleChange(idx, 'empaque_id', Number(e.target.value) || '')}>
+                    <option value="">— Selecciona —</option>
+                    {empaques.map(em => <option key={em.id} value={em.id}>{em.tamanio}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Sector</label>
+                  <input className={input} value={f.sector} onChange={e => handleChange(idx, 'sector', e.target.value)} />
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Marca</label>
+                  <input className={input} value={f.marca} onChange={e => handleChange(idx, 'marca', e.target.value)} />
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Destino</label>
+                  <input className={input} value={f.destino} onChange={e => handleChange(idx, 'destino', e.target.value)} />
+                </div>
+
+                <div>
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Tipo de producción</label>
+                  <select className={input} value={f.tipo_produccion} onChange={e => handleChange(idx, 'tipo_produccion', e.target.value as any)}>
+                    <option value="convencional">Convencional</option>
+                    <option value="organica">Orgánica</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Variedad</label>
+                  <input className={input} value={f.variedad} onChange={e => handleChange(idx, 'variedad', e.target.value)} />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className={`block mb-2 font-medium ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Notas</label>
+                  <textarea className={input} rows={3} value={f.notas} onChange={e => handleChange(idx, 'notas', e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )
+        })}
+
+        {mensaje && (
+          <div className={`rounded-xl px-4 py-3 ${darkMode ? 'bg-[#1f1f1f] border border-[#353535]' : 'bg-white border border-orange-200'}`}>
+            <p className={`${darkMode ? 'text-orange-300' : 'text-orange-700'} font-semibold`}>{mensaje}</p>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-end">
+          <button className={btnSec} onClick={() => router.push('/panel/administradorRutas/notas/notas')}>Cancelar</button>
+          <button className={`${btnPri} ${guardando ? 'opacity-70 cursor-not-allowed' : ''}`} onClick={handleSubmit} disabled={guardando}>
+            <span className="inline-flex items-center gap-2"><FiSave /> {guardando ? 'Guardando…' : 'Guardar cambios'}</span>
+          </button>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ interface Material {
 interface Opcion {
   id: number
   nombre: string
+  clave?: string | null
 }
 
 interface FormularioMovimientoProps {
@@ -25,12 +26,17 @@ export default function FormularioMovimiento({
   modoNoche,
   tipo,
   setVistaActiva,
-  materiales = [],
+  materiales,
   softShadow,
   onDone
 }: FormularioMovimientoProps) {
   const titulo = tipo === 'entradas' ? 'Registrar Entrada' : tipo === 'salidas' ? 'Registrar Salida' : 'Registrar Intercambio'
   const colorBoton = tipo === 'entradas' ? 'bg-green-600 hover:bg-green-700' : tipo === 'salidas' ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'
+
+  const materialesSafe: Material[] = useMemo(() => {
+    if (!Array.isArray(materiales)) return []
+    return materiales.filter(m => m && typeof m.id === 'number')
+  }, [materiales])
 
   const [materialId, setMaterialId] = useState<number>(0)
   const [cantidad, setCantidad] = useState<string>('')
@@ -46,16 +52,36 @@ export default function FormularioMovimiento({
   const [errorMsg, setErrorMsg] = useState<string>('')
 
   const materialSel = useMemo(() => {
-    const lista = Array.isArray(materiales) ? materiales : []
-    return lista.find(m => m.id === materialId) || null
-  }, [materialId, materiales])
+    if (!(materialId > 0) || materialesSafe.length === 0) return null
+    for (let i = 0; i < materialesSafe.length; i++) {
+      const m = materialesSafe[i]
+      if (m.id === materialId) return m
+    }
+    return null
+  }, [materialId, materialesSafe])
 
   useEffect(() => {
     if (tipo === 'entradas') {
-      fetch('/api/almacen/proveedores').then(r => r.json()).then(j => setProveedores(Array.isArray(j) ? j : []))
+      fetch('/api/almacen/proveedores')
+        .then(r => r.json())
+        .then(j => {
+          const arr = Array.isArray(j) ? j : []
+          const norm: Opcion[] = arr.map((x: any) => ({ id: Number(x.id), nombre: String(x.nombre || '') }))
+          setProveedores(norm)
+        })
     }
     if (tipo === 'salidas') {
-      fetch('/api/almacen/agricultores').then(r => r.json()).then(j => setAgricultores(Array.isArray(j) ? j : []))
+      fetch('/api/almacen/agricultores')
+        .then(r => r.json())
+        .then(j => {
+          const arr = Array.isArray(j) ? j : []
+          const norm: Opcion[] = arr.map((x: any) => ({
+            id: Number(x.id),
+            nombre: String(x.nombre || ''),
+            clave: typeof x.clave === 'string' ? x.clave : (x.clave ? String(x.clave) : null)
+          }))
+          setAgricultores(norm)
+        })
     }
   }, [tipo])
 
@@ -100,7 +126,7 @@ export default function FormularioMovimiento({
       setFecha('')
       setNotas('')
       if (onDone) await onDone()
-    } catch (e: any) {
+    } catch {
       setErrorMsg('error inesperado')
     } finally {
       setGuardando(false)
@@ -141,7 +167,7 @@ export default function FormularioMovimiento({
                 : 'bg-white border-orange-300 text-gray-800'
             }`}>
             <option value={0}>Seleccionar material</option>
-            {materiales.map(m => (
+            {(materialesSafe || []).map(m => (
               <option key={m.id} value={m.id}>{m.nombre}</option>
             ))}
           </select>
@@ -203,7 +229,9 @@ export default function FormularioMovimiento({
               }`}>
               <option value={0}>Seleccionar agricultor</option>
               {agricultores.map(a => (
-                <option key={a.id} value={a.id}>{a.nombre}</option>
+                <option key={a.id} value={a.id}>
+                  {a.nombre}{a.clave ? ` — ${a.clave}` : ''}
+                </option>
               ))}
             </select>
           </div>

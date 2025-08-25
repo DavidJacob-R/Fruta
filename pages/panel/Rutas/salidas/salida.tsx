@@ -1,324 +1,245 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/router"
+import HeaderSalidas from "./HeaderSalidas"
+import ListaPallets, { Pallet } from "./ListaPallets"
+import ConfirmacionSalida from "./ConfirmacionSalida"
 
-interface Pallet {
-  id: string;
-  empresa: string;
-  maquila: string;
-  numero: string;
-}
+export default function SalidasPanel() {
+  const router = useRouter()
+  const [step, setStep] = useState<1 | 2>(1)
+  const [pallets, setPallets] = useState<Pallet[]>([])
+  const [selected, setSelected] = useState<number[]>([])
+  const [search, setSearch] = useState("")
+  const [empresa, setEmpresa] = useState("HEALTHY HARVEST")
+  const [cliente, setCliente] = useState("N/I")
+  const [docs, setDocs] = useState({
+    cartaInstruccion: false,
+    manifiestoCarga: false,
+    packingList: false,
+    proforma: false
+  })
 
-export default function SalidasPallets() {
-  const router = useRouter();
-  const [darkMode, setDarkMode] = useState(true);
-  const [pallets, setPallets] = useState<Pallet[]>([]);
-  const [selectedPallets, setSelectedPallets] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [empresa, setEmpresa] = useState('HEALTHY HARVEST');
-  const [cliente, setCliente] = useState('N/I');
-  const [eliminarOptions, setEliminarOptions] = useState({
-    ediTar: false,
-    continuar: false,
-    fotoEdiTar: false,
-    fotoContinuar: false
-  });
+  const selectedDetails = useMemo(
+    () => pallets.filter(p => selected.includes(p.id)),
+    [pallets, selected]
+  )
 
-  // Cargar datos de pallets
-  useEffect(() => {
-    const mockPallets: Pallet[] = [
-      { id: '1', empresa: 'HEALTHY HARVEST', maquila: 'N/I', numero: '0010' },
-      { id: '2', empresa: 'HEALTHY HARVEST', maquila: 'N/I', numero: '0054' },
-      { id: '3', empresa: 'FRESH FOODS', maquila: 'MAQUILA A', numero: '0011' },
-      { id: '4', empresa: 'ORGANIC PRODUCE', maquila: 'MAQUILA B', numero: '0098' },
-      { id: '5', empresa: 'HEALTHY HARVEST', maquila: 'N/I', numero: '0187' },
-      { id: '6', empresa: 'GREEN VALLEY', maquila: 'MAQUILA C', numero: '0078' },
-      { id: '7', empresa: 'HEALTHY HARVEST', maquila: 'N/I', numero: '0026' },
-      { id: '8', empresa: 'ORGANIC PRODUCE', maquila: 'MAQUILA B', numero: '0089' },
-    ];
-    setPallets(mockPallets);
-  }, []);
+  function toggleDoc(k: keyof typeof docs) {
+    setDocs(prev => ({ ...prev, [k]: !prev[k] }))
+  }
 
-  // Controlar modo oscuro/claro
-  useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-  }, [darkMode]);
+  function toggle(id: number) {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
 
-  // Filtrar pallets
-  const filteredPallets = pallets.filter(pallet =>
-    pallet.numero.includes(searchTerm) ||
-    pallet.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pallet.maquila.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  function selectVisible(ids: number[]) {
+    setSelected(prev => {
+      if (ids.length === 0) {
+        // deseleccionar visibles
+        return prev.filter(id => !selectedDetails.map(p=>p.id).includes(id) && !ids.includes(id))
+      }
+      const set = new Set(prev)
+      ids.forEach(id => set.add(id))
+      return Array.from(set)
+    })
+  }
 
-// Manejar selección de pallets
-const togglePalletSelection = (palletId: string) => {
-  setSelectedPallets(prev =>
-    prev.includes(palletId)
-      ? prev.filter(id => id !== palletId)
-      : [...prev, palletId]
-  );
-};
+  function clearSelection() {
+    setSelected([])
+  }
 
-  // Obtener los detalles de los pallets seleccionados
-  const selectedPalletsDetails = pallets.filter(p => selectedPallets.includes(p.id));
+  async function cargarPallets() {
+    const r = await fetch("/api/salidas/pallets")
+    const j = await r.json()
+    setPallets(j.pallets || [])
+  }
 
-  // Manejar opciones de eliminación
-  const handleToggleOption = (option: keyof typeof eliminarOptions) => {
-    setEliminarOptions(prev => ({
-      ...prev,
-      [option]: !prev[option]
-    }));
-  };
+  useEffect(() => { cargarPallets() }, [])
 
-  // Finalizar proceso
-  const handleFinalizar = () => {
-    alert('Salida confirmada y registrada');
-    router.push('/panel/empleado');
-  };
+  async function confirmarSalida() {
+    const destino = [cliente, empresa].filter(Boolean).join(" / ")
+    const payload = {
+      pallet_ids: selected,
+      usuario_id: null,
+      destino,
+      temperatura_salida: null,
+      observaciones: null
+    }
+    const r = await fetch("/api/salidas/confirmar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    const j = await r.json()
+    if (!j.ok) {
+      alert("No se pudo confirmar la salida. Verifica la selección.")
+      return
+    }
+    alert(`Salida registrada. Código de carga: ${j.codigo}`)
+    router.push("/panel/empleado")
+  }
 
-  // Renderizar pantalla de selección
-  const renderSelectionScreen = () => (
-    <>
-      <h1 className={`text-3xl font-extrabold mb-6 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-        Selección de Pallets para Salida
-      </h1>
-
-      {/* Buscador */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Buscar pallet por número, empresa o maquila..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition
-            ${darkMode
-              ? 'bg-black/70 border-orange-400 text-white placeholder-orange-300/70'
-              : 'bg-white border-orange-300 text-orange-900 placeholder-orange-400/70'
-            }`}
-        />
-      </div>
-
-      {/* Lista de pallets */}
-      <div className="mb-6 max-h-96 overflow-y-auto">
-        <table className="w-full">
-          <thead>
-            <tr className={`border-b ${darkMode ? 'border-orange-400/50' : 'border-orange-300'}`}>
-              <th className="px-4 py-3 text-left"></th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Empresa</th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>Maquila</th>
-              <th className={`px-4 py-3 text-left ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>N° Pallet</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPallets.map(pallet => (
-              <tr 
-                key={pallet.id} 
-                className={`border-b ${darkMode ? 'border-orange-400/30 hover:bg-white/10' : 'border-orange-200 hover:bg-orange-50'}`}
-              >
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedPallets.includes(pallet.id)}
-                    onChange={() => togglePalletSelection(pallet.id)}
-                    className={`w-5 h-5 rounded border-2 focus:ring-2 focus:ring-orange-400 
-                      ${darkMode
-                        ? 'bg-black/70 border-orange-400 checked:bg-orange-500'
-                        : 'border-orange-300 checked:bg-orange-500'
-                      }`}
-                  />
-                </td>
-                <td className={`px-4 py-3 ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>{pallet.empresa}</td>
-                <td className={`px-4 py-3 ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>{pallet.maquila}</td>
-                <td className={`px-4 py-3 font-mono ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>{pallet.numero}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Resumen y botones */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-        <div className={`text-lg font-semibold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-          {selectedPallets.length} pallet(s) seleccionado(s)
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setSelectedPallets([])}
-            disabled={selectedPallets.length === 0}
-            className={`px-6 py-3 rounded-xl font-bold transition
-              ${darkMode
-                ? 'bg-red-600/90 hover:bg-red-700 disabled:bg-red-600/30 disabled:text-orange-200/50'
-                : 'bg-red-500 hover:bg-red-600 disabled:bg-red-200 disabled:text-orange-700/50'
-              }`}
-          >
-            Limpiar selección
-          </button>
-          <button
-            onClick={() => setShowConfirmation(true)}
-            disabled={selectedPallets.length === 0}
-            className={`px-6 py-3 rounded-xl font-bold transition
-              ${darkMode
-                ? 'bg-orange-600/90 hover:bg-orange-700 disabled:bg-orange-600/30 disabled:text-orange-200/50'
-                : 'bg-orange-500 hover:bg-orange-600 disabled:bg-orange-200 disabled:text-orange-700/50'
-              }`}
-          >
-            Confirmar selección →
-          </button>
-        </div>
-      </div>
-    </>
-  );
-
-  // Renderizar pantalla de confirmación
-  const renderConfirmationScreen = () => (
-    <>
-      <h1 className={`text-3xl font-extrabold mb-8 text-center drop-shadow-xl
-        ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-        MENÚ DE CONFIRMACIÓN DE SALIDAS
-      </h1>
-
-      {/* Información de empresa y cliente */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className={`font-bold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>EMPRESA:</p>
-            <input
-              type="text"
-              value={empresa}
-              onChange={(e) => setEmpresa(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
-            />
-          </div>
-          <div>
-            <p className={`font-bold ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>CLIENTE:</p>
-            <input
-              type="text"
-              value={cliente}
-              onChange={(e) => setCliente(e.target.value)}
-              className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-black/50 border-orange-400 text-white' : 'bg-white border-orange-300'}`}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Sección de pallets */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-          PALLETS QUE SALDRÁN
-        </h2>
-        <div className="grid grid-cols-3 gap-2">
-          {selectedPalletsDetails.map(pallet => (
-            <div 
-              key={pallet.id} 
-              className={`px-3 py-2 rounded-lg text-center font-mono ${darkMode ? 'bg-black/50 text-orange-300' : 'bg-white text-orange-700'}`}
-            >
-              {pallet.numero}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sección de documentos */}
-      <div className={`mb-8 p-4 rounded-xl ${darkMode ? 'bg-black/30' : 'bg-orange-50'}`}>
-        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-          DOCUMENTOS
-        </h2>
-        <ul className="space-y-2">
-          {['CARTA DE INSTRUCCIÓN', 'MANIFIESTO DE CARGA', 'PACKING LIST', 'PROFORMA'].map(doc => (
-            <li 
-              key={doc} 
-              className={`px-3 py-2 rounded-lg ${darkMode ? 'bg-black/50 text-orange-200' : 'bg-white text-orange-700'}`}
-            >
-              {doc}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-
-
-      {/* Botones de acción */}
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={() => setShowConfirmation(false)}
-          className={`px-6 py-3 rounded-xl font-bold transition
-            ${darkMode
-              ? 'bg-slate-600/90 hover:bg-slate-700'
-              : 'bg-slate-500 hover:bg-slate-600 text-white'
-            }`}
-        >
-          ← Corregir selección
-        </button>
-        <button
-          onClick={handleFinalizar}
-          className={`px-6 py-3 rounded-xl font-bold transition
-            ${darkMode
-              ? 'bg-orange-600/90 hover:bg-orange-700'
-              : 'bg-orange-500 hover:bg-orange-600 text-white'
-            }`}
-        >
-          Confirmar salida →
-        </button>
-      </div>
-    </>
-  );
+  function removeFromSelection(id: number) {
+    setSelected(prev => prev.filter(x => x !== id))
+  }
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300
-      ${darkMode
-        ? 'bg-gradient-to-br from-[#181a1b] via-[#23282b] to-[#212225]'
-        : 'bg-gradient-to-br from-orange-50 via-white to-gray-100'}`}>
+    <div className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-925 to-neutral-950 text-white">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <HeaderSalidas onBack={() => router.push("/panel/empleado")} total={pallets.length} step={step} />
 
-      {/* Barra modo noche/día */}
-      <header className="w-full flex justify-between items-center pt-5 px-8">
-        <button
-          onClick={() => showConfirmation ? setShowConfirmation(false) : router.push('/panel/empleado')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {showConfirmation ? '← Volver' : '← Regresar'}
-        </button>
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {darkMode ? '🌙 Noche' : '☀️ Día'}
-        </button>
-      </header>
+        {step === 1 && (
+          <section className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Lista */}
+            <div className="lg:col-span-7 rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6 shadow-xl">
+              <ListaPallets
+                pallets={pallets}
+                selectedIds={selected}
+                onToggle={toggle}
+                search={search}
+                setSearch={setSearch}
+                onSelectVisible={selectVisible}
+                onClear={clearSelection}
+              />
 
-      {/* Branding */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 select-none">
-        <div className={`w-14 h-14 ${darkMode ? 'bg-white/10 border-orange-400' : 'bg-orange-100 border-orange-300'} border-2 shadow-xl rounded-full flex items-center justify-center`}>
-          <span className={`text-3xl font-black ${darkMode ? 'text-orange-300' : 'text-orange-400'}`}>🍊</span>
-        </div>
-        <span className={`font-bold tracking-widest uppercase text-xl drop-shadow 
-          ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>El Molinito</span>
-      </div>
+              {/* Barra inferior solo en móvil */}
+              <div className="md:hidden fixed left-0 right-0 bottom-0 bg-neutral-950/85 backdrop-blur border-t border-neutral-800/70 pb-[env(safe-area-inset-bottom)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm sm:text-base text-neutral-300">
+                      {selected.length} seleccionado(s)
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={clearSelection}
+                        disabled={selected.length === 0}
+                        className={`px-4 py-2 rounded-xl border text-sm sm:text-base ${
+                          selected.length === 0
+                            ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                            : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+                        }`}
+                      >
+                        Limpiar
+                      </button>
+                      <button
+                        onClick={() => setStep(2)}
+                        disabled={selected.length === 0}
+                        className={`px-5 py-2 rounded-xl text-sm sm:text-base ${
+                          selected.length === 0
+                            ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+                            : "bg-white text-black font-semibold hover:bg-neutral-200 shadow"
+                        }`}
+                      >
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-      {/* Contenido principal */}
-      <main className="flex-1 flex flex-col items-center py-14 px-4">
-        <div className={`w-full max-w-4xl mx-auto rounded-3xl shadow-2xl p-8 flex flex-col relative z-0 transition
-          ${darkMode
-            ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-300'
-            : 'bg-white border-2 border-orange-200'
-          }`}>
-          {showConfirmation ? renderConfirmationScreen() : renderSelectionScreen()}
-        </div>
+              {/* Espaciador para que no tape la barra en móvil */}
+              <div className="h-20 md:h-0"></div>
+            </div>
+
+            {/* Resumen en vivo (solo tablet/escritorio) */}
+            <aside className="hidden lg:block lg:col-span-5">
+              <div className="sticky top-4 space-y-4">
+                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold text-neutral-100">Resumen</h3>
+                    <span className="text-sm text-neutral-400">{selected.length} seleccionado(s)</span>
+                  </div>
+                  <div className="mt-3 max-h-[360px] overflow-auto pr-1">
+                    {selectedDetails.length === 0 ? (
+                      <div className="text-neutral-500 text-sm">Selecciona pallets para verlos aquí.</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {selectedDetails.map(p => (
+                          <li key={p.id} className="flex items-center justify-between px-3 py-2 rounded-xl border border-neutral-800 bg-neutral-950">
+                            <div>
+                              <div className="text-sm text-neutral-100">{p.empresa}</div>
+                              <div className="text-xs text-neutral-400 font-mono">{p.numero}</div>
+                            </div>
+                            <button
+                              onClick={() => removeFromSelection(p.id)}
+                              className="px-2 py-1 rounded-lg border border-neutral-800 text-neutral-300 hover:bg-neutral-800 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <button
+                      onClick={clearSelection}
+                      disabled={selected.length === 0}
+                      className={`px-4 py-2 rounded-xl border text-sm ${
+                        selected.length === 0
+                          ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                          : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+                      }`}
+                    >
+                      Limpiar
+                    </button>
+                    <button
+                      onClick={() => setStep(2)}
+                      disabled={selected.length === 0}
+                      className={`px-5 py-2 rounded-xl text-sm ${
+                        selected.length === 0
+                          ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+                          : "bg-white text-black font-semibold hover:bg-neutral-200 shadow"
+                      }`}
+                    >
+                      Confirmar selección →
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
+                  <h4 className="text-sm font-semibold text-neutral-200">Sugerencias</h4>
+                  <p className="text-sm text-neutral-400 mt-2">
+                    Usa “Seleccionar visibles” para escoger rápidamente lo filtrado.
+                    Mantén la selección mientras cambias el texto del buscador.
+                  </p>
+                </div>
+              </div>
+            </aside>
+          </section>
+        )}
+
+        {step === 2 && (
+          <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-100">Confirmar salida</h2>
+              <button
+                onClick={() => setStep(1)}
+                className="px-4 py-2 rounded-xl border border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+              >
+                ← Corregir
+              </button>
+            </div>
+
+            <ConfirmacionSalida
+              pallets={selectedDetails}
+              empresa={empresa}
+              setEmpresa={setEmpresa}
+              cliente={cliente}
+              setCliente={setCliente}
+              documentos={docs}
+              toggleDoc={toggleDoc}
+              onBack={() => setStep(1)}
+              onConfirm={confirmarSalida}
+            />
+          </section>
+        )}
       </main>
 
-      <footer className={`w-full text-center py-4 text-sm mt-auto
-        ${darkMode
-          ? "bg-[#181a1b] text-orange-200"
-          : "bg-orange-50 text-orange-900"
-        }`}>
-        © {new Date().getFullYear()} El Molinito – Sistema de logística y control
+      <footer className="w-full text-center py-5 text-sm text-neutral-500">
+        © {new Date().getFullYear()} El Molinito – Logística
       </footer>
     </div>
-  );
+  )
 }

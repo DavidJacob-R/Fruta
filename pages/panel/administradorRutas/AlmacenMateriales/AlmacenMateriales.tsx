@@ -4,6 +4,7 @@ import { useUi } from 'components/ui-context'
 import VistaInicio from './VistaInicio'
 import VistaExistencias from './VistaExistencias'
 import FormularioMovimiento from './FormularioMovimiento'
+import CatalogoMateriales from './CatalogoMateriales'
 
 interface ModuloAlmacen {
   nombre: string
@@ -101,7 +102,8 @@ export default function AlmacenMateriales() {
     { nombre: 'Registrar Entrada', vista: 'entradas', icon: '📥' },
     { nombre: 'Registrar Salida', vista: 'salidas', icon: '📤' },
     { nombre: 'Intercambios', vista: 'intercambios', icon: '🔄' },
-    { nombre: 'Consultar Existencias', vista: 'existencias', icon: '📊' }
+    { nombre: 'Consultar Existencias', vista: 'existencias', icon: '📊' },
+    { nombre: 'Materiales', vista: 'catalogo', icon: '🧩' }
   ]
 
   const textDay = 'text-[#1a1a1a]'
@@ -118,7 +120,8 @@ export default function AlmacenMateriales() {
               {vistaActiva === 'inicio' ? 'Resumen general del inventario' :
               vistaActiva === 'existencias' ? 'Gestion de existencias y control de stock' :
               vistaActiva === 'entradas' ? 'Registro de entradas de materiales' :
-              vistaActiva === 'salidas' ? 'Registro de salidas de materiales' : 'Registro de intercambios entre almacenes'}
+              vistaActiva === 'salidas' ? 'Registro de salidas de materiales' :
+              vistaActiva === 'catalogo' ? 'Alta y gestion de materiales' : 'Registro de intercambios entre almacenes'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -195,6 +198,18 @@ export default function AlmacenMateriales() {
         >
           📦 Existencias
         </button>
+        <button
+          onClick={() => setVistaActiva('catalogo')}
+          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
+            vistaActiva === 'catalogo'
+              ? 'bg-indigo-500 text-white'
+              : darkMode
+                ? 'bg-[#353535] hover:bg-[#404040]'
+                : 'bg-orange-100 hover:bg-orange-200'
+          }`}
+        >
+          🧩 Materiales
+        </button>
       </div>
 
       {vistaActiva === 'inicio' && (
@@ -234,6 +249,16 @@ export default function AlmacenMateriales() {
           onDone={async () => {
             await recargarTodo()
             setVistaActiva('inicio')
+          }}
+        />
+      )}
+
+      {vistaActiva === 'catalogo' && (
+        <CatalogoMateriales
+          modoNoche={darkMode}
+          softShadow={softShadow}
+          onChanged={async () => {
+            await cargarMateriales()
           }}
         />
       )}

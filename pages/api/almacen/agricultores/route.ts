@@ -1,12 +1,14 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'metodo no permitido' })
+export async function GET(req: Request) {
   try {
-    const empresaId = req.query.empresa_id ? Number(req.query.empresa_id) : null
-    const qRaw = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : ''
-    const limit = Math.min(500, Number(req.query.limit || 200))
+    const url = new URL(req.url)
+    const empresaId = url.searchParams.get('empresa_id') ? Number(url.searchParams.get('empresa_id')) : null
+    const qRaw = (url.searchParams.get('q') || '').trim().toLowerCase()
+    const limit = Math.min(500, Number(url.searchParams.get('limit') || 200))
 
     const conds: string[] = []
     const vals: any[] = []
@@ -38,8 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       clave: r.clave ? String(r.clave) : null,
       rfc: r.rfc ? String(r.rfc) : null
     }))
-    return res.status(200).json(data)
+    return NextResponse.json(data, { status: 200 })
   } catch {
-    return res.status(400).json({ error: 'error' })
+    return NextResponse.json({ error: 'error' }, { status: 400 })
   }
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/router"
-import { FiHome } from "react-icons/fi"
+import { FiHome, FiSearch, FiPlus, FiTrash2 } from "react-icons/fi"
 import ModalEmpaque from "./ModalEmpaque"
 import { useUi } from "@/components/ui-context"
 
@@ -13,19 +13,34 @@ type Empaque = {
 export default function AdminEmpaques() {
   const router = useRouter()
   const { darkMode } = useUi()
+
   const [empaques, setEmpaques] = useState<Empaque[]>([])
   const [form, setForm] = useState({ tamanio: "", descripcion: "" })
   const [mensajeAgregar, setMensajeAgregar] = useState("")
   const [mensajeEliminar, setMensajeEliminar] = useState("")
   const [loading, setLoading] = useState(false)
+  const [cargandoLista, setCargandoLista] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
+  const [busqueda, setBusqueda] = useState("")
+
+  // Tokens visuales
+  const bgDay = "bg-[#f6f4f2]"
+  const bgNight = "bg-[#161616]"
+  const textDay = "text-[#1a1a1a]"
+  const textNight = "text-white"
+  const cardDay = "bg-[#f8f7f5] border border-orange-200"
+  const cardNight = "bg-[#232323] border border-[#353535]"
+  const softShadow = "shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]"
+  const inputWrap = `${darkMode ? cardNight : cardDay} rounded-xl px-3 py-2 flex items-center gap-2`
+  const inputSearch = "bg-transparent outline-none w-72 max-w-full"
+  const btnPri = "inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700"
 
   const cargarEmpaques = () => {
-    setLoading(true)
+    setCargandoLista(true)
     fetch("/api/empaques/listar")
       .then((r) => r.json())
-      .then((data) => setEmpaques(data.empaques || []))
-      .finally(() => setLoading(false))
+      .then((data) => setEmpaques(Array.isArray(data.empaques) ? data.empaques : []))
+      .finally(() => setCargandoLista(false))
   }
 
   useEffect(() => {
@@ -35,6 +50,7 @@ export default function AdminEmpaques() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     if (name === "tamanio") {
+      // Mantiene el comportamiento previo: solo números
       const soloNumeros = value.replace(/[^\d]/g, "")
       setForm((f) => ({ ...f, tamanio: soloNumeros }))
       return
@@ -42,14 +58,15 @@ export default function AdminEmpaques() {
     setForm((f) => ({ ...f, [name]: value }))
   }
 
-  const handleAgregar = async () => {
+  // Acepta valores pero usamos el estado local (compatibilidad tipada con ModalEmpaque)
+  const handleAgregar = async (_?: any) => {
     const tamanioVal = form.tamanio.trim()
     const descVal = form.descripcion.trim()
 
     if (!tamanioVal || !descVal) return
 
     if (!/^\d+$/.test(tamanioVal)) {
-      setMensajeAgregar("El tamano debe ser un numero valido.")
+      setMensajeAgregar("El tamaño debe ser un número válido (en oz).")
       setMensajeEliminar("")
       setTimeout(() => setMensajeAgregar(""), 2500)
       return
@@ -65,16 +82,18 @@ export default function AdminEmpaques() {
       .then((res) => {
         setMensajeAgregar(res.success ? "Empaque agregado correctamente." : res.message || "No se pudo agregar el empaque.")
         setMensajeEliminar("")
-        setForm({ tamanio: "", descripcion: "" })
-        cargarEmpaques()
-        setModalOpen(false)
+        if (res.success) {
+          setForm({ tamanio: "", descripcion: "" })
+          cargarEmpaques()
+          setModalOpen(false)
+        }
         setTimeout(() => setMensajeAgregar(""), 2500)
       })
       .finally(() => setLoading(false))
   }
 
   const handleEliminar = async (id: number) => {
-    if (!confirm("Seguro que deseas eliminar este empaque?")) return
+    if (!confirm("¿Seguro que deseas eliminar este empaque?")) return
     setLoading(true)
     await fetch("/api/empaques/eliminar", {
       method: "POST",
@@ -91,82 +110,116 @@ export default function AdminEmpaques() {
       .finally(() => setLoading(false))
   }
 
-  const textMain = darkMode ? "text-orange-200" : "text-orange-700"
-  const textSecondary = darkMode ? "text-gray-400" : "text-gray-500"
-  const cardBg = darkMode ? "bg-gray-900 border-gray-700" : "bg-white border-slate-200"
-  const thBg = darkMode ? "bg-slate-800 text-orange-200 border-slate-700" : "bg-orange-50 text-orange-700 border-orange-200"
+  const empaquesFiltrados = useMemo(() => {
+    const k = busqueda.trim().toLowerCase()
+    if (!k) return empaques
+    return empaques.filter((e) =>
+      e.tamanio.toString().toLowerCase().includes(k) ||
+      (e.descripcion || "").toLowerCase().includes(k)
+    )
+  }, [empaques, busqueda])
 
   return (
-    <>
-      <div className="flex flex-col md:flex-row md:justify-between items-center mb-6 gap-4">
-        <div>
-          <h1 className={`text-3xl font-extrabold tracking-tight mb-1 ${textMain}`}>Gestion de Empaques</h1>
-          <p className={`text-base ${textSecondary}`}>Administra los empaques registrados en el sistema.</p>
-        </div>
-        <div className="flex gap-2">
+    <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay} transition-colors duration-300`}>
+      {/* Header degradado */}
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">Empaques</h1>
+            <p className="text-orange-100">Administra los empaques/clamshell disponibles.</p>
+          </div>
           <button
-            className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-5 rounded-xl"
-            onClick={() => setModalOpen(true)}
-          >
-            + Agregar empaque
-          </button>
-          <button
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm shadow-sm font-semibold transition-colors ${
-              darkMode ? "bg-[#232323] border-orange-700 text-orange-300 hover:bg-orange-900" : "bg-white border-orange-200 text-orange-700 hover:bg-orange-100"
-            }`}
+            className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
             onClick={() => router.push("/panel/administrador")}
-            title="Ir al menu principal"
+            title="Ir al menú principal"
           >
             <FiHome className="text-lg" />
-            <span className="hidden sm:inline">Menu principal</span>
+            <span className="hidden sm:inline">Menú</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      {mensajeAgregar && <div className="mb-3 font-semibold text-emerald-600 dark:text-emerald-300">{mensajeAgregar}</div>}
-      {mensajeEliminar && <div className="mb-3 font-semibold text-red-600 dark:text-red-300">{mensajeEliminar}</div>}
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Acciones principales */}
+        <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className={inputWrap}>
+            <FiSearch className={darkMode ? "text-orange-300" : "text-orange-600"} />
+            <input
+              className={inputSearch}
+              placeholder="Buscar por tamaño o descripción"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
 
-      <div className={`rounded-3xl border-2 shadow-2xl overflow-x-auto p-6 transition-colors ${cardBg}`}>
-        <table className="min-w-full table-auto text-base">
-          <thead>
-            <tr className={`${thBg} border-b-2`}>
-              <th className="p-4 font-bold">Tamano</th>
-              <th className="p-4 font-bold">Descripcion</th>
-              <th className="p-4 font-bold"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={3} className={`text-center py-6 ${textSecondary}`}>
-                  Cargando...
-                </td>
-              </tr>
-            ) : empaques.length === 0 ? (
-              <tr>
-                <td colSpan={3} className={`text-center py-6 ${textSecondary}`}>
-                  No hay empaques registrados.
-                </td>
-              </tr>
-            ) : (
-              empaques.map((emp) => (
-                <tr key={emp.id} className="border-b">
-                  <td className={`p-4 ${textMain}`}>{emp.tamanio}</td>
-                  <td className={`p-4 ${textMain}`}>{emp.descripcion}</td>
-                  <td className="p-4 text-right">
-                    <button
-                      className="bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded-xl font-bold text-sm"
-                      onClick={() => handleEliminar(emp.id)}
+          <div className="flex items-center gap-2">
+            <button className={btnPri} onClick={() => setModalOpen(true)}>
+              <FiPlus /> Agregar empaque
+            </button>
+          </div>
+        </section>
+
+        {/* Mensajes */}
+        {!!mensajeAgregar && (
+          <div className={`${darkMode ? "text-emerald-200" : "text-green-700"} font-semibold text-sm`}>{mensajeAgregar}</div>
+        )}
+        {!!mensajeEliminar && (
+          <div className={`${darkMode ? "text-red-300" : "text-red-600"} font-semibold text-sm`}>{mensajeEliminar}</div>
+        )}
+
+        {/* Listado */}
+        <section className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+          <h2 className="text-lg font-semibold mb-4">Listado de empaques</h2>
+
+          {cargandoLista ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className={`rounded-2xl p-5 ${darkMode ? "bg-[#1f1f1f] border border-[#353535]" : "bg-white border border-orange-200"} animate-pulse`}>
+                  <div className="h-5 w-2/3 rounded bg-current/10 mb-2" />
+                  <div className="h-4 w-1/2 rounded bg-current/10" />
+                  <div className="mt-4 h-9 w-24 rounded bg-current/10" />
+                </div>
+              ))}
+            </div>
+          ) : empaquesFiltrados.length === 0 ? (
+            <div className={`rounded-2xl border border-dashed ${darkMode ? "border-[#353535] text-white/80" : "border-orange-200 text-[#1a1a1a]/70"} p-8 text-center`}>
+              No hay empaques registrados.
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border">
+              <table className={`min-w-full text-sm ${darkMode ? "bg-[#1f1f1f] border-[#353535]" : "bg-white border-orange-200"}`}>
+                <thead>
+                  <tr className={`${darkMode ? "bg-slate-800 text-orange-200 border-slate-700" : "bg-orange-50 text-orange-700 border-orange-200"} border-b-2`}>
+                    <th className="px-4 py-3 text-left font-bold">Tamaño (oz)</th>
+                    <th className="px-4 py-3 text-left font-bold">Descripción</th>
+                    <th className="px-4 py-3 text-left font-bold">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {empaquesFiltrados.map((emp, i) => (
+                    <tr
+                      key={emp.id}
+                      className={`${i % 2 === 0 ? (darkMode ? "bg-slate-900" : "bg-orange-50") : (darkMode ? "bg-gray-800" : "bg-white")} border-b ${darkMode ? "border-slate-700" : "border-orange-100"}`}
                     >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                      <td className="px-4 py-3 font-semibold">{emp.tamanio}</td>
+                      <td className="px-4 py-3">{emp.descripcion}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold"
+                          onClick={() => handleEliminar(emp.id)}
+                          title="Eliminar empaque"
+                        >
+                          <FiTrash2 /> Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </main>
 
       <ModalEmpaque
         open={modalOpen}
@@ -176,6 +229,6 @@ export default function AdminEmpaques() {
         onChange={handleChange}
         loading={loading}
       />
-    </>
+    </div>
   )
 }

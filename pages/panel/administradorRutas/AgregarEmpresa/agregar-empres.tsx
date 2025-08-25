@@ -7,36 +7,34 @@ export default function EmpresasAgricultoresPage() {
   const { darkMode } = useUi()
   const router = useRouter()
 
-  const textMain = darkMode ? "text-orange-200" : "text-orange-700"
-  const textSecondary = darkMode ? "text-gray-400" : "text-gray-500"
+  const bgDay = "bg-[#f6f4f2]"
+  const bgNight = "bg-[#161616]"
+  const textDay = "text-[#1a1a1a]"
+  const textNight = "text-white"
 
   return (
-    <>
-      <div className="w-full max-w-6xl mx-auto">
-        <header className="mb-6 flex items-center justify-between gap-3">
+    <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay} transition-colors duration-300`}>
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           <div>
-            <h1 className={`text-3xl font-extrabold tracking-tight ${textMain}`}>
-              Empresas & Agricultores
-            </h1>
-            <p className={`mt-1 ${textSecondary}`}>
-              Administra las empresas registradas y sus agricultores.
-            </p>
+            <h1 className="text-3xl font-bold mb-1">Empresas & Agricultores</h1>
+            <p className="text-orange-100">Administra las empresas registradas y sus agricultores vinculados.</p>
           </div>
 
           <button
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm shadow-sm font-semibold transition-colors ${
-              darkMode ? "bg-[#232323] border-orange-700 text-orange-300 hover:bg-orange-900" : "bg-white border-orange-200 text-orange-700 hover:bg-orange-100"
-            }`}
+            className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
             onClick={() => router.push("/panel/administrador")}
-            title="Ir al menu principal"
+            title="Ir al menú principal"
           >
             <FiHome className="text-lg" />
-            <span className="hidden sm:inline">Menu principal</span>
+            <span className="hidden sm:inline">Menú</span>
           </button>
-        </header>
+        </div>
+      </section>
 
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <EmpresasPanel />
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
