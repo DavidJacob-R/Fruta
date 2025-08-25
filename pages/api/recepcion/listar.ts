@@ -1,68 +1,127 @@
-import { agricultores_empresa, empresa, recepcion_fruta, tipos_clamshell, tipos_fruta } from '@/lib/schema'
-import { db } from '@/lib/db'
-import { and, gte, lt, eq } from 'drizzle-orm'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { pool } from '@/lib/db' // mismo pool que usas en otros handlers
+
+type Row = {
+  numero_nota: number | null
+  fecha_recepcion: string | null
+  empresa_nombre: string | null
+  agricultor_nombre: string | null
+  fruta_nombre: string | null
+  empaque_nombre: string | null
+  peso_caja_oz: number | null
+  notas: string | null
+}
+
+type FrutaItem = {
+  fruta_nombre: string | null
+  empaque_nombre: string | null
+  peso_caja_oz: number | null
+  notas: string | null
+}
+
+type Nota = {
+  numero_nota: number
+  fecha_recepcion: string | null
+  empresa_nombre: string | null
+  agricultor_nombre: string | null
+  agricultor_apellido: string | null
+  frutas: FrutaItem[]
+}
+
+function safeISO(d: Date) {
+  // Evita "Invalid Date" al convertir
+  const t = d.getTime()
+  if (Number.isNaN(t)) return null
+  return new Date(t).toISOString()
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const { desde } = req.query
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'metodo no permitido' })
+  }
 
-    let start: Date | null = null
-    let end: Date | null = null
-    if (desde) {
-      const d = new Date(desde as string)
-      d.setHours(0, 0, 0, 0)
-      start = d
-      end = new Date(d)
-      end.setDate(d.getDate() + 1)
+  try {
+    // 1) Construir rango del día [start, end)
+    const qDesde = typeof req.query.desde === 'string' ? req.query.desde : ''
+    let start: Date
+    if (qDesde) {
+      start = new Date(qDesde)
+    } else {
+      start = new Date()
+      start.setHours(0, 0, 0, 0)
+    }
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+
+    const startISO = safeISO(start)
+    const endISO = safeISO(end)
+    if (!startISO || !endISO) {
+      return res.status(400).json({ recepciones: [], error: 'rango de fechas inválido' })
     }
 
-    const base = db
-      .select({
-        numero_nota: recepcion_fruta.numero_nota,
-        fecha_recepcion: recepcion_fruta.fecha_recepcion,
-        notas: recepcion_fruta.notas,
-        empresa_nombre: empresa.empresa,
-        agricultor_nombre: agricultores_empresa.nombre, // <- ahora desde agricultores_empresa
-        fruta_nombre: tipos_fruta.nombre,
-        empaque_nombre: tipos_clamshell.tamanio,
-        peso_caja_oz: recepcion_fruta.peso_caja_oz
-      })
-      .from(recepcion_fruta)
-      .leftJoin(agricultores_empresa, eq(recepcion_fruta.agricultor_id, agricultores_empresa.id))
-      .leftJoin(empresa, eq(recepcion_fruta.empresa_id, empresa.id))
-      .leftJoin(tipos_fruta, eq(recepcion_fruta.tipo_fruta_id, tipos_fruta.id))
-      .leftJoin(tipos_clamshell, eq(recepcion_fruta.empaque_id, tipos_clamshell.id))
+    // 2) Traer filas (un row por fruta/empaque en la nota)
+    const sql = `
+      select
+        rf.numero_nota,
+        rf.fecha_recepcion,
+        e.empresa            as empresa_nombre,
+        ag.nombre            as agricultor_nombre,
+        tf.nombre            as fruta_nombre,
+        em.tamanio           as empaque_nombre,
+        rf.peso_caja_oz::float8 as peso_caja_oz,
+        rf.notas
+      from public.recepcion_fruta rf
+      left join public.empresa             e  on rf.empresa_id   = e.id
+      left join public.agricultores_empresa ag on rf.agricultor_id = ag.id
+      left join public.tipos_fruta         tf on rf.tipo_fruta_id = tf.id
+      left join public.empaques            em on rf.empaque_id    = em.id
+      where rf.fecha_recepcion >= $1
+        and rf.fecha_recepcion <  $2
+        and rf.numero_nota is not null
+      order by rf.numero_nota asc, rf.fecha_recepcion desc
+    `
+    const { rows } = await pool.query<Row>(sql, [startISO, endISO])
 
-    const rows = await (start && end
-      ? base.where(and(gte(recepcion_fruta.fecha_recepcion, start), lt(recepcion_fruta.fecha_recepcion, end)))
-      : base)
+    // 3) Agrupar con Map (sin Object.entries / reduce sobre undefined)
+    const map = new Map<number, Nota>()
 
-    const agrupado = Object.values(
-      rows.reduce((acc, item) => {
-        if (item.numero_nota === null) return acc
-        const key = item.numero_nota as number
-        if (!acc[key]) {
-          acc[key] = {
-            numero_nota: item.numero_nota,
-            fecha_recepcion: item.fecha_recepcion,
-            empresa_nombre: item.empresa_nombre,
-            agricultor_nombre: item.agricultor_nombre || null, // sin apellido en la nueva tabla
-            frutas: []
-          }
-        }
-        acc[key].frutas.push({
-          fruta_nombre: item.fruta_nombre,
-          empaque_nombre: item.empaque_nombre,
-          peso_caja_oz: item.peso_caja_oz,
-          notas: item.notas
+    for (const r of rows) {
+      if (r.numero_nota == null) continue
+
+      if (!map.has(r.numero_nota)) {
+        map.set(r.numero_nota, {
+          numero_nota: r.numero_nota,
+          fecha_recepcion: r.fecha_recepcion ?? null,
+          empresa_nombre: r.empresa_nombre ?? null,
+          agricultor_nombre: r.agricultor_nombre ?? null,
+          agricultor_apellido: null, // no existe en tu SQL; lo dejamos null por compatibilidad con el front
+          frutas: [],
         })
-        return acc
-      }, {} as Record<number, any>)
-    )
+      }
 
-    res.status(200).json({ recepciones: agrupado })
-  } catch (error) {
-    res.status(500).json({ recepciones: [], error: 'Error al obtener recepciones' })
+      const nota = map.get(r.numero_nota)!
+      nota.frutas.push({
+        fruta_nombre: r.fruta_nombre ?? null,
+        empaque_nombre: r.empaque_nombre ?? null,
+        peso_caja_oz: r.peso_caja_oz ?? null,
+        notas: r.notas ?? null,
+      })
+
+      // Mantener la fecha de la fila más reciente (ya viene ordenado por fecha desc dentro de la nota)
+      if (!nota.fecha_recepcion && r.fecha_recepcion) {
+        nota.fecha_recepcion = r.fecha_recepcion
+      }
+    }
+
+    // 4) Salida ordenada por fecha desc
+    const recepciones = Array.from(map.values()).sort((a, b) => {
+      const at = a.fecha_recepcion ? new Date(a.fecha_recepcion).getTime() : 0
+      const bt = b.fecha_recepcion ? new Date(b.fecha_recepcion).getTime() : 0
+      return bt - at
+    })
+
+    return res.status(200).json({ recepciones })
+  } catch (err) {
+    console.error('Error /api/recepcion/listar', err)
+    return res.status(500).json({ recepciones: [], error: 'Error al obtener recepciones' })
   }
 }
