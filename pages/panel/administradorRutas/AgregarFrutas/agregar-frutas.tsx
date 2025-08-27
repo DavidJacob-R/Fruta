@@ -22,7 +22,6 @@ export default function FrutasAdmin() {
   const [busqueda, setBusqueda] = useState("")
   const inputNombreRef = useRef<HTMLInputElement>(null)
 
-  // Tokens visuales (mismos del resto del panel)
   const bgDay = "bg-[#f6f4f2]"
   const bgNight = "bg-[#161616]"
   const textDay = "text-[#1a1a1a]"
@@ -41,7 +40,6 @@ export default function FrutasAdmin() {
 
   const btnPri = "px-5 py-3 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700"
 
-  // Cargar frutas
   const cargarFrutas = () => {
     setCargandoLista(true)
     fetch("/api/frutas/listar")
@@ -54,7 +52,6 @@ export default function FrutasAdmin() {
     cargarFrutas()
   }, [])
 
-  // Agregar
   const handleAgregar = async () => {
     const n = nombre.trim()
     if (!n) return
@@ -71,7 +68,6 @@ export default function FrutasAdmin() {
         setNombre("")
         setDescripcion("")
         cargarFrutas()
-        // Volver a enfocar el input nombre
         setTimeout(() => inputNombreRef.current?.focus(), 50)
       }
     } catch {
@@ -82,9 +78,8 @@ export default function FrutasAdmin() {
     }
   }
 
-  // Eliminar (usa el endpoint existente de “desactivar”)
   const handleEliminar = async (id: number) => {
-    if (!confirm("¿Seguro que deseas eliminar esta fruta?")) return
+    if (!confirm("Seguro que deseas eliminar esta fruta?")) return
     setLoading(true)
     try {
       const r = await fetch("/api/frutas/desactivar", {
@@ -103,7 +98,6 @@ export default function FrutasAdmin() {
     }
   }
 
-  // Filtro de búsqueda
   const frutasFiltradas = useMemo(() => {
     const k = busqueda.trim().toLowerCase()
     if (!k) return frutas
@@ -116,28 +110,26 @@ export default function FrutasAdmin() {
 
   return (
     <div className={`${darkMode ? bgNight : bgDay} min-h-screen ${darkMode ? textNight : textDay} transition-colors duration-300`}>
-      {/* Header degradado */}
-      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-6 text-white shadow-lg">
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-b-2xl p-4 sm:p-6 text-white shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">Frutas</h1>
-            <p className="text-orange-100">Administra el catálogo de frutas para recepción.</p>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 truncate">Frutas</h1>
+            <p className="text-orange-100 text-sm sm:text-base">Administra el catalogo de frutas para recepcion.</p>
           </div>
           <button
             className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition flex items-center gap-2"
             onClick={() => router.push("/panel/administrador")}
-            title="Ir al menú principal"
+            title="Ir al menu principal"
           >
             <FiHome className="text-lg" />
-            <span className="hidden sm:inline">Menú</span>
+            <span className="hidden sm:inline">Menu</span>
           </button>
         </div>
       </section>
 
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Formulario */}
-        <section className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <section className={`rounded-2xl p-4 sm:p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+          <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/20">🍊</span>
             Nueva fruta
           </h2>
@@ -147,12 +139,10 @@ export default function FrutasAdmin() {
               e.preventDefault()
               if (!loading) handleAgregar()
             }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4"
           >
             <div className="md:col-span-1">
-              <label className={`block mb-2 font-medium ${darkMode ? "text-orange-200" : "text-orange-700"}`}>
-                Nombre *
-              </label>
+              <label className={`block mb-2 font-medium ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Nombre *</label>
               <input
                 ref={inputNombreRef}
                 value={nombre}
@@ -160,14 +150,11 @@ export default function FrutasAdmin() {
                 placeholder="Ej: Uva, Manzana, Durazno"
                 className={`w-full p-3 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none ${inputClass}`}
                 required
-                autoFocus
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className={`block mb-2 font-medium ${darkMode ? "text-orange-200" : "text-orange-700"}`}>
-                Descripción (opcional)
-              </label>
+              <label className={`block mb-2 font-medium ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Descripcion (opcional)</label>
               <input
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
@@ -177,10 +164,10 @@ export default function FrutasAdmin() {
               />
             </div>
 
-            <div className="md:col-span-3 flex items-center justify-end gap-3">
+            <div className="md:col-span-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button
                 type="submit"
-                className={`${btnPri} inline-flex items-center gap-2 ${loading ? "opacity-60 pointer-events-none" : ""}`}
+                className={`${btnPri} inline-flex items-center justify-center gap-2 w-full sm:w-auto ${loading ? "opacity-60 pointer-events-none" : ""}`}
                 disabled={loading}
                 title="Agregar fruta"
               >
@@ -197,16 +184,15 @@ export default function FrutasAdmin() {
           </form>
         </section>
 
-        {/* Buscador + Conteo */}
         <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="w-full md:w-auto">
             <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${darkMode ? cardNight : cardDay}`}>
               <FiSearch className={darkMode ? "text-orange-300" : "text-orange-600"} />
               <input
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar fruta por nombre o descripción"
-                className={`w-72 max-w-full outline-none bg-transparent ${darkMode ? "text-white placeholder:text-white/60" : "text-[#1a1a1a] placeholder:text-[#1a1a1a]/60"}`}
+                placeholder="Buscar fruta por nombre o descripcion"
+                className={`w-full sm:w-80 outline-none bg-transparent ${darkMode ? "text-white placeholder:text-white/60" : "text-[#1a1a1a] placeholder:text-[#1a1a1a]/60"}`}
               />
             </div>
           </div>
@@ -215,13 +201,12 @@ export default function FrutasAdmin() {
           </div>
         </section>
 
-        {/* Listado */}
-        <section className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
-          <h3 className="text-lg font-semibold mb-4">Frutas registradas</h3>
+        <section className={`rounded-2xl p-4 sm:p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
+          <h3 className="text-base sm:text-lg font-semibold mb-4">Frutas registradas</h3>
 
           {cargandoLista ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className={`rounded-2xl p-5 ${darkMode ? "bg-[#1f1f1f] border border-[#353535]" : "bg-white border border-orange-200"} animate-pulse`}>
                   <div className="h-5 w-2/3 rounded bg-current/10 mb-2" />
                   <div className="h-4 w-1/2 rounded bg-current/10" />
@@ -234,23 +219,21 @@ export default function FrutasAdmin() {
               No hay frutas registradas.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
               {frutasFiltradas.map((fruta) => (
                 <div
                   key={fruta.id}
                   className={`group rounded-2xl p-5 border ${darkMode ? "bg-[#1f1f1f] border-[#353535] hover:bg-[#202020]" : "bg-white border-orange-200 hover:bg-orange-50"} transition ${softShadow}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className={`text-lg font-bold ${darkMode ? "text-orange-100" : "text-gray-800"}`}>{fruta.nombre}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-base sm:text-lg font-bold ${darkMode ? "text-orange-100" : "text-gray-800"} truncate`}>{fruta.nombre}</div>
                       {fruta.descripcion && (
-                        <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm mt-1`}>
-                          {fruta.descripcion}
-                        </div>
+                        <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm mt-1 break-words`}>{fruta.descripcion}</div>
                       )}
                     </div>
                     <button
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition shrink-0"
                       onClick={() => handleEliminar(fruta.id)}
                       title="Eliminar"
                     >

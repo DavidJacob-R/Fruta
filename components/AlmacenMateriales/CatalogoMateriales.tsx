@@ -113,10 +113,10 @@ export default function CatalogoMateriales({ modoNoche, softShadow, onChanged }:
   }
 
   return (
-    <div className={`flex flex-col gap-6`}>
-      <div className={`rounded-2xl p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow}`}>
-        <h3 className="text-xl font-semibold mb-4">Agregar material</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="flex flex-col gap-6">
+      <div className={`rounded-2xl p-4 sm:p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow}`}>
+        <h3 className="text-base sm:text-xl font-semibold mb-4">Agregar material</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
           <input
             value={nombre}
             onChange={e => setNombre(e.target.value)}
@@ -137,26 +137,26 @@ export default function CatalogoMateriales({ modoNoche, softShadow, onChanged }:
           />
         </div>
         {errorMsg && <div className="text-red-600 text-sm mt-3">{errorMsg}</div>}
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-col sm:flex-row sm:justify-end">
           <button
             onClick={crear}
             disabled={guardando}
-            className={`px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 ${guardando ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-6 py-3 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 w-full sm:w-auto ${guardando ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {guardando ? 'Guardando...' : 'Agregar'}
           </button>
         </div>
       </div>
 
-      <div className={`rounded-2xl p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow}`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">Catalogo de materiales</h3>
+      <div className={`rounded-2xl p-4 sm:p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <h3 className="text-base sm:text-xl font-semibold">Catalogo de materiales</h3>
           <div className="flex items-center gap-3">
             <input
               value={filtro}
               onChange={e => setFiltro(e.target.value)}
               placeholder="Buscar"
-              className={`p-2 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
+              className={`p-2 rounded-lg border w-48 sm:w-64 ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
             />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={incluirInactivos} onChange={e => setIncluirInactivos(e.target.checked)} />
@@ -165,7 +165,35 @@ export default function CatalogoMateriales({ modoNoche, softShadow, onChanged }:
           </div>
         </div>
 
-        <div className="overflow-auto">
+        <div className="md:hidden grid grid-cols-1 gap-3">
+          {cargando && (
+            <div className={`${modoNoche ? 'bg-[#1f1f1f] border-[#353535]' : 'bg-white border-orange-200'} border rounded-2xl p-4 animate-pulse`}>Cargando...</div>
+          )}
+          {!cargando && filtrados.length === 0 && (
+            <div className={`${modoNoche ? 'bg-[#1f1f1f] border-[#353535] text-white/80' : 'bg-white border-orange-200 text-[#1a1a1a]/70'} border rounded-2xl p-4`}>Sin datos</div>
+          )}
+          {!cargando && filtrados.map(it => (
+            <div key={it.id} className={`${modoNoche ? 'bg-[#1f1f1f] border-[#353535]' : 'bg-white border-orange-200'} border rounded-2xl p-4`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-bold">{it.nombre}</div>
+                  <div className="text-sm opacity-80">{it.unidad_medida}</div>
+                  <div className="text-sm mt-1">Cantidad: {typeof it.cantidad === 'number' ? it.cantidad.toFixed(2) : '0.00'}</div>
+                  {it.descripcion && <div className="text-xs opacity-80 mt-1 break-words">{it.descripcion}</div>}
+                </div>
+                <button
+                  onClick={() => eliminar(it.id)}
+                  disabled={guardando}
+                  className={`px-3 py-2 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 ${guardando ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden md:block overflow-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className={`${modoNoche ? 'bg-[#2a2a2a]' : 'bg-orange-50'}`}>
@@ -182,7 +210,7 @@ export default function CatalogoMateriales({ modoNoche, softShadow, onChanged }:
               {!cargando && filtrados.length === 0 && (
                 <tr><td className="p-3" colSpan={5}>Sin datos</td></tr>
               )}
-              {filtrados.map(it => (
+              {!cargando && filtrados.map(it => (
                 <tr key={it.id} className={`${modoNoche ? 'border-b border-[#353535]' : 'border-b border-orange-100'}`}>
                   <td className="p-3">{it.nombre}</td>
                   <td className="p-3">{it.unidad_medida}</td>

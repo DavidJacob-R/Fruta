@@ -24,7 +24,7 @@ export default function EmpresasPanel() {
     telefono: "",
     email: "",
     direccion: "",
-    tipo_venta: "nacional",
+    tipo_venta: "nacional"
   })
   const [loading, setLoading] = useState(false)
   const [mensaje, setMensaje] = useState("")
@@ -34,8 +34,8 @@ export default function EmpresasPanel() {
   const cardDay = "bg-[#f8f7f5] border border-orange-200"
   const cardNight = "bg-[#232323] border border-[#353535]"
   const softShadow = "shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]"
-  const inputWrap = `${darkMode ? cardNight : cardDay} rounded-xl px-3 py-2 flex items-center gap-2`
-  const input = "bg-transparent outline-none w-72 max-w-full"
+  const inputWrap = `${darkMode ? cardNight : cardDay} rounded-xl px-3 py-2 flex items-center gap-2 w-full sm:w-auto`
+  const input = "bg-transparent outline-none w-full sm:w-72"
   const btnPri = "inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700"
 
   const cargarEmpresas = () => {
@@ -59,7 +59,7 @@ export default function EmpresasPanel() {
     await fetch("/api/empresas/agregar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(empresaForm),
+      body: JSON.stringify(empresaForm)
     })
       .then((r) => r.json())
       .then((res) => {
@@ -69,11 +69,11 @@ export default function EmpresasPanel() {
           telefono: "",
           email: "",
           direccion: "",
-          tipo_venta: "nacional",
+          tipo_venta: "nacional"
         })
         cargarEmpresas()
         setModalOpen(false)
-        setTimeout(() => setMensaje(''), 2500)
+        setTimeout(() => setMensaje(""), 2500)
       })
       .finally(() => setLoading(false))
   }
@@ -102,12 +102,12 @@ export default function EmpresasPanel() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <div className={inputWrap}>
             <FiSearch className={darkMode ? "text-orange-300" : "text-orange-600"} />
             <input
               className={input}
-              placeholder="Buscar empresa por nombre, email, teléfono o dirección"
+              placeholder="Buscar empresa por nombre, email, telefono o direccion"
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
             />
@@ -118,9 +118,7 @@ export default function EmpresasPanel() {
         </button>
       </div>
 
-      {mensaje && (
-        <div className={`${darkMode ? "text-emerald-200" : "text-green-700"} font-semibold text-sm`}>{mensaje}</div>
-      )}
+      {mensaje && <div className={`${darkMode ? "text-emerald-200" : "text-green-700"} font-semibold text-sm`}>{mensaje}</div>}
 
       <section className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
         <h2 className="text-lg font-semibold mb-4">Listado de empresas</h2>
@@ -137,7 +135,7 @@ export default function EmpresasPanel() {
           </div>
         ) : empresasFiltradas.length === 0 ? (
           <div className={`rounded-2xl border border-dashed ${darkMode ? "border-[#353535] text-white/80" : "border-orange-200 text-[#1a1a1a]/70"} p-8 text-center`}>
-            No hay empresas registradas.
+            No hay empresas registradas
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -149,20 +147,20 @@ export default function EmpresasPanel() {
                 onClick={() => setEmpresaSeleccionada(emp)}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className={`text-lg font-bold ${darkMode ? "text-orange-100" : "text-gray-800"}`}>{emp.empresa}</div>
-                    <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm mt-1`}>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-lg font-bold ${darkMode ? "text-orange-100" : "text-gray-800"} truncate`}>{emp.empresa}</div>
+                    <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm mt-1 truncate`}>
                       Tel: {emp.telefono || <span className="opacity-60">—</span>}
                     </div>
-                    <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm`}>
+                    <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-sm truncate`}>
                       Email: {emp.email || <span className="opacity-60">—</span>}
                     </div>
                     {emp.direccion && (
-                      <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-xs mt-1`}>{emp.direccion}</div>
+                      <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-xs mt-1 line-clamp-2`}>{emp.direccion}</div>
                     )}
                   </div>
-                  <span className={`${emp.tipo_venta === "nacional" ? "bg-orange-100 text-orange-800" : "bg-amber-100 text-amber-800"} px-3 py-1 rounded-full text-xs font-bold`}>
-                    {emp.tipo_venta === "nacional" ? "Nacional" : "Exportación"}
+                  <span className={`${emp.tipo_venta === "nacional" ? "bg-orange-100 text-orange-800" : "bg-amber-100 text-amber-800"} px-3 py-1 rounded-full text-xs font-bold shrink-0`}>
+                    {emp.tipo_venta === "nacional" ? "Nacional" : "Exportacion"}
                   </span>
                 </div>
               </button>

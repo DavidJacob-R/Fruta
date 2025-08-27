@@ -7,14 +7,22 @@ export default function RecepcionSeleccion() {
   const [darkMode, setDarkMode] = useState(true)
 
   useEffect(() => {
+    const temaGuardado = typeof window !== 'undefined' ? localStorage.getItem('tema') : null
+    if (temaGuardado) setDarkMode(temaGuardado === 'noche')
     fetch('/api/recepcion/siguiente_nota')
       .then(res => res.json())
       .then(data => setSiguienteNumero(data.siguienteNumero))
+      .catch(() => setSiguienteNumero(null))
   }, [])
 
   useEffect(() => {
-    if (darkMode) document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('tema', 'noche')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('tema', 'dia')
+    }
   }, [darkMode])
 
   const crearNota = () => {
@@ -22,86 +30,75 @@ export default function RecepcionSeleccion() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col justify-between transition-colors duration-300
-      ${darkMode
-        ? 'bg-gradient-to-br from-[#181a1b] via-[#23282b] to-[#212225]'
-        : 'bg-gradient-to-br from-orange-50 via-white to-gray-100'}`}>
-
-      <header className="w-full flex justify-end items-center pt-5 pr-8">
-        <button
-          onClick={() => setDarkMode(d => !d)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full shadow border text-base font-semibold transition
-            ${darkMode
-              ? "bg-[#232a2d]/90 border-orange-300 text-orange-100 hover:bg-[#22282a]/90"
-              : "bg-white border-orange-200 text-orange-700 hover:bg-orange-50"}`}>
-          {darkMode
-            ? (<><span role="img" aria-label="noche">🌙</span> Noche</>)
-            : (<><span role="img" aria-label="dia">☀️</span> Dia</>)
-          }
-        </button>
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-[#181a1b]' : 'bg-orange-50'}`}>
+      <header className={`w-full sticky top-0 z-20 ${darkMode ? 'bg-[#181a1b]/90' : 'bg-white/90'} backdrop-blur border-b ${darkMode ? 'border-white/10' : 'border-orange-200'}`}>
+        <div className="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full border flex items-center justify-center ${darkMode ? 'bg-white/10 border-orange-400' : 'bg-orange-100 border-orange-300'}`}>
+              <span className={`text-2xl font-black ${darkMode ? 'text-orange-300' : 'text-orange-500'}`}>🍊</span>
+            </div>
+            <span className={`text-base font-bold tracking-wider ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>El Molinito</span>
+          </div>
+          <button
+            onClick={() => setDarkMode(d => !d)}
+            className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${darkMode ? 'bg-[#232a2d] border-orange-300 text-orange-100' : 'bg-white border-orange-300 text-orange-700'}`}
+          >
+            {darkMode ? 'Noche' : 'Dia'}
+          </button>
+        </div>
       </header>
 
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 select-none">
-        <div className={`w-14 h-14 ${darkMode ? 'bg-white/10 border-orange-400' : 'bg-orange-100 border-orange-300'} border-2 shadow-xl rounded-full flex items-center justify-center`}>
-          <span className={`text-3xl font-black ${darkMode ? 'text-orange-300' : 'text-orange-400'}`}>🍊</span>
-        </div>
-        <span className={`font-bold tracking-widest uppercase text-xl drop-shadow 
-          ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>El Molinito</span>
-      </div>
+      <main className="flex-1">
+        <div className="max-w-xl mx-auto px-4 pt-6 pb-28">
+          <h1 className={`text-2xl font-extrabold ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>Recepcion de fruta</h1>
 
-      <main className="flex-1 flex items-center justify-center py-14 px-3">
-        <div className={`w-full max-w-xl mx-auto rounded-3xl shadow-2xl p-10 flex flex-col items-center pt-20 relative z-0 transition
-          ${darkMode
-            ? 'bg-white/10 backdrop-blur-lg border-2 border-orange-300'
-            : 'bg-white border-2 border-orange-200'
-          }`}>
+          <div className={`mt-4 rounded-2xl p-5 border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-orange-200'} shadow-sm`}>
+            <div className="flex items-end justify-between">
+              <div>
+                <div className={`text-sm ${darkMode ? 'text-orange-200/80' : 'text-orange-700/90'}`}>Proxima nota</div>
+                <div className={`mt-1 text-4xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-orange-900'}`}>
+                  {siguienteNumero !== null ? siguienteNumero : '...'}
+                </div>
+              </div>
+              <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${darkMode ? 'bg-orange-300/15 text-orange-200' : 'bg-orange-100 text-orange-700'}`}>
+                Recepcion
+              </div>
+            </div>
 
-          <h1 className={`text-4xl font-extrabold mb-8 text-center drop-shadow-xl
-            ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
-            Recepcion de Fruta
-          </h1>
-
-          <div className="flex items-center gap-2 mb-10">
-            <span className={`font-bold text-lg ${darkMode ? 'text-orange-100' : 'text-orange-700'}`}>Nota N°:</span>
-            <span className={`text-2xl font-mono rounded-xl px-4 py-2 border shadow
-              ${darkMode
-                ? 'bg-black/70 border-orange-400 text-white'
-                : 'bg-orange-50 border-orange-200 text-orange-900'
-              }`}>
-              {siguienteNumero ?? '...'}
-            </span>
-          </div>
-
-          <div className="w-full flex flex-col gap-8">
-            <button
-              onClick={crearNota}
-              className="w-full shadow-xl hover:scale-105 transition-transform rounded-2xl px-8 py-6 text-lg font-extrabold tracking-wide border-2 focus:ring-2 outline-none bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-none">
-              Crear nota
-            </button>
-
-            <button
-              onClick={() => router.push('/panel/Rutas/recepcion/nota-recepcion')}
-              className="w-full shadow hover:scale-105 transition-transform px-6 py-4 text-lg font-bold rounded-2xl border-2 focus:ring-2 outline-none
-                bg-white border-orange-200 text-orange-800 hover:bg-orange-50">
-              Ver notas del dia
-            </button>
-
-            <button
-              className="w-full shadow px-6 py-4 text-lg font-bold rounded-2xl border-2 transition-transform hover:scale-105 focus:ring-2 outline-none
-                border-orange-200 text-orange-700 bg-white hover:bg-orange-100"
-              onClick={() => router.push('/panel/empleado')}>
-              Regresar al menu principal
-            </button>
+            <div className="mt-5 grid gap-3">
+              <button
+                onClick={() => router.push('/panel/Rutas/recepcion/nota-recepcion')}
+                className={`w-full rounded-xl px-4 py-4 text-base font-bold border ${darkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-orange-200 text-orange-800'} active:scale-[0.99]`}
+              >
+                Ver notas del dia
+              </button>
+              <button
+                onClick={() => router.push('/panel/empleado')}
+                className={`w-full rounded-xl px-4 py-4 text-base font-bold border ${darkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-orange-200 text-orange-800'} active:scale-[0.99]`}
+              >
+                Regresar al menu principal
+              </button>
+            </div>
           </div>
         </div>
       </main>
 
-      <footer className={`w-full text-center py-4 text-sm mt-auto
-        ${darkMode
-          ? "bg-[#181a1b] text-orange-200"
-          : "bg-orange-50 text-orange-900"
-        }`}>
-        © {new Date().getFullYear()} El Molinito – Sistema de logistica y control
+      <div
+        className={`fixed inset-x-0 bottom-0 z-30 ${darkMode ? 'bg-[#181a1b]/80 border-t border-white/10' : 'bg-white/90 border-t border-orange-200'} backdrop-blur`}
+        style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="max-w-xl mx-auto px-4 py-3">
+          <button
+            onClick={crearNota}
+            className="w-full rounded-2xl px-6 py-4 text-lg font-extrabold tracking-wide bg-gradient-to-r from-orange-500 to-orange-600 text-white active:scale-[0.99]"
+          >
+            Crear nota
+          </button>
+        </div>
+      </div>
+
+      <footer className={`w-full text-center text-xs ${darkMode ? 'text-orange-200/80' : 'text-orange-900/80'} pb-20`}>
+        © {new Date().getFullYear()} El Molinito
       </footer>
     </div>
   )

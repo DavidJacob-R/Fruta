@@ -41,22 +41,22 @@ export default function ModalEmpresa({ open, onClose, onSubmit, values, onChange
             <input name="empresa" value={values.empresa} onChange={onChange} placeholder="Ej: Frutas del Sur" className={input} required autoFocus />
           </div>
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Teléfono</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Telefono</label>
             <input name="telefono" value={values.telefono} onChange={onChange} placeholder="Ej: 5551234567" className={input} type="tel" />
           </div>
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Correo electrónico</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Correo electronico</label>
             <input name="email" value={values.email} onChange={onChange} placeholder="correo@empresa.com" className={input} type="email" />
           </div>
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Dirección</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Direccion</label>
             <input name="direccion" value={values.direccion} onChange={onChange} placeholder="Calle, colonia, ciudad" className={input} />
           </div>
           <div>
             <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Tipo de venta</label>
             <select name="tipo_venta" value={values.tipo_venta} onChange={onChange} className={input}>
               <option value="nacional">Nacional</option>
-              <option value="exportacion">Exportación</option>
+              <option value="exportacion">Exportacion</option>
             </select>
           </div>
           <div className="md:col-span-2 flex justify-end">

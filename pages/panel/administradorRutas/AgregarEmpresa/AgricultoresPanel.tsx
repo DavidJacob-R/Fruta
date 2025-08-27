@@ -30,7 +30,7 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
     hectareas: "",
     sectores: "",
     rfc: "",
-    ubicacion: "",
+    ubicacion: ""
   })
   const [nextClave, setNextClave] = useState("")
   const [loading, setLoading] = useState(false)
@@ -40,8 +40,8 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
   const cardDay = "bg-[#f8f7f5] border border-orange-200"
   const cardNight = "bg-[#232323] border border-[#353535]"
   const softShadow = "shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]"
-  const inputWrap = `${darkMode ? cardNight : cardDay} rounded-xl px-3 py-2 flex items-center gap-2`
-  const input = "bg-transparent outline-none w-72 max-w-full"
+  const inputWrap = `${darkMode ? cardNight : cardDay} rounded-xl px-3 py-2 flex items-center gap-2 w-full sm:w-auto`
+  const input = "bg-transparent outline-none w-full sm:w-72"
   const btnPri = "inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-orange-600 hover:bg-orange-700"
   const btnSec = `${darkMode ? "px-4 py-2 rounded-xl font-semibold border bg-[#232323] border-[#353535] text-white hover:bg-[#2a2a2a]" : "px-4 py-2 rounded-xl font-semibold border bg-white border-orange-300 text-[#1a1a1a] hover:bg-orange-50"}`
 
@@ -68,7 +68,7 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
       hectareas: "",
       sectores: "",
       rfc: "",
-      ubicacion: "",
+      ubicacion: ""
     })
     cargarClave()
   }
@@ -84,8 +84,8 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...agricultorForm,
-        empresa_id: empresaId,
-      }),
+        empresa_id: empresaId
+      })
     })
       .then(r => r.json())
       .then(res => {
@@ -114,7 +114,7 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <button className={btnSec} onClick={onClose}>
             <span className="inline-flex items-center gap-2"><FiArrowLeft /> Cambiar empresa</span>
           </button>
@@ -138,22 +138,45 @@ export default function AgricultoresPanel({ empresaId, empresaNombre, onClose }:
       <section className={`rounded-2xl p-6 ${darkMode ? cardNight : cardDay} ${softShadow}`}>
         <h2 className="text-lg font-semibold mb-4">Agricultores de {empresaNombre}</h2>
 
-        <div className="overflow-x-auto rounded-2xl border">
+        <div className="md:hidden grid grid-cols-1 gap-3">
+          {agricultoresFiltrados.length === 0 ? (
+            <div className={`rounded-xl p-4 text-center ${darkMode ? "bg-[#1f1f1f] text-white/70" : "bg-white text-gray-600"} border ${darkMode ? "border-[#353535]" : "border-orange-200"}`}>
+              No hay agricultores registrados
+            </div>
+          ) : (
+            agricultoresFiltrados.map((a) => (
+              <div key={a.id} className={`rounded-xl p-4 ${darkMode ? "bg-[#1f1f1f]" : "bg-white"} border ${darkMode ? "border-[#353535]" : "border-orange-200"}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-bold">{a.clave}</div>
+                  <div className={`${darkMode ? "text-white/70" : "text-gray-600"} text-xs`}>{a.rfc || "Sin RFC"}</div>
+                </div>
+                <div className="mt-1 text-base font-semibold">{a.nombre}</div>
+                <div className="mt-1 grid grid-cols-2 gap-2 text-sm">
+                  <div>Hectareas: {a.hectareas || "—"}</div>
+                  <div>Sectores: {a.sectores || "—"}</div>
+                  <div className="col-span-2">Ubicacion: {a.ubicacion || "—"}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto rounded-2xl border">
           <table className={`min-w-full text-sm ${darkMode ? "bg-[#1f1f1f] border-[#353535]" : "bg-white border-orange-200"}`}>
             <thead>
               <tr className={`${darkMode ? "bg-slate-800 text-orange-200 border-slate-700" : "bg-orange-50 text-orange-700 border-orange-200"} border-b-2`}>
-                <th className="px-4 py-3 text-left font-bold">Código</th>
+                <th className="px-4 py-3 text-left font-bold">Codigo</th>
                 <th className="px-4 py-3 text-left font-bold">Nombre</th>
-                <th className="px-4 py-3 text-left font-bold">Hectáreas</th>
+                <th className="px-4 py-3 text-left font-bold">Hectareas</th>
                 <th className="px-4 py-3 text-left font-bold">Sectores</th>
                 <th className="px-4 py-3 text-left font-bold">RFC</th>
-                <th className="px-4 py-3 text-left font-bold">Ubicación</th>
+                <th className="px-4 py-3 text-left font-bold">Ubicacion</th>
               </tr>
             </thead>
             <tbody>
               {agricultoresFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className={`${darkMode ? "text-white/70" : "text-gray-500"} text-center py-8`}>No hay agricultores registrados.</td>
+                  <td colSpan={6} className={`${darkMode ? "text-white/70" : "text-gray-500"} text-center py-8`}>No hay agricultores registrados</td>
                 </tr>
               ) : (
                 agricultoresFiltrados.map((a, i) => (

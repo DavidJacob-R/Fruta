@@ -139,33 +139,22 @@ export default function FormularioMovimiento({
     ((tipo === 'entradas' && proveedorId > 0) || (tipo === 'salidas' && agricultorId > 0) || (tipo === 'intercambios'))
 
   return (
-    <div className={`rounded-2xl p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow}`}>
-      <div className="flex items-center gap-3 mb-6">
-        <div className={`rounded-full p-3 ${
-          tipo === 'entradas' ? 'bg-green-100 text-green-600' :
-          tipo === 'salidas' ? 'bg-red-100 text-red-600' :
-          'bg-purple-100 text-purple-600'
-        }`}>
-          <span className="text-2xl">
-            {tipo === 'entradas' ? '📥' : tipo === 'salidas' ? '📤' : '🔄'}
-          </span>
+    <div className={`rounded-2xl p-4 sm:p-6 ${modoNoche ? 'bg-[#232323]' : 'bg-white'} ${softShadow} pb-24 sm:pb-6`}>
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
+        <div className={`rounded-full p-3 ${tipo === 'entradas' ? 'bg-green-100 text-green-600' : tipo === 'salidas' ? 'bg-red-100 text-red-600' : 'bg-purple-100 text-purple-600'}`}>
+          <span className="text-2xl">{tipo === 'entradas' ? '📥' : tipo === 'salidas' ? '📤' : '🔄'}</span>
         </div>
-        <h3 className="text-2xl font-semibold">{titulo}</h3>
+        <h3 className="text-xl sm:text-2xl font-semibold">{titulo}</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-6">
         <div>
-          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-            Material
-          </label>
+          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Material</label>
           <select
             value={materialId || 0}
             onChange={e => setMaterialId(Number(e.target.value))}
-            className={`w-full p-3 rounded-lg border ${
-              modoNoche
-                ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                : 'bg-white border-orange-300 text-gray-800'
-            }`}>
+            className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
+          >
             <option value={0}>Seleccionar material</option>
             {(materialesSafe || []).map(m => (
               <option key={m.id} value={m.id}>{m.nombre}</option>
@@ -174,38 +163,27 @@ export default function FormularioMovimiento({
         </div>
 
         <div>
-          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-            Cantidad
-          </label>
+          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Cantidad</label>
           <input
             type="number"
+            inputMode="decimal"
+            step="any"
             value={cantidad}
             onChange={e => setCantidad(e.target.value)}
-            className={`w-full p-3 rounded-lg border ${
-              modoNoche
-                ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                : 'bg-white border-orange-300 text-gray-800'
-            }`}
+            className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
             placeholder="Ingrese la cantidad"
           />
-          {materialSel && materialSel.unidad && (
-            <div className="text-xs mt-1 opacity-70">unidad: {materialSel.unidad}</div>
-          )}
+          {materialSel && materialSel.unidad && <div className="text-xs mt-1 opacity-70">unidad: {materialSel.unidad}</div>}
         </div>
 
         {tipo === 'entradas' && (
           <div>
-            <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-              Proveedor
-            </label>
+            <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Proveedor</label>
             <select
               value={proveedorId || 0}
               onChange={e => setProveedorId(Number(e.target.value))}
-              className={`w-full p-3 rounded-lg border ${
-                modoNoche
-                  ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                  : 'bg-white border-orange-300 text-gray-800'
-              }`}>
+              className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
+            >
               <option value={0}>Seleccionar proveedor</option>
               {proveedores.map(p => (
                 <option key={p.id} value={p.id}>{p.nombre}</option>
@@ -216,22 +194,15 @@ export default function FormularioMovimiento({
 
         {tipo === 'salidas' && (
           <div>
-            <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-              Agricultor
-            </label>
+            <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Agricultor</label>
             <select
               value={agricultorId || 0}
               onChange={e => setAgricultorId(Number(e.target.value))}
-              className={`w-full p-3 rounded-lg border ${
-                modoNoche
-                  ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                  : 'bg-white border-orange-300 text-gray-800'
-              }`}>
+              className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
+            >
               <option value={0}>Seleccionar agricultor</option>
               {agricultores.map(a => (
-                <option key={a.id} value={a.id}>
-                  {a.nombre}{a.clave ? ` — ${a.clave}` : ''}
-                </option>
+                <option key={a.id} value={a.id}>{a.nombre}{a.clave ? ` — ${a.clave}` : ''}</option>
               ))}
             </select>
           </div>
@@ -240,32 +211,20 @@ export default function FormularioMovimiento({
         {tipo === 'intercambios' && (
           <>
             <div>
-              <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-                Origen
-              </label>
+              <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Origen</label>
               <input
                 value={origen}
                 onChange={e => setOrigen(e.target.value)}
-                className={`w-full p-3 rounded-lg border ${
-                  modoNoche
-                    ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                    : 'bg-white border-orange-300 text-gray-800'
-                }`}
+                className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
                 placeholder="Almacen origen"
               />
             </div>
             <div>
-              <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-                Destino
-              </label>
+              <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Destino</label>
               <input
                 value={destino}
                 onChange={e => setDestino(e.target.value)}
-                className={`w-full p-3 rounded-lg border ${
-                  modoNoche
-                    ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                    : 'bg-white border-orange-300 text-gray-800'
-                }`}
+                className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
                 placeholder="Almacen destino"
               />
             </div>
@@ -273,33 +232,21 @@ export default function FormularioMovimiento({
         )}
 
         <div>
-          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-            Fecha
-          </label>
+          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Fecha</label>
           <input
             type="date"
             value={fecha}
             onChange={e => setFecha(e.target.value)}
-            className={`w-full p-3 rounded-lg border ${
-              modoNoche
-                ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                : 'bg-white border-orange-300 text-gray-800'
-            }`}
+            className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
           />
         </div>
 
         <div>
-          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>
-            Notas
-          </label>
+          <label className={`block mb-2 font-medium ${modoNoche ? 'text-orange-200' : 'text-orange-700'}`}>Notas</label>
           <textarea
             value={notas}
             onChange={e => setNotas(e.target.value)}
-            className={`w-full p-3 rounded-lg border ${
-              modoNoche
-                ? 'bg-[#2a2a2a] border-orange-700 text-white'
-                : 'bg-white border-orange-300 text-gray-800'
-            }`}
+            className={`w-full p-3 rounded-lg border ${modoNoche ? 'bg-[#2a2a2a] border-orange-700 text-white' : 'bg-white border-orange-300 text-gray-800'}`}
             rows={3}
             placeholder="Notas adicionales"
           ></textarea>
@@ -308,13 +255,9 @@ export default function FormularioMovimiento({
 
       {errorMsg && <div className="text-red-600 text-sm mb-3">{errorMsg}</div>}
 
-      <div className="flex gap-4 justify-end">
+      <div className="hidden sm:flex gap-4 justify-end">
         <button
-          className={`px-6 py-3 rounded-lg font-medium ${
-            modoNoche
-              ? 'bg-gray-600 hover:bg-gray-700'
-              : 'bg-gray-200 hover:bg-gray-300'
-          }`}
+          className={`px-6 py-3 rounded-lg font-medium ${modoNoche ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-[#1a1a1a]'}`}
           onClick={() => setVistaActiva('inicio')}
           disabled={guardando}
         >
@@ -327,6 +270,25 @@ export default function FormularioMovimiento({
         >
           {guardando ? 'Guardando...' : (tipo === 'entradas' ? 'Registrar Entrada' : tipo === 'salidas' ? 'Registrar Salida' : 'Registrar Intercambio')}
         </button>
+      </div>
+
+      <div className="sm:hidden fixed inset-x-0 bottom-0 z-20">
+        <div className={`${modoNoche ? 'bg-[#161616]' : 'bg-white'} border-t ${modoNoche ? 'border-white/10' : 'border-orange-200'} px-3 py-3 flex gap-3`}>
+          <button
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold ${modoNoche ? 'bg-gray-600 text-white' : 'bg-gray-200 text-[#1a1a1a]'}`}
+            onClick={() => setVistaActiva('inicio')}
+            disabled={guardando}
+          >
+            Cancelar
+          </button>
+          <button
+            className={`flex-1 px-4 py-3 rounded-xl font-semibold text-white ${colorBoton} ${puedeGuardar ? '' : 'opacity-50 cursor-not-allowed'}`}
+            onClick={submitMovimiento}
+            disabled={!puedeGuardar || guardando}
+          >
+            {guardando ? 'Guardando...' : 'Guardar'}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -111,12 +111,12 @@ export default function AlmacenMateriales() {
   const softShadow = 'shadow-[0_2px_10px_0_rgba(0,0,0,0.06)]'
 
   return (
-    <div className={`${darkMode ? textNight : textDay} flex flex-col gap-8`}>
-      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 text-white shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Almacen de Materiales</h1>
-            <p className="text-orange-100">
+    <div className={`${darkMode ? textNight : textDay} flex flex-col gap-5 sm:gap-8`}>
+      <section className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 truncate">Almacen de Materiales</h1>
+            <p className="text-orange-100 text-sm sm:text-base">
               {vistaActiva === 'inicio' ? 'Resumen general del inventario' :
               vistaActiva === 'existencias' ? 'Gestion de existencias y control de stock' :
               vistaActiva === 'entradas' ? 'Registro de entradas de materiales' :
@@ -124,144 +124,112 @@ export default function AlmacenMateriales() {
               vistaActiva === 'catalogo' ? 'Alta y gestion de materiales' : 'Registro de intercambios entre almacenes'}
             </p>
           </div>
-          <div className="flex gap-2">
-            {vistaActiva !== 'inicio' && (
-              <button
-                onClick={() => setVistaActiva('inicio')}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition"
-              >
-                Volver al inicio
-              </button>
-            )}
-          </div>
+          {vistaActiva !== 'inicio' && (
+            <button
+              onClick={() => setVistaActiva('inicio')}
+              className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-sm font-semibold"
+            >
+              Volver al inicio
+            </button>
+          )}
         </div>
       </section>
 
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        <button
-          onClick={() => setVistaActiva('inicio')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'inicio'
-              ? 'bg-orange-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          📊 Resumen
-        </button>
-        <button
-          onClick={() => setVistaActiva('entradas')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'entradas'
-              ? 'bg-green-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          📥 Entradas
-        </button>
-        <button
-          onClick={() => setVistaActiva('salidas')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'salidas'
-              ? 'bg-red-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          📤 Salidas
-        </button>
-        <button
-          onClick={() => setVistaActiva('intercambios')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'intercambios'
-              ? 'bg-purple-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          🔄 Intercambios
-        </button>
-        <button
-          onClick={() => setVistaActiva('existencias')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'existencias'
-              ? 'bg-blue-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          📦 Existencias
-        </button>
-        <button
-          onClick={() => setVistaActiva('catalogo')}
-          className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
-            vistaActiva === 'catalogo'
-              ? 'bg-indigo-500 text-white'
-              : darkMode
-                ? 'bg-[#353535] hover:bg-[#404040]'
-                : 'bg-orange-100 hover:bg-orange-200'
-          }`}
-        >
-          🧩 Materiales
-        </button>
+      <div className={`sticky top-0 z-10 ${darkMode ? 'bg-[#161616]' : 'bg-[#f6f4f2]'}/85 backdrop-blur`}>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
+            <button
+              onClick={() => setVistaActiva('inicio')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'inicio' ? 'bg-orange-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              📊 Resumen
+            </button>
+            <button
+              onClick={() => setVistaActiva('entradas')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'entradas' ? 'bg-green-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              📥 Entradas
+            </button>
+            <button
+              onClick={() => setVistaActiva('salidas')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'salidas' ? 'bg-red-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              📤 Salidas
+            </button>
+            <button
+              onClick={() => setVistaActiva('intercambios')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'intercambios' ? 'bg-purple-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              🔄 Intercambios
+            </button>
+            <button
+              onClick={() => setVistaActiva('existencias')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'existencias' ? 'bg-blue-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              📦 Existencias
+            </button>
+            <button
+              onClick={() => setVistaActiva('catalogo')}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap snap-start ${vistaActiva === 'catalogo' ? 'bg-indigo-500 text-white' : darkMode ? 'bg-[#353535] hover:bg-[#404040] text-white' : 'bg-orange-100 hover:bg-orange-200 text-[#1a1a1a]'}`}
+            >
+              🧩 Materiales
+            </button>
+          </div>
+        </div>
       </div>
 
-      {vistaActiva === 'inicio' && (
-        <VistaInicio
-          modoNoche={darkMode}
-          modulosAlmacen={modulosAlmacen}
-          setVistaActiva={setVistaActiva}
-          materiales={materiales}
-          movimientos={movimientos.map(m => ({
-            id: m.id,
-            tipo: m.tipo === 'entrada' ? 'entrada' : m.tipo === 'salida' ? 'salida' : 'intercambio',
-            fecha: m.fecha,
-            material: m.material,
-            cantidad: typeof m.cantidad === 'number' ? m.cantidad : 0,
-            origen: m.origen || 'N/A',
-            destino: m.destino || 'N/A'
-          }))}
-          softShadow={softShadow}
-        />
-      )}
+      <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8">
+        {vistaActiva === 'inicio' && (
+          <VistaInicio
+            modoNoche={darkMode}
+            modulosAlmacen={modulosAlmacen}
+            setVistaActiva={setVistaActiva}
+            materiales={materiales}
+            movimientos={movimientos.map(m => ({
+              id: m.id,
+              tipo: m.tipo === 'entrada' ? 'entrada' : m.tipo === 'salida' ? 'salida' : 'intercambio',
+              fecha: m.fecha,
+              material: m.material,
+              cantidad: typeof m.cantidad === 'number' ? m.cantidad : 0,
+              origen: m.origen || 'N/A',
+              destino: m.destino || 'N/A'
+            }))}
+            softShadow={softShadow}
+          />
+        )}
 
-      {vistaActiva === 'existencias' && (
-        <VistaExistencias
-          modoNoche={darkMode}
-          materiales={materiales}
-          softShadow={softShadow}
-        />
-      )}
+        {vistaActiva === 'existencias' && (
+          <VistaExistencias
+            modoNoche={darkMode}
+            materiales={materiales}
+            softShadow={softShadow}
+          />
+        )}
 
-      {(vistaActiva === 'entradas' || vistaActiva === 'salidas' || vistaActiva === 'intercambios') && (
-        <FormularioMovimiento
-          modoNoche={darkMode}
-          tipo={vistaActiva}
-          setVistaActiva={setVistaActiva}
-          materiales={materiales}
-          softShadow={softShadow}
-          onDone={async () => {
-            await recargarTodo()
-            setVistaActiva('inicio')
-          }}
-        />
-      )}
+        {(vistaActiva === 'entradas' || vistaActiva === 'salidas' || vistaActiva === 'intercambios') && (
+          <FormularioMovimiento
+            modoNoche={darkMode}
+            tipo={vistaActiva}
+            setVistaActiva={setVistaActiva}
+            materiales={materiales}
+            softShadow={softShadow}
+            onDone={async () => {
+              await recargarTodo()
+              setVistaActiva('inicio')
+            }}
+          />
+        )}
 
-      {vistaActiva === 'catalogo' && (
-        <CatalogoMateriales
-          modoNoche={darkMode}
-          softShadow={softShadow}
-          onChanged={async () => {
-            await cargarMateriales()
-          }}
-        />
-      )}
+        {vistaActiva === 'catalogo' && (
+          <CatalogoMateriales
+            modoNoche={darkMode}
+            softShadow={softShadow}
+            onChanged={async () => {
+              await cargarMateriales()
+            }}
+          />
+        )}
+      </div>
     </div>
   )
 }

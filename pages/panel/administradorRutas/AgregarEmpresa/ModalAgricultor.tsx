@@ -39,7 +39,7 @@ export default function ModalAgricultor({ open, onClose, onSubmit, values, onCha
           }}
         >
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Código único</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Codigo unico</label>
             <input value={nextClave} disabled className={`${input} opacity-80`} />
           </div>
           <div>
@@ -47,7 +47,7 @@ export default function ModalAgricultor({ open, onClose, onSubmit, values, onCha
             <input name="nombre" value={values.nombre} onChange={onChange} className={input} required />
           </div>
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Hectáreas</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Hectareas</label>
             <input name="hectareas" value={values.hectareas} onChange={onChange} className={input} type="number" step="0.01" />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function ModalAgricultor({ open, onClose, onSubmit, values, onCha
             <input name="rfc" value={values.rfc} onChange={onChange} className={input} maxLength={16} />
           </div>
           <div>
-            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Ubicación</label>
+            <label className={`block mb-1 font-semibold ${darkMode ? "text-orange-200" : "text-orange-700"}`}>Ubicacion</label>
             <input name="ubicacion" value={values.ubicacion} onChange={onChange} className={input} />
           </div>
           <div className="md:col-span-2 flex justify-end">

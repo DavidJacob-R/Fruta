@@ -12,23 +12,25 @@ const defaultModulos: Modulo[] = [
   { nombre: "Agregar frutas", ruta: "/panel/administradorRutas/AgregarFrutas/agregar-frutas", icon: "🍓" },
   { nombre: "Notas", ruta: "/panel/administradorRutas/notas/notas", icon: "📝" },
   { nombre: "Temporadas", ruta: "/panel/administradorRutas/Temporadas/temporadas", icon: "📅" },
-  { nombre: "Usuarios", ruta: "/panel/administradorRutas/Usuarios/usuarios", icon: "👥" },
+  { nombre: "Usuarios", ruta: "/panel/administradorRutas/Usuarios/usuarios", icon: "👥" }
 ]
 
-export default function AdminLayout({
-  children,
-  modulos
-}: {
-  children: React.ReactNode
-  modulos?: Modulo[]
-}) {
+export default function AdminLayout({ children, modulos }: { children: React.ReactNode; modulos?: Modulo[] }) {
   const [darkMode, setDarkMode] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (darkMode) document.documentElement.classList.add("dark")
     else document.documentElement.classList.remove("dark")
   }, [darkMode])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   const bgNight = "bg-[#161616]"
   const bgDay = "bg-[#f6f4f2]"
@@ -36,17 +38,24 @@ export default function AdminLayout({
   return (
     <UiProvider value={{ darkMode, setDarkMode, sidebarOpen, setSidebarOpen }}>
       <div className={`${darkMode ? bgNight : bgDay} min-h-screen flex transition-colors duration-300`}>
-        {!sidebarOpen && (
-          <button
-            className="fixed z-50 top-5 left-3 bg-orange-500 text-white rounded-full p-2 shadow-xl"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <FiMenu className="text-2xl" />
-          </button>
-        )}
+        <button
+          className="fixed z-50 top-4 left-3 bg-orange-500 text-white rounded-full p-3 shadow-xl active:scale-95 md:hidden"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Abrir menu"
+        >
+          <FiMenu className="text-2xl" />
+        </button>
+
+        <button
+          className={`fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden ${sidebarOpen ? "block" : "hidden"}`}
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Cerrar menu"
+        />
+
         <SidebarAdmin modulos={modulos ?? defaultModulos} />
-        <main className={`flex-1 p-4 md:p-8 transition-all duration-300 ${sidebarOpen ? "md:ml-[260px]" : ""}`}>
-          <div className="w-full max-w-7xl mx-auto">{children}</div>
+
+        <main className="flex-1 p-4 md:p-8 md:ml-[280px]">
+          <div className="w-full max-w-7xl mx-auto pb-[env(safe-area-inset-bottom)]">{children}</div>
         </main>
       </div>
     </UiProvider>
