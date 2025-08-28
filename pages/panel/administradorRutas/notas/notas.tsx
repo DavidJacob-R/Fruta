@@ -79,22 +79,16 @@ export default function NotasAdmin() {
       router.events.off("routeChangeComplete", handleRouteChange)
     }
   }, [router])
-
-  async function handleImprimir(nota: any) {
-    const idNota = nota.id || nota.nota_id || nota.numero_nota
-    if (!idNota) {
-      alert("Nota sin id valido")
-      return
-    }
-    const res = await fetch(`/api/notas/pdf-storage/${idNota}`)
-    const data = await res.json()
-    const pdfUrl = data.url
-    if (!pdfUrl) {
-      alert("PDF no encontrado")
-      return
-    }
-    window.open(pdfUrl, "_blank")
+const handleImprimir = (nota: any) => {
+  const numero = Number(nota?.numero_nota)
+  if (!Number.isFinite(numero)) {
+    alert('nota sin numero_nota valido')
+    return
   }
+  const w = window.open(`/api/notas/abrir/${numero}`, '_blank')
+  if (!w) alert('no se pudo abrir la ventana. desactiva el bloqueador de popups')
+}
+
 
   async function handleReenviar(notaId: number) {
     if (!emailReenvio) {

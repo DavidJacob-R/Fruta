@@ -34,33 +34,36 @@ async function resolverNumero(idRaw: string): Promise<number | null> {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const raw = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id
   if (!raw) {
-    res.status(400).json({ url: null, error: 'falta id' })
+    res.status(400).send('falta id')
     return
   }
 
-  try {
-    const numero = await resolverNumero(String(raw))
-    if (!numero) {
-      res.status(404).json({ url: null, error: 'no se pudo resolver numero_nota' })
-      return
-    }
-
-    const fileName = `nota_${numero}.pdf`
-    const path = `${FOLDER}/${fileName}`
-
-    const list = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1, search: fileName })
-    if (list.error) {
-      res.status(500).json({ url: null, error: 'error al listar storage' })
-      return
-    }
-    if (!list.data || list.data.length === 0) {
-      res.status(404).json({ url: null, error: 'pdf no encontrado en storage' })
-      return
-    }
-
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
-    res.status(200).json({ url: data.publicUrl })
-  } catch {
-    res.status(500).json({ url: null, error: 'error del servidor' })
+  const numero = await resolverNumero(String(raw))
+  if (!numero) {
+    res.status(404).send('no se pudo resolver numero')
+    return
   }
+
+  const fileName = `nota_${numero}.pdf`
+  const path = `${FOLDER}/${fileName}`
+
+  const list = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1, search: fileName })
+  if (!list.data || list.data.length === 0) {
+    const r = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/pdf/crea-pdf`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ numero_nota: numero, fecha: new Date().toISOString().slice(0,10) })
+    })
+    await r.json()
+  }
+
+  const list2 = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1, search: fileName })
+  if (!list2.data || list2.data.length === 0) {
+    res.status(404).send('pdf no encontrado')
+    return
+  }
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
+  res.writeHead(302, { Location: data.publicUrl })
+  res.end()
 }
