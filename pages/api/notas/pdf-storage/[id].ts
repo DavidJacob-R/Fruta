@@ -39,7 +39,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const h = await fetch(url, { method: 'HEAD' })
     if (!h.ok) { res.status(404).json({ url: null, error: 'pdf no encontrado' }); return }
     res.status(200).json({ url })
-  } catch {
+  } catch (e: any) {
+    console.error('pdf-storage error:', e?.message || e)
     res.status(500).json({ url: null, error: 'error interno' })
   }
 }
