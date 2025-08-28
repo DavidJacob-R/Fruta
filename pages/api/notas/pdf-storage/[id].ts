@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { createClient } from '@supabase/supabase-js'
 import { db } from '@/lib/db'
 import { notas, recepcion_fruta } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
@@ -7,7 +6,6 @@ import { eq } from 'drizzle-orm'
 const BUCKET = process.env.NEXT_PUBLIC_PDFS_BUCKET || 'elmolinito'
 const FOLDER = process.env.NEXT_PUBLIC_PDFS_FOLDER || 'recepciones'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
 async function resolverNumero(idRaw: string): Promise<number | null> {
   const idNum = Number(idRaw)
@@ -24,18 +22,24 @@ async function resolverNumero(idRaw: string): Promise<number | null> {
   return null
 }
 
+function publicUrl(numero: number) {
+  const base = SUPABASE_URL.replace(/\/+$/,'')
+  return `${base}/storage/v1/object/public/${BUCKET}/${FOLDER}/nota_${numero}.pdf`
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const raw = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id
   if (!raw) { res.status(400).json({ url: null, error: 'falta id' }); return }
-  if (!SUPABASE_URL || !SUPABASE_KEY) { res.status(500).json({ url: null, error: 'supabase no configurado' }); return }
+  if (!SUPABASE_URL) { res.status(500).json({ url: null, error: 'falta NEXT_PUBLIC_SUPABASE_URL' }); return }
 
-  const numero = await resolverNumero(String(raw))
-  if (!numero) { res.status(404).json({ url: null, error: 'no se pudo resolver numero_nota' }); return }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-  const path = `${FOLDER}/nota_${numero}.pdf`
-  const signed = await supabase.storage.from(BUCKET).createSignedUrl(path, 120)
-  if (signed.error || !signed.data?.signedUrl) { res.status(404).json({ url: null, error: 'pdf no encontrado' }); return }
-
-  res.status(200).json({ url: signed.data.signedUrl })
+  try {
+    const numero = await resolverNumero(String(raw))
+    if (!numero) { res.status(404).json({ url: null, error: 'no se pudo resolver numero_nota' }); return }
+    const url = publicUrl(numero)
+    const h = await fetch(url, { method: 'HEAD' })
+    if (!h.ok) { res.status(404).json({ url: null, error: 'pdf no encontrado' }); return }
+    res.status(200).json({ url })
+  } catch {
+    res.status(500).json({ url: null, error: 'error interno' })
+  }
 }

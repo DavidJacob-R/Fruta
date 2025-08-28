@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { createClient } from '@supabase/supabase-js'
 import { db } from '@/lib/db'
 import { notas, recepcion_fruta } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
@@ -7,7 +6,6 @@ import { eq } from 'drizzle-orm'
 const BUCKET = process.env.NEXT_PUBLIC_PDFS_BUCKET || 'elmolinito'
 const FOLDER = process.env.NEXT_PUBLIC_PDFS_FOLDER || 'recepciones'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || ''
 
 async function resolverNumero(idRaw: string): Promise<number | null> {
@@ -25,29 +23,33 @@ async function resolverNumero(idRaw: string): Promise<number | null> {
   return null
 }
 
+function publicUrl(numero: number) {
+  const base = SUPABASE_URL.replace(/\/+$/,'')
+  return `${base}/storage/v1/object/public/${BUCKET}/${FOLDER}/nota_${numero}.pdf`
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const raw = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id
   if (!raw) { res.status(400).send('falta id'); return }
-  if (!SUPABASE_URL || !SUPABASE_KEY) { res.status(500).send('supabase no configurado'); return }
+  if (!SUPABASE_URL) { res.status(500).send('falta NEXT_PUBLIC_SUPABASE_URL'); return }
 
   const numero = await resolverNumero(String(raw))
   if (!numero) { res.status(404).send('no se pudo resolver numero'); return }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-  const path = `${FOLDER}/nota_${numero}.pdf`
-
-  let signed = await supabase.storage.from(BUCKET).createSignedUrl(path, 120)
-  if (signed.error) {
+  const url = publicUrl(numero)
+  try {
+    const h1 = await fetch(url, { method: 'HEAD' })
+    if (h1.ok) { res.writeHead(302, { Location: url }); res.end(); return }
     const r = await fetch(`${BASE_URL}/api/pdf/crea-pdf`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ numero_nota: numero, fecha: new Date().toISOString().slice(0,10) })
     })
     await r.json()
-    signed = await supabase.storage.from(BUCKET).createSignedUrl(path, 120)
-    if (signed.error || !signed.data?.signedUrl) { res.status(404).send('pdf no encontrado'); return }
+    const h2 = await fetch(url, { method: 'HEAD' })
+    if (h2.ok) { res.writeHead(302, { Location: url }); res.end(); return }
+    res.status(404).send('pdf no encontrado')
+  } catch {
+    res.status(500).send('error interno')
   }
-
-  res.writeHead(302, { Location: signed.data.signedUrl })
-  res.end()
 }

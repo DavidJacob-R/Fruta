@@ -81,13 +81,11 @@ export default function NotasAdmin() {
   }, [router])
 const handleImprimir = (nota: any) => {
   const numero = Number(nota?.numero_nota)
-  if (!Number.isFinite(numero)) {
-    alert('nota sin numero_nota valido')
-    return
-  }
+  if (!Number.isFinite(numero)) { alert('nota sin numero_nota valido'); return }
   const w = window.open(`/api/notas/abrir/${numero}`, '_blank')
-  if (!w) alert('no se pudo abrir la ventana. desactiva el bloqueador de popups')
+  if (!w) alert('no se pudo abrir la ventana')
 }
+
 
 
   async function handleReenviar(notaId: number) {
