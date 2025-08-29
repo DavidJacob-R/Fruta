@@ -12,7 +12,8 @@ const defaultModulos: Modulo[] = [
   { nombre: "Agregar frutas", ruta: "/panel/administradorRutas/AgregarFrutas/agregar-frutas", icon: "🍓" },
   { nombre: "Notas", ruta: "/panel/administradorRutas/notas/notas", icon: "📝" },
   { nombre: "Temporadas", ruta: "/panel/administradorRutas/Temporadas/temporadas", icon: "📅" },
-  { nombre: "Usuarios", ruta: "/panel/administradorRutas/Usuarios/usuarios", icon: "👥" }
+  { nombre: "Usuarios", ruta: "/panel/administradorRutas/Usuarios/usuarios", icon: "👥" },
+  { nombre: "Historial", ruta: "/panel/administradorRutas/Historial/historial", icon: "📜" },
 ]
 
 export default function AdminLayout({ children, modulos }: { children: React.ReactNode; modulos?: Modulo[] }) {

@@ -1,5 +1,6 @@
 import {
-  pgTable, serial, integer, varchar, text, decimal, timestamp, boolean, date, pgEnum, uniqueIndex 
+  pgTable, serial, bigint, integer, varchar, text, decimal, timestamp, boolean, date, pgEnum, uniqueIndex, 
+  jsonb
 } from 'drizzle-orm/pg-core'
 // ENUMS (deben ir primero)
 export const tipoVentaEnum = pgEnum('tipo_venta', ['nacional', 'exportacion']);
@@ -346,3 +347,18 @@ export const agricultores_empresa = pgTable('agricultores_empresa', {
   ubicacion: text('ubicacion'),
 });
 
+export const modulo_historial = pgEnum("modulo_historial", ["recepcion","control_calidad","preenfriado","salida"])
+export const accion_historial = pgEnum("accion_historial", ["crear","actualizar","eliminar","entrada","salida","medicion","estado"])
+
+export const historial_movimientos = pgTable("historial_movimientos", {
+  id: bigint("id", { mode: "number" }).primaryKey().notNull(),
+  modulo: modulo_historial("modulo").notNull(),
+  accion: accion_historial("accion").notNull(),
+  entidad: text("entidad").notNull(),
+  registro_id: integer("registro_id").notNull(),
+  usuario_id: integer("usuario_id"),
+  descripcion: text("descripcion"),
+  datos: jsonb("datos"),
+  creado_en: timestamp("creado_en", { withTimezone: false }).defaultNow(),
+  temporada_id: integer("temporada_id")
+})

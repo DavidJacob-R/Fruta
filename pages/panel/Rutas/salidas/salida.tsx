@@ -1,33 +1,17 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/router"
 
-// -----------------------------
-// Tipos locales (todo en 1 file)
-// -----------------------------
-type Pedido = {
-  id: number
-  numero_nota?: number | null
-  empresa_nombre?: string | null
-  agricultor_nombre?: string | null
-  agricultor_apellido?: string | null
-  fruta_nombre?: string | null
-  empaque_nombre?: string | null
-  cantidad_cajas: number
-  fecha_recepcion?: string | null
+// Tipos locales
+type Pallet = { id: number; empresa: string; numero: string }
+type Checklist = {
+  cartaInstruccion: boolean
+  manifiestoCarga: boolean
+  packingList: boolean
+  proforma: boolean
 }
 
-type Motivo = { id: number; nombre: string }
-
-// -----------------------------
-// Subcomponentes internos
-// -----------------------------
-function HeaderControlCalidad(props: {
-  email: string
-  onReload: () => void
-  onBack: () => void
-  mensaje: string
-}) {
-  const { email, onReload, onBack, mensaje } = props
+// Subcomponentes internos (no son páginas, no se prerenderizan solos)
+function HeaderSalidas({ onBack, total, step = 1 }: { onBack: () => void; total: number; step?: 1 | 2 }) {
   return (
     <header className="w-full">
       <div className="flex items-center justify-between">
@@ -41,13 +25,11 @@ function HeaderControlCalidad(props: {
 
         <div className="flex items-center gap-3 select-none">
           <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center shadow">
-            <span className="text-neutral-200 text-lg">🛡️</span>
+            <span className="text-neutral-200 text-lg">🚚</span>
           </div>
           <div className="text-right">
-            <h1 className="text-lg sm:text-xl font-semibold text-neutral-100 leading-tight">
-              Control de calidad
-            </h1>
-            <p className="text-xs text-neutral-400">Sesión: <span className="text-neutral-200">{email || "—"}</span></p>
+            <h1 className="text-lg sm:text-xl font-semibold text-neutral-100 leading-tight">Salidas de pallets</h1>
+            <p className="text-xs text-neutral-400">Logística y despacho</p>
           </div>
         </div>
       </div>
@@ -56,516 +38,492 @@ function HeaderControlCalidad(props: {
         <nav className="text-sm text-neutral-400">
           <span className="hover:text-neutral-200">Panel</span>
           <span className="mx-2 text-neutral-600">/</span>
-          <span className="text-neutral-200 font-medium">Control de calidad</span>
+          <span className="hover:text-neutral-200">Almacén</span>
+          <span className="mx-2 text-neutral-600">/</span>
+          <span className="text-neutral-200 font-medium">Salidas</span>
         </nav>
-        <button
-          onClick={onReload}
-          className="px-4 py-2 rounded-xl border border-neutral-800 text-neutral-100 hover:bg-neutral-800"
-        >
-          Recargar
-        </button>
-      </div>
 
-      {mensaje && (
-        <div
-          className={`mt-4 text-center px-4 py-3 rounded-xl text-sm ${
-            mensaje.includes("correctamente")
-              ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700/40"
-              : "bg-red-600/20 text-red-300 border border-red-700/40"
-          }`}
-        >
-          {mensaje}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-neutral-400">
+            <span className={`inline-block w-2 h-2 rounded-full ${step===1 ? "bg-white/80":"bg-white/40"}`} />
+            <span className={`inline-block w-2 h-2 rounded-full ${step===2 ? "bg-white/80":"bg-white/40"}`} />
+            <span className="text-xs ml-2">{step===1 ? "Selección" : "Confirmación"}</span>
+          </div>
+          <span className="px-3 py-1 rounded-lg border border-neutral-800 bg-neutral-900/70 text-neutral-200 text-sm">
+            Disponibles: <strong className="text-neutral-100">{total}</strong>
+          </span>
         </div>
-      )}
+      </div>
     </header>
   )
 }
 
-function ListaPedidos(props: {
-  pedidos?: Pedido[]
-  onSelect: (pedido: Pedido) => void
+function ListaPallets({
+  pallets,
+  selectedIds,
+  onToggle,
+  search,
+  setSearch,
+  onToggleVisible,
+  onClear
+}: {
+  pallets: Pallet[]
+  selectedIds: number[]
+  onToggle: (id: number) => void
+  search: string
+  setSearch: (v: string) => void
+  onToggleVisible: (ids: number[]) => void
+  onClear: () => void
 }) {
-  const { pedidos = [], onSelect } = props
-  const [q, setQ] = useState("")
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return pallets
+    return pallets.filter(p => p.numero.toLowerCase().includes(q) || p.empresa.toLowerCase().includes(q))
+  }, [pallets, search])
 
-  const filtrados = useMemo(() => {
-    const s = q.trim().toLowerCase()
-    if (!s) return pedidos
-    return pedidos.filter(p =>
-      `${p?.numero_nota ?? ""} ${p?.empresa_nombre ?? ""} ${p?.fruta_nombre ?? ""} ${p?.empaque_nombre ?? ""} ${p?.cantidad_cajas ?? ""}`
-        .toLowerCase()
-        .includes(s)
-    )
-  }, [pedidos, q])
-
-  function fmtFecha(fecha?: string | Date | null) {
-    if (!fecha) return "—"
-    const d = new Date(fecha)
-    if (Number.isNaN(d.getTime())) return "—"
-    return d.toLocaleDateString("es-MX", { year: "numeric", month: "short", day: "2-digit" })
-  }
+  const visibleIds = filtered.map(p => p.id)
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id))
 
   return (
     <div className="w-full">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between mb-3">
         <div className="relative flex-1">
           <input
-            value={q}
-            onChange={(e)=>setQ(e.target.value)}
-            placeholder="Buscar por nota, empresa, fruta…"
+            type="text"
+            placeholder="Buscar por código o empresa…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-11 pr-4 py-3 rounded-2xl bg-neutral-900 border border-neutral-800 text-neutral-100 placeholder-neutral-500 outline-none focus:ring-2 focus:ring-white/10"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">🔍</div>
-          {q && (
-            <button
-              onClick={()=>setQ("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs text-neutral-300 hover:bg-neutral-800"
-            >
-              Limpiar
-            </button>
-          )}
         </div>
-        <span className="px-3 py-2 rounded-xl border border-neutral-800 bg-neutral-900/70 text-neutral-300 text-sm">
-          {filtrados.length} pendiente{filtrados.length===1 ? "" : "s"}
-        </span>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => onToggleVisible(visibleIds)}
+            disabled={visibleIds.length === 0}
+            className={`px-4 py-2 rounded-xl border text-sm ${
+              visibleIds.length === 0
+                ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+            }`}
+          >
+            {allVisibleSelected ? "Deseleccionar visibles" : "Seleccionar visibles"}
+          </button>
+          <button
+            onClick={onClear}
+            disabled={selectedIds.length === 0}
+            className={`px-4 py-2 rounded-xl border text-sm ${
+              selectedIds.length === 0
+                ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+            }`}
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
 
-      {/* Móvil: tarjetas táctiles */}
+      {/* Móvil: tarjetas */}
       <div className="grid grid-cols-1 gap-3 md:hidden">
-        {filtrados.length === 0 ? (
+        {filtered.map(p => {
+          const checked = selectedIds.includes(p.id)
+          return (
+            <label
+              key={p.id}
+              className={`rounded-2xl border bg-neutral-900 p-4 flex items-start justify-between active:scale-[0.99] transition ${
+                checked ? "border-white/30" : "border-neutral-800 hover:border-neutral-700"
+              }`}
+            >
+              <div className="pr-3">
+                <div className="text-base font-semibold text-neutral-100">
+                  Pallet <span className="text-neutral-300">{String(p.id).slice(-6)}</span>
+                </div>
+                <div className="mt-1 text-xs text-neutral-500">Empresa</div>
+                <div className="text-sm text-neutral-200">{p.empresa}</div>
+                <div className="mt-1 text-xs text-neutral-500">Código</div>
+                <div className="font-mono text-sm text-neutral-300">{p.numero}</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => onToggle(p.id)}
+                className="mt-1 h-6 w-6 rounded border-2 border-neutral-600 bg-neutral-800"
+              />
+            </label>
+          )
+        })}
+        {filtered.length === 0 && (
           <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-center text-neutral-400">
-            No hay pedidos pendientes
+            No hay pallets en almacén
           </div>
-        ) : (
-          filtrados.map((p, idx) => {
-            const tieneNota = Number.isFinite(p?.numero_nota) && (p?.numero_nota as number) > 0
-            const titulo = tieneNota ? `Nota #${p.numero_nota}` : `Recepción #${p?.id ?? "-"}`
-
-            return (
-              <button
-                key={`${p?.id ?? "k"}-${idx}`}
-                onClick={() => onSelect(p)}
-                className="text-left rounded-2xl border border-neutral-800 bg-neutral-900 p-4 active:scale-[0.99] transition"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-base font-medium text-neutral-100 truncate">{titulo}</h3>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] bg-neutral-800 text-neutral-300 border border-neutral-700">
-                        Pendiente
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-neutral-400 truncate">
-                      {[p?.empresa_nombre, `${p?.agricultor_nombre ?? ""} ${p?.agricultor_apellido ?? ""}`.trim()]
-                        .filter(Boolean).join(" • ") || "Sin datos"}
-                    </p>
-                  </div>
-                  <span className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-neutral-800 bg-neutral-950 px-2 py-1 text-xs text-neutral-300">
-                    Ver detalle →
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-neutral-500">Fruta</div>
-                    <div className="text-sm text-neutral-100 truncate">{p?.fruta_nombre ?? "—"}</div>
-                  </div>
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-neutral-500">Empaque</div>
-                    <div className="text-sm text-neutral-100 truncate">{p?.empaque_nombre ?? "—"}</div>
-                  </div>
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-neutral-500">Cajas</div>
-                    <div className="text-sm text-neutral-100">{p?.cantidad_cajas ?? "—"}</div>
-                  </div>
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-neutral-500">Fecha</div>
-                    <div className="text-sm text-neutral-100">{fmtFecha(p?.fecha_recepcion as any)}</div>
-                  </div>
-                </div>
-              </button>
-            )
-          })
         )}
       </div>
 
-      {/* Tablet/desktop: lista compacta */}
+      {/* Tablet/escritorio: tabla */}
       <div className="hidden md:block overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-        {filtrados.length === 0 ? (
-          <div className="p-10 text-center text-neutral-400">No hay pedidos pendientes</div>
-        ) : (
-          <ul className="divide-y divide-neutral-800">
-            {filtrados.map((p, idx) => {
-              const tieneNota = Number.isFinite(p?.numero_nota) && (p?.numero_nota as number) > 0
-              const titulo = tieneNota ? `Nota #${p.numero_nota}` : `Recepción #${p?.id ?? "-"}`
-
-              return (
-                <li key={`${p?.id ?? "k"}-${idx}`}>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(p)}
-                    className="group w-full text-left focus:outline-none"
-                  >
-                    <div className="p-5 sm:p-6 transition ease-out hover:bg-neutral-800/40">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-base sm:text-lg font-medium text-neutral-100 truncate">{titulo}</h3>
-                            <span className="px-2 py-0.5 rounded-full text-xs bg-neutral-800 text-neutral-300 border border-neutral-700">
-                              Pendiente
-                            </span>
-                          </div>
-                          <p className="mt-1 text-sm text-neutral-400 truncate">
-                            {[p?.empresa_nombre, `${p?.agricultor_nombre ?? ""} ${p?.agricultor_apellido ?? ""}`.trim()]
-                              .filter(Boolean).join(" • ") || "Sin datos"}
-                          </p>
-                        </div>
-                        <div className="shrink-0">
-                          <span className="inline-flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-1.5 text-sm text-neutral-300 group-hover:border-neutral-700">
-                            Ver detalle
-                            <span className="translate-x-0 group-hover:translate-x-0.5 transition">→</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div className="text-sm text-neutral-300"><span className="text-neutral-400">Fruta:</span> {p?.fruta_nombre ?? "—"}</div>
-                        <div className="text-sm text-neutral-300"><span className="text-neutral-400">Empaque:</span> {p?.empaque_nombre ?? "—"}</div>
-                        <div className="text-sm text-neutral-300"><span className="text-neutral-400">Cajas:</span> {p?.cantidad_cajas ?? "—"}</div>
-                        <div className="text-sm text-neutral-300"><span className="text-neutral-400">Fecha:</span> {fmtFecha(p?.fecha_recepcion as any)}</div>
-                      </div>
-                    </div>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function PedidoDetalle({ pedido }: { pedido: Pedido }) {
-  return (
-    <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 sm:p-6">
-      <h2 className="text-base sm:text-lg font-semibold text-neutral-100 mb-3">Detalle del pedido</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Empresa</div>
-          <div className="text-neutral-100 truncate">{pedido.empresa_nombre ?? "—"}</div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Agricultor</div>
-          <div className="text-neutral-100 truncate">
-            {`${pedido.agricultor_nombre ?? ""} ${pedido.agricultor_apellido ?? ""}`.trim() || "—"}
-          </div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Fruta</div>
-          <div className="text-neutral-100 truncate">{pedido.fruta_nombre ?? "—"}</div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Empaque</div>
-          <div className="text-neutral-100 truncate">{pedido.empaque_nombre ?? "—"}</div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Cajas iniciales</div>
-          <div className="text-neutral-100">{pedido.cantidad_cajas}</div>
-        </div>
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Nota / Recepción</div>
-          <div className="text-neutral-100">
-            {Number.isFinite(pedido.numero_nota) && (pedido.numero_nota as number) > 0 ? `#${pedido.numero_nota}` : `#${pedido.id}`}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-neutral-900/70">
+              <tr className="border-b border-neutral-800">
+                <th className="p-3 text-left w-12">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={() => onToggleVisible(visibleIds)}
+                    className="h-5 w-5 rounded border-2 border-neutral-600 bg-neutral-800"
+                  />
+                </th>
+                <th className="p-3 text-left text-neutral-300">Empresa</th>
+                <th className="p-3 text-left text-neutral-300">Código de pallet</th>
+                <th className="p-3 text-left text-neutral-300">Identificador</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p, i) => {
+                const checked = selectedIds.includes(p.id)
+                return (
+                  <tr key={p.id} className={`border-b border-neutral-850/50 ${i%2===0 ? "bg-neutral-950/30" : ""} hover:bg-neutral-800/40`}>
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => onToggle(p.id)}
+                        className="h-5 w-5 rounded border-2 border-neutral-600 bg-neutral-800"
+                      />
+                    </td>
+                    <td className="p-3 text-neutral-100">{p.empresa}</td>
+                    <td className="p-3 font-mono text-neutral-300">{p.numero}</td>
+                    <td className="p-3 text-neutral-300">Pallet {String(p.id).slice(-6)}</td>
+                  </tr>
+                )
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="p-6 text-center text-neutral-400">No hay pallets en almacén</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   )
 }
 
-function FormularioCalidad(props: {
-  pedido: Pedido
-  motivos: Motivo[]
-  rechazos: number
-  setRechazos: (n: number) => void
-  cajasFinales: number
-  selectedMotivos: number[]
-  toggleMotivo: (id: number) => void
-  comentarios: string
-  setComentarios: (v: string) => void
-  onVolver: () => void
-  onSubmit: (e: React.FormEvent) => void
+function ConfirmacionSalida({
+  pallets,
+  empresa,
+  setEmpresa,
+  cliente,
+  setCliente,
+  documentos,
+  toggleDoc,
+  onBack,
+  onConfirm
+}: {
+  pallets: Pallet[]
+  empresa: string
+  setEmpresa: (v: string) => void
+  cliente: string
+  setCliente: (v: string) => void
+  documentos: Checklist
+  toggleDoc: (k: keyof Checklist) => void
+  onBack: () => void
+  onConfirm: () => void
 }) {
-  const {
-    pedido, motivos, rechazos, setRechazos,
-    cajasFinales, selectedMotivos, toggleMotivo,
-    comentarios, setComentarios, onVolver, onSubmit
-  } = props
-  const maxPermitido = pedido?.cantidad_cajas ?? 0
-
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 sm:p-6">
-      <h2 className="text-base sm:text-lg font-semibold text-neutral-100">Registrar control</h2>
-      <p className="text-xs text-neutral-400 mt-1">Indica cuántas cajas se rechazan y selecciona uno o varios motivos.</p>
-
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-          <label className="block text-sm text-neutral-300 mb-2">Cajas rechazadas</label>
-          <input
-            type="number"
-            min={0}
-            max={maxPermitido}
-            value={rechazos}
-            onChange={(e) => {
-              const v = Math.max(0, Math.min(Number(e.target.value || 0), maxPermitido))
-              setRechazos(v)
-            }}
-            className="w-full px-3 py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
-            placeholder="0"
-            required
-          />
-          <p className="mt-2 text-xs text-neutral-500">Máximo {maxPermitido}.</p>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+          <h2 className="text-base sm:text-lg font-semibold text-neutral-100 mb-3">Datos de salida</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-neutral-400">Empresa</label>
+              <input
+                type="text"
+                value={empresa}
+                onChange={(e) => setEmpresa(e.target.value)}
+                className="mt-1 w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-neutral-400">Cliente</label>
+              <input
+                type="text"
+                value={cliente}
+                onChange={(e) => setCliente(e.target.value)}
+                className="mt-1 w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Cajas finales</div>
-          <div className="mt-1 text-2xl text-neutral-100">{cajasFinales}</div>
-          <p className="mt-2 text-xs text-neutral-500">Se calcula automáticamente.</p>
-        </div>
-
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-          <div className="text-[10px] uppercase tracking-wide text-neutral-500">Recibidas</div>
-          <div className="mt-1 text-2xl text-neutral-100">{maxPermitido}</div>
-          <p className="mt-2 text-xs text-neutral-500">Según la recepción.</p>
+        <div className="lg:col-span-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+          <h2 className="text-base sm:text-lg font-semibold text-neutral-100 mb-3">Documentos (checklist)</h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              { key: "cartaInstruccion", label: "CARTA DE INSTRUCCIÓN" },
+              { key: "manifiestoCarga", label: "MANIFIESTO DE CARGA" },
+              { key: "packingList", label: "PACKING LIST" },
+              { key: "proforma", label: "PROFORMA" }
+            ].map(doc => (
+              <li key={doc.key} className="px-3 py-2 rounded-xl flex items-center bg-neutral-950 border border-neutral-800">
+                <input
+                  type="checkbox"
+                  checked={documentos[doc.key as keyof Checklist] as unknown as boolean}
+                  onChange={() => toggleDoc(doc.key as keyof Checklist)}
+                  className="w-5 h-5 rounded border-2 border-neutral-600 bg-neutral-800 mr-3"
+                />
+                <span className={`text-neutral-100 ${documentos[doc.key as keyof Checklist] ? "line-through opacity-70" : ""}`}>
+                  {doc.label}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-sm font-medium text-neutral-200 mb-2">Motivos de rechazo</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {motivos.map((m) => {
-            const activo = selectedMotivos.includes(m.id)
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => toggleMotivo(m.id)}
-                className={`px-3 py-2 rounded-xl border text-sm ${
-                  activo
-                    ? "bg-white text-black border-neutral-200"
-                    : "bg-neutral-900 text-neutral-100 border-neutral-800 hover:bg-neutral-800"
-                }`}
-                aria-pressed={activo}
-              >
-                {m.nombre}
-              </button>
-            )
-          })}
+      <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+        <h2 className="text-base sm:text-lg font-semibold text-neutral-100 mb-3">Pallets seleccionados</h2>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          {pallets.map(p => (
+            <div key={p.id} className="px-3 py-2 rounded-lg text-center font-mono bg-neutral-950 border border-neutral-800 text-neutral-300">
+              {p.numero}
+            </div>
+          ))}
         </div>
-        <p className="mt-2 text-xs text-neutral-500">
-          Puedes seleccionar varios. Si hay rechazos, al menos un motivo debe estar seleccionado.
-        </p>
       </div>
 
-      <div className="mt-4">
-        <label className="block text-sm text-neutral-300 mb-2">Comentarios</label>
-        <textarea
-          value={comentarios}
-          onChange={(e) => setComentarios(e.target.value)}
-          rows={3}
-          className="w-full px-3 py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-100 outline-none focus:ring-2 focus:ring-white/10"
-          placeholder="Observaciones generales…"
-        />
-      </div>
-
-      <div className="mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onVolver}
-          className="w-full sm:w-auto px-5 py-3 rounded-xl border border-neutral-700 text-neutral-100 hover:bg-neutral-800"
-        >
-          ← Volver
+      <div className="flex justify-end gap-3">
+        <button onClick={onBack} className="px-5 py-3 rounded-xl border border-neutral-700 text-neutral-100 hover:bg-neutral-800">
+          ← Corregir selección
         </button>
-        <button
-          type="submit"
-          disabled={rechazos < 0 || rechazos > maxPermitido || (rechazos > 0 && selectedMotivos.length === 0)}
-          className={`w-full sm:w-auto px-6 py-3 rounded-xl font-semibold shadow ${
-            rechazos < 0 || rechazos > maxPermitido || (rechazos > 0 && selectedMotivos.length === 0)
-              ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-              : "bg-white text-black hover:bg-neutral-200"
-          }`}
-        >
-          Guardar y generar ticket
+        <button onClick={onConfirm} className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition shadow">
+          Confirmar salida →
         </button>
       </div>
-
-      <div className="mt-3 text-center text-[11px] text-neutral-500">
-        El backend recibirá los motivos seleccionados sin cantidades específicas.
-      </div>
-    </form>
+    </div>
   )
 }
 
-// -----------------------------
 // Página (default export)
-// -----------------------------
-export default function ControlCalidadPage() {
+export default function SalidasPage() {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2>(1)
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
-  const [motivos, setMotivos] = useState<Motivo[]>([])
-  const [selectedPedido, setSelectedPedido] = useState<Pedido | null>(null)
-  const [mensaje, setMensaje] = useState<string>("")
-  const [email, setEmail] = useState<string>("")
+  const [pallets, setPallets] = useState<Pallet[]>([])
+  const [selected, setSelected] = useState<number[]>([])
+  const [search, setSearch] = useState("")
+  const [empresa, setEmpresa] = useState("HEALTHY HARVEST")
+  const [cliente, setCliente] = useState("N/I")
+  const [docs, setDocs] = useState<Checklist>({
+    cartaInstruccion: false,
+    manifiestoCarga: false,
+    packingList: false,
+    proforma: false
+  })
 
-  // Form actual: número de rechazos + multi-motivo + comentarios
-  const [rechazos, setRechazos] = useState<number>(0)
-  const [comentarios, setComentarios] = useState<string>("")
-  const [selectedMotivos, setSelectedMotivos] = useState<number[]>([])
+  const selectedDetails = useMemo(() => pallets.filter(p => selected.includes(p.id)), [pallets, selected])
 
-  async function cargarDatos() {
-    setMensaje("")
+  function toggleDoc(k: keyof Checklist) { setDocs(prev => ({ ...prev, [k]: !prev[k] })) }
+  function toggle(id: number) { setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]) }
+
+  // Alterna selección de los IDs visibles: si todos están seleccionados, los quita; si no, los agrega
+  function toggleVisible(ids: number[]) {
+    setSelected(prev => {
+      const set = new Set(prev)
+      const allVisibleSelected = ids.length > 0 && ids.every(id => set.has(id))
+      if (allVisibleSelected) { ids.forEach(id => set.delete(id)) } else { ids.forEach(id => set.add(id)) }
+      return Array.from(set)
+    })
+  }
+
+  function clearSelection() { setSelected([]) }
+
+  async function cargarPallets() {
     try {
-      const [pedidosRes, motivosRes] = await Promise.all([
-        fetch("/api/control_calidad/listar"),
-        fetch("/api/control_calidad/motivos"),
-      ])
-      const pedidosData = await pedidosRes.json()
-      const motivosData = await motivosRes.json()
-      setPedidos(Array.isArray(pedidosData) ? pedidosData : (pedidosData.pedidos || []))
-      setMotivos(Array.isArray(motivosData) ? motivosData : (motivosData.motivos || []))
+      const r = await fetch("/api/salidas/pallets")
+      const j = await r.json()
+      setPallets(Array.isArray(j) ? j : (j.pallets || []))
     } catch {
-      setMensaje("Error al cargar pedidos o motivos")
+      setPallets([])
     }
   }
 
-  useEffect(() => {
-    const usuario = typeof window !== "undefined" ? localStorage.getItem("usuario") : null
-    if (usuario) {
-      try {
-        const user = JSON.parse(usuario)
-        setEmail(user.email || "")
-      } catch {}
-    }
-    cargarDatos()
-  }, [])
+  useEffect(() => { cargarPallets() }, [])
 
-  function handleSelectPedido(pedido: Pedido) {
-    setSelectedPedido(pedido)
-    setRechazos(0)
-    setComentarios("")
-    setSelectedMotivos([])
-    setStep(2)
-    setMensaje("")
-  }
-
-  const cajasFinales = useMemo(() => {
-    if (!selectedPedido) return 0
-    return Math.max(0, (selectedPedido.cantidad_cajas || 0) - (rechazos || 0))
-  }, [selectedPedido, rechazos])
-
-  function toggleMotivo(id: number) {
-    setSelectedMotivos(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    )
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!selectedPedido) return
-
-    if ((rechazos || 0) < 0) {
-      setMensaje("Los rechazos no pueden ser negativos.")
-      return
-    }
-    if (rechazos > (selectedPedido.cantidad_cajas || 0)) {
-      setMensaje("Los rechazos no pueden superar la cantidad total.")
-      return
-    }
-    if (rechazos > 0 && selectedMotivos.length === 0) {
-      setMensaje("Selecciona al menos un motivo de rechazo.")
-      return
-    }
-    if (rechazos === 0 && selectedMotivos.length > 0) {
-      setMensaje("Define cantidad de cajas rechazadas mayor a 0.")
-      return
-    }
+  async function confirmarSalida() {
+    if (selected.length === 0) return
+    const destino = [cliente, empresa].filter(Boolean).join(" / ")
+    const payload = { pallet_ids: selected, usuario_id: null, destino, temperatura_salida: null, observaciones: null }
 
     try {
-      const usuario = JSON.parse(localStorage.getItem("usuario") || "{}")
-      const payload = {
-        recepcion_id: selectedPedido.id,
-        usuario_control_id: usuario.id,
-        cajas_aprobadas: cajasFinales,
-        cajas_rechazadas: rechazos,
-        notas: comentarios,
-        motivos: selectedMotivos.map(mID => ({ motivo_id: mID, cantidad_cajas: 0 }))
-      }
-
-      const res = await fetch("/api/control_calidad/guardar", {
+      const r = await fetch("/api/salidas/confirmar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       })
-      const result = await res.json()
-
-      if (result?.success) {
-        setMensaje("Control de calidad registrado correctamente")
-        setTimeout(() => {
-          setStep(1)
-          setSelectedPedido(null)
-          setSelectedMotivos([])
-          setRechazos(0)
-          setComentarios("")
-          cargarDatos()
-        }, 900)
-      } else {
-        setMensaje("Error al guardar: " + (result?.message || ""))
-      }
+      const j = await r.json()
+      if (!j.ok) { alert("No se pudo confirmar la salida. Verifica la selección."); return }
+      alert(`Salida registrada. Código de carga: ${j.codigo}`)
+      router.push("/panel/empleado")
     } catch {
-      setMensaje("Error al registrar el control de calidad")
+      alert("Error de red al confirmar la salida.")
     }
   }
+
+  function removeFromSelection(id: number) { setSelected(prev => prev.filter(x => x !== id)) }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-925 to-neutral-950 text-white">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <HeaderControlCalidad
-          email={email}
-          onReload={cargarDatos}
-          onBack={() => router.push("/panel/empleado")}
-          mensaje={mensaje}
-        />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <HeaderSalidas onBack={() => router.push("/panel/empleado")} total={pallets.length} step={step} />
 
         {step === 1 && (
-          <section className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6">
-            <ListaPedidos pedidos={pedidos} onSelect={handleSelectPedido} />
+          <section className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="lg:col-span-7 rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6 shadow-xl">
+              <ListaPallets
+                pallets={pallets}
+                selectedIds={selected}
+                onToggle={toggle}
+                search={search}
+                setSearch={setSearch}
+                onToggleVisible={toggleVisible}
+                onClear={clearSelection}
+              />
+
+              <div className="md:hidden fixed left-0 right-0 bottom-0 bg-neutral-950/85 backdrop-blur border-t border-neutral-800/70 pb-[env(safe-area-inset-bottom)]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm sm:text-base text-neutral-300">{selected.length} seleccionado(s)</div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={clearSelection}
+                        disabled={selected.length === 0}
+                        className={`px-4 py-2 rounded-xl border text-sm sm:text-base ${
+                          selected.length === 0
+                            ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                            : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+                        }`}
+                      >
+                        Limpiar
+                      </button>
+                      <button
+                        onClick={() => setStep(2)}
+                        disabled={selected.length === 0}
+                        className={`px-5 py-2 rounded-xl text-sm sm:text-base ${
+                          selected.length === 0
+                            ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+                            : "bg-white text-black font-semibold hover:bg-neutral-200 shadow"
+                        }`}
+                      >
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-20 md:h-0"></div>
+            </div>
+
+            <aside className="hidden lg:block lg:col-span-5">
+              <div className="sticky top-4 space-y-4">
+                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-semibold text-neutral-100">Resumen</h3>
+                    <span className="text-sm text-neutral-400">{selected.length} seleccionado(s)</span>
+                  </div>
+                  <div className="mt-3 max-h-[360px] overflow-auto pr-1">
+                    {selectedDetails.length === 0 ? (
+                      <div className="text-neutral-500 text-sm">Selecciona pallets para verlos aquí.</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {selectedDetails.map(p => (
+                          <li key={p.id} className="flex items-center justify-between px-3 py-2 rounded-xl border border-neutral-800 bg-neutral-950">
+                            <div>
+                              <div className="text-sm text-neutral-100">{p.empresa}</div>
+                              <div className="text-xs text-neutral-400 font-mono">{p.numero}</div>
+                            </div>
+                            <button
+                              onClick={() => removeFromSelection(p.id)}
+                              className="px-2 py-1 rounded-lg border border-neutral-800 text-neutral-300 hover:bg-neutral-800 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <button
+                      onClick={clearSelection}
+                      disabled={selected.length === 0}
+                      className={`px-4 py-2 rounded-xl border text-sm ${
+                        selected.length === 0
+                          ? "border-neutral-800 text-neutral-600 cursor-not-allowed"
+                          : "border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+                      }`}
+                    >
+                      Limpiar
+                    </button>
+                    <button
+                      onClick={() => setStep(2)}
+                      disabled={selected.length === 0}
+                      className={`px-5 py-2 rounded-xl text-sm ${
+                        selected.length === 0
+                          ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
+                          : "bg-white text-black font-semibold hover:bg-neutral-200 shadow"
+                      }`}
+                    >
+                      Confirmar selección →
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 p-5">
+                  <h4 className="text-sm font-semibold text-neutral-200">Sugerencias</h4>
+                  <p className="text-sm text-neutral-400 mt-2">
+                    Usa “Seleccionar visibles” para escoger rápidamente lo filtrado.
+                    Mantén la selección mientras cambias el texto del buscador.
+                  </p>
+                </div>
+              </div>
+            </aside>
           </section>
         )}
 
-        {step === 2 && selectedPedido && (
-          <section className="mt-4 space-y-4">
-            <PedidoDetalle pedido={selectedPedido} />
-            <FormularioCalidad
-              pedido={selectedPedido}
-              motivos={motivos}
-              rechazos={rechazos}
-              setRechazos={setRechazos}
-              cajasFinales={cajasFinales}
-              selectedMotivos={selectedMotivos}
-              toggleMotivo={toggleMotivo}
-              comentarios={comentarios}
-              setComentarios={setComentarios}
-              onVolver={() => setStep(1)}
-              onSubmit={handleSubmit}
+        {step === 2 && (
+          <section className="mt-6 rounded-2xl border border-neutral-800 bg-neutral-900/70 p-4 sm:p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-neutral-100">Confirmar salida</h2>
+              <button
+                onClick={() => setStep(1)}
+                className="px-4 py-2 rounded-xl border border-neutral-700 text-neutral-100 hover:bg-neutral-800"
+              >
+                ← Corregir
+              </button>
+            </div>
+
+            <ConfirmacionSalida
+              pallets={selectedDetails}
+              empresa={empresa}
+              setEmpresa={setEmpresa}
+              cliente={cliente}
+              setCliente={setCliente}
+              documentos={docs}
+              toggleDoc={toggleDoc}
+              onBack={() => setStep(1)}
+              onConfirm={confirmarSalida}
             />
           </section>
         )}
       </main>
 
       <footer className="w-full text-center py-5 text-sm text-neutral-500">
-        © {new Date().getFullYear()} El Molinito – Control de calidad
+        © {new Date().getFullYear()} El Molinito – Logística
       </footer>
     </div>
   )
