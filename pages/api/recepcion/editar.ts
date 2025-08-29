@@ -2,11 +2,16 @@ import { db } from '@/lib/db'
 import { recepcion_fruta } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { setDbActorFromReq } from "@/lib/db-actor"
+
 
 export default async function handler(
+  
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await setDbActorFromReq(req)
+
   if (req.method !== "POST") return res.status(405).json({ success: false, message: "Método no permitido" });
 
   const { id, agricultor_id, tipo_fruta_id, cantidad_cajas, peso_caja_oz, empaque_id, notas, usuario_recepcion_id } = req.body;

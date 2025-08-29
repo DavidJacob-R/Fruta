@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
+import { setDbActorFromReq } from "@/lib/db-actor"
+
 import { sql } from 'drizzle-orm'
 
 function genCodigo() {
@@ -13,6 +15,8 @@ function genCodigo() {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    await setDbActorFromReq(req)
+
     if (req.method !== 'POST') return res.status(405).json({ ok: false })
     const { pallets, usuario_id, tipo_pallet_id } = req.body || {}
     if (!Array.isArray(pallets) || pallets.length === 0) return res.status(400).json({ ok: false })

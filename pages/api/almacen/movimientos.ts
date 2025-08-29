@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { pool } from '@/lib/db'
+import { setDbActorPgFromReq } from "@/lib/db-actor"
+
 
 function mapTipo(t: string) {
   if (t === 'entradas') return 'entrada'
@@ -10,6 +12,8 @@ function mapTipo(t: string) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
+      await setDbActorPgFromReq(req)
+
       const limit = Math.min(200, Number(req.query.limit || 50))
       const q = `
         select

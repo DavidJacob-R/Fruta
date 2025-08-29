@@ -3,8 +3,11 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
 import { recepcion_fruta, notas, usuarios } from '@/lib/schema'
 import { sql, eq, and } from 'drizzle-orm'
+import { setDbActorFromReq, setDbActorFromTx } from "@/lib/db-actor"
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await setDbActorFromReq(req)
   if (req.method !== 'POST') {
     res.status(405).json({ success: false, message: 'Metodo no permitido' })
     return

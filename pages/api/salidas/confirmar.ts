@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { setDbActorFromReq, setDbActorFromTx } from "@/lib/db-actor"
+
 
 function genCodigoCarga() {
   const d = new Date()
@@ -13,6 +15,8 @@ function genCodigoCarga() {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    await setDbActorFromReq(req)
+
     if (req.method !== 'POST') return res.status(405).json({ ok: false })
 
     const {

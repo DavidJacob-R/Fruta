@@ -1,9 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { setDbActorFromReq } from "@/lib/db-actor"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    await setDbActorFromReq(req)
+
     if (req.method !== 'POST') return res.status(405).json({ ok: false })
     const { pallet_id, temp_final, usuario_id } = req.body || {}
     if (!pallet_id) return res.status(400).json({ ok: false })

@@ -2,8 +2,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "../../../lib/db";
 import { control_calidad, control_calidad_motivos } from "../../../lib/schema";
+import { setDbActorFromReq } from "@/lib/db-actor"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await setDbActorFromReq(req)
+
   if (req.method === "POST") {
     const {
       recepcion_id,
